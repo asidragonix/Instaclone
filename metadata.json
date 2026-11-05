@@ -1,0 +1,6 @@
+{
+  "name": "InstaClone",
+  "description": "A social photo-sharing app with real-time feed, post creation, likes, comments, explore discovery, user profiles, and direct messaging.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

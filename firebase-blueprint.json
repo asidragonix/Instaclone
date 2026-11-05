@@ -1,0 +1,392 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Public social profile for an InstaClone user without PII.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "Authenticated Firebase UID of the user."
+        },
+        "username": {
+          "type": "string",
+          "description": "Lowercase alphanumeric handle (2-30 chars)."
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Public display name (1-50 chars)."
+        },
+        "bio": {
+          "type": "string",
+          "description": "Short user bio (up to 200 chars)."
+        },
+        "avatarData": {
+          "type": "string",
+          "description": "Compressed avatar data URI or HTTPS URL."
+        },
+        "followersCount": {
+          "type": "integer",
+          "description": "Total number of followers."
+        },
+        "followingCount": {
+          "type": "integer",
+          "description": "Total number of accounts followed."
+        },
+        "postsCount": {
+          "type": "integer",
+          "description": "Total number of posts created."
+        },
+        "visibility": {
+          "type": "string",
+          "enum": ["public", "private"],
+          "description": "Profile visibility level."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp set via FieldValue.serverTimestamp()."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp set via FieldValue.serverTimestamp()."
+        }
+      },
+      "required": [
+        "userId",
+        "username",
+        "displayName",
+        "bio",
+        "avatarData",
+        "followersCount",
+        "followingCount",
+        "postsCount",
+        "visibility",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Post": {
+      "title": "Post",
+      "description": "A photo post shared to the InstaClone feed.",
+      "type": "object",
+      "properties": {
+        "authorId": {
+          "type": "string",
+          "description": "UID of the post creator."
+        },
+        "authorUsername": {
+          "type": "string",
+          "description": "Denormalized username of the creator."
+        },
+        "authorAvatarData": {
+          "type": "string",
+          "description": "Denormalized avatar image of the creator."
+        },
+        "imageData": {
+          "type": "string",
+          "description": "Compressed JPEG data URI or HTTPS photo URL."
+        },
+        "caption": {
+          "type": "string",
+          "description": "Post caption text (up to 2200 chars)."
+        },
+        "location": {
+          "type": "string",
+          "description": "Optional location label (empty string if none)."
+        },
+        "likesCount": {
+          "type": "integer",
+          "description": "Atomically synchronized count of likes."
+        },
+        "commentsCount": {
+          "type": "integer",
+          "description": "Atomically synchronized count of comments."
+        },
+        "lastCommentId": {
+          "type": "string",
+          "description": "ID of latest comment for atomic batch verification."
+        },
+        "visibility": {
+          "type": "string",
+          "enum": ["public", "private"],
+          "description": "Post visibility state."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp set via FieldValue.serverTimestamp()."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp set via FieldValue.serverTimestamp()."
+        }
+      },
+      "required": [
+        "authorId",
+        "authorUsername",
+        "authorAvatarData",
+        "imageData",
+        "caption",
+        "location",
+        "likesCount",
+        "commentsCount",
+        "lastCommentId",
+        "visibility",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "PostLike": {
+      "title": "PostLike",
+      "description": "Represents a single user's like on a post.",
+      "type": "object",
+      "properties": {
+        "postId": {
+          "type": "string",
+          "description": "Target post ID."
+        },
+        "userId": {
+          "type": "string",
+          "description": "UID of the user liking the post."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp set via FieldValue.serverTimestamp()."
+        }
+      },
+      "required": ["postId", "userId", "createdAt"]
+    },
+    "Comment": {
+      "title": "Comment",
+      "description": "A user comment on a post.",
+      "type": "object",
+      "properties": {
+        "postId": {
+          "type": "string",
+          "description": "Target post ID."
+        },
+        "authorId": {
+          "type": "string",
+          "description": "UID of the comment author."
+        },
+        "authorUsername": {
+          "type": "string",
+          "description": "Username of the comment author."
+        },
+        "authorAvatarData": {
+          "type": "string",
+          "description": "Avatar of the comment author."
+        },
+        "text": {
+          "type": "string",
+          "description": "Comment body (1-500 chars)."
+        },
+        "visibility": {
+          "type": "string",
+          "enum": ["public"],
+          "description": "Comment visibility."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp set via FieldValue.serverTimestamp()."
+        }
+      },
+      "required": [
+        "postId",
+        "authorId",
+        "authorUsername",
+        "authorAvatarData",
+        "text",
+        "visibility",
+        "createdAt"
+      ]
+    },
+    "Follow": {
+      "title": "Follow",
+      "description": "Directional follow relationship between two users.",
+      "type": "object",
+      "properties": {
+        "followerId": {
+          "type": "string",
+          "description": "UID of the follower."
+        },
+        "followingId": {
+          "type": "string",
+          "description": "UID of the user being followed."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp set via FieldValue.serverTimestamp()."
+        }
+      },
+      "required": ["followerId", "followingId", "createdAt"]
+    },
+    "Bookmark": {
+      "title": "Bookmark",
+      "description": "Saved post bookmark owned privately by a user.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "UID of the bookmark owner."
+        },
+        "postId": {
+          "type": "string",
+          "description": "Saved post ID."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp set via FieldValue.serverTimestamp()."
+        }
+      },
+      "required": ["userId", "postId", "createdAt"]
+    },
+    "Conversation": {
+      "title": "Conversation",
+      "description": "1-on-1 direct message thread between two users.",
+      "type": "object",
+      "properties": {
+        "participantIds": {
+          "type": "array",
+          "description": "Sorted two-element array of participant UIDs."
+        },
+        "userOneId": {
+          "type": "string",
+          "description": "Lexicographically first participant UID."
+        },
+        "userOneUsername": {
+          "type": "string",
+          "description": "Username of first participant."
+        },
+        "userOneAvatarData": {
+          "type": "string",
+          "description": "Avatar of first participant."
+        },
+        "userTwoId": {
+          "type": "string",
+          "description": "Lexicographically second participant UID."
+        },
+        "userTwoUsername": {
+          "type": "string",
+          "description": "Username of second participant."
+        },
+        "userTwoAvatarData": {
+          "type": "string",
+          "description": "Avatar of second participant."
+        },
+        "lastMessage": {
+          "type": "string",
+          "description": "Preview of most recent message."
+        },
+        "lastSenderId": {
+          "type": "string",
+          "description": "UID of most recent message sender."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp set via FieldValue.serverTimestamp()."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp set via FieldValue.serverTimestamp()."
+        }
+      },
+      "required": [
+        "participantIds",
+        "userOneId",
+        "userOneUsername",
+        "userOneAvatarData",
+        "userTwoId",
+        "userTwoUsername",
+        "userTwoAvatarData",
+        "lastMessage",
+        "lastSenderId",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "DirectMessage": {
+      "title": "DirectMessage",
+      "description": "Individual chat message inside a 1-on-1 conversation.",
+      "type": "object",
+      "properties": {
+        "conversationId": {
+          "type": "string",
+          "description": "Parent conversation ID."
+        },
+        "participantIds": {
+          "type": "array",
+          "description": "Denormalized two-element array of participant UIDs."
+        },
+        "senderId": {
+          "type": "string",
+          "description": "UID of message sender."
+        },
+        "senderUsername": {
+          "type": "string",
+          "description": "Username of message sender."
+        },
+        "text": {
+          "type": "string",
+          "description": "Message text content (1-1000 chars)."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp set via FieldValue.serverTimestamp()."
+        }
+      },
+      "required": [
+        "conversationId",
+        "participantIds",
+        "senderId",
+        "senderUsername",
+        "text",
+        "createdAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/profiles/{userId}": {
+      "schema": "UserProfile",
+      "description": "Public social profiles without PII."
+    },
+    "/posts/{postId}": {
+      "schema": "Post",
+      "description": "Photo posts visible in feed, explore, and profiles."
+    },
+    "/likes/{likeId}": {
+      "schema": "PostLike",
+      "description": "Per-user post likes keyed by postId_userId."
+    },
+    "/comments/{commentId}": {
+      "schema": "Comment",
+      "description": "Comments attached to posts."
+    },
+    "/follows/{followId}": {
+      "schema": "Follow",
+      "description": "Follower-following edges keyed by followerId_followingId."
+    },
+    "/users/{userId}/bookmarks/{postId}": {
+      "schema": "Bookmark",
+      "description": "Private saved post bookmarks per user."
+    },
+    "/conversations/{conversationId}": {
+      "schema": "Conversation",
+      "description": "1-on-1 direct message threads keyed by userOneId_userTwoId."
+    },
+    "/conversations/{conversationId}/messages/{messageId}": {
+      "schema": "DirectMessage",
+      "description": "Messages inside a direct message thread."
+    }
+  }
+}
