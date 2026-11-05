@@ -1,4 +1,4 @@
-name: Android CI & APK Build
+name: Build Android APK & Deploy
 
 on:
   push:
@@ -11,12 +11,12 @@ permissions:
   contents: write
 
 jobs:
-  build:
-    name: Build Android APK & Deploy
+  build-apk:
+    name: Build Native Android APK
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Code
+      - name: Checkout Source Code
         uses: actions/checkout@v4
 
       - name: Set up JDK 17
@@ -26,21 +26,52 @@ jobs:
           distribution: 'temurin'
           cache: gradle
 
-      - name: Grant execute permission for Gradle wrapper
+      - name: Restore Keystore & Configuration Files
         run: |
-          if [ -f gradlew ]; then
-            chmod +x gradlew
-          else
-            gradle wrapper
-            chmod +x gradlew
+          echo "Restoring debug.keystore from base64 if needed..."
+          if [ ! -f debug.keystore ] && [ -f debug.keystore.base64 ]; then
+            base64 -d debug.keystore.base64 > debug.keystore
+            echo "Successfully restored debug.keystore"
           fi
 
-      - name: Build Debug APK
-        run: ./gradlew assembleDebug --stacktrace
+          echo "Verifying google-services.json..."
+          if [ ! -f app/google-services.json ] && [ -f google-services.json ]; then
+            cp google-services.json app/google-services.json
+            echo "Copied google-services.json to app/ directory"
+          fi
 
-      - name: Upload Debug APK Artifact
+          chmod +x gradlew
+          echo "Environment pre-check complete."
+
+      - name: Build Debug APK via Gradle
+        run: ./gradlew assembleDebug --no-daemon --stacktrace
+
+      - name: Verify APK Generated
+        run: |
+          ls -lh app/build/outputs/apk/debug/app-debug.apk
+          cp app/build/outputs/apk/debug/app-debug.apk ./InstaClone-v1.0.apk
+
+      - name: Upload APK to GitHub Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: InstaClone-debug-apk
+          name: InstaClone-Android-APK
           path: app/build/outputs/apk/debug/app-debug.apk
-          retention-days: 14
+          retention-days: 30
+
+      - name: Create GitHub Release (On Push to Main)
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+        uses: softprops/action-gh-release@v2
+        continue-on-error: true
+        with:
+          tag_name: v1.0.${{ github.run_number }}
+          name: InstaClone v1.0 (Build ${{ github.run_number }})
+          body: |
+            ## 📱 InstaClone Android APK Release
+            Download and install the native Android APK on your phone:
+            - **Package Name:** `com.aistudio.instaclone.vpxnqz`
+            - **Architecture:** Universal Debug APK
+            - **Firebase Backend:** Provisioned & Connected
+          files: |
+            app/build/outputs/apk/debug/app-debug.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

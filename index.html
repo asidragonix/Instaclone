@@ -102,15 +102,19 @@
       </div>
 
       <!-- App Banner & GitHub Info -->
-      <div class="p-3 bg-gradient-to-br from-insta-surfaceVariant to-insta-surface rounded-2xl border border-insta-border text-xs space-y-2">
-        <div class="flex items-center space-x-2 text-insta-coral font-semibold">
+      <div class="p-3.5 bg-gradient-to-br from-insta-surfaceVariant to-insta-surface rounded-2xl border border-insta-border text-xs space-y-2.5">
+        <div class="flex items-center space-x-2 text-insta-coral font-bold text-sm">
           <i data-lucide="smartphone" class="w-4 h-4"></i>
-          <span>Native Android App</span>
+          <span>Android App Ready</span>
         </div>
-        <p class="text-gray-400">This repository contains the full production Kotlin & Jetpack Compose Android app with Firebase backend!</p>
-        <a href="https://github.com" target="_blank" class="inline-flex items-center space-x-1.5 text-insta-gold hover:underline font-medium pt-1">
+        <p class="text-gray-400">Full native Kotlin, Jetpack Compose &amp; Firebase app.</p>
+        <a href="./app/build/outputs/apk/debug/app-debug.apk" download="InstaClone.apk" id="downloadApkBtn" class="flex items-center justify-center space-x-2 w-full py-2.5 bg-gradient-to-r from-insta-coral to-insta-magenta text-white font-bold rounded-xl hover:opacity-90 transition text-center shadow-md">
+          <i data-lucide="download" class="w-4 h-4"></i>
+          <span>Download Android APK</span>
+        </a>
+        <a href="https://github.com" target="_blank" class="inline-flex items-center space-x-1.5 text-insta-gold hover:underline font-medium text-[11px] pt-0.5">
           <i data-lucide="github" class="w-3.5 h-3.5"></i>
-          <span>GitHub Actions APK Build</span>
+          <span>View GitHub Actions Build</span>
         </a>
       </div>
     </aside>
@@ -121,7 +125,11 @@
       <!-- Mobile Top Bar -->
       <header class="flex md:hidden items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-insta-border bg-white dark:bg-insta-surface sticky top-0 z-30">
         <h1 class="font-brand text-3xl bg-gradient-to-r from-insta-amber via-insta-coral to-insta-magenta bg-clip-text text-transparent">InstaClone</h1>
-        <div class="flex items-center space-x-3">
+        <div class="flex items-center space-x-2">
+          <a href="./app/build/outputs/apk/debug/app-debug.apk" download="InstaClone.apk" class="px-2.5 py-1 bg-insta-coral text-white text-xs font-bold rounded-lg flex items-center space-x-1 shadow-sm">
+            <i data-lucide="download" class="w-3.5 h-3.5"></i>
+            <span>APK</span>
+          </a>
           <button onclick="openCreateModal()" class="p-1.5 rounded-lg text-gray-700 dark:text-gray-200">
             <i data-lucide="plus-square" class="w-6 h-6"></i>
           </button>

@@ -1,114 +1,100 @@
-# InstaClone — Full-Stack Social Experience
+# InstaClone — Social Media Platform (Android + Web)
 
-A production-ready social media platform featuring both a **live Web application** (deployable on GitHub Pages / Vercel / Netlify) and a **native Android app** built with Kotlin, Jetpack Compose (Material 3), and Cloud Firestore.
-
----
-
-## 🚨 Why Did GitHub Show a "White Page / 404 Not Found"?
-
-If you pushed this project to GitHub and enabled **GitHub Pages**, you likely saw a **White Page** or **404 Page Not Found**. Here is why:
-
-1. **Missing `index.html` Entry Point:**
-   - GitHub Pages is a static web server that looks for an `index.html` file in the root (`/`) or `/docs` directory.
-   - Because this project was generated as a native Android Gradle project, the root directory previously only contained Android files (`build.gradle.kts`, `app/`, etc.), without an `index.html`.
-2. **Jekyll / Base Path Mismatch:**
-   - Without an `index.html`, GitHub's Jekyll engine attempts to render raw directory files or returns a 404.
-
-### ✅ How This is Fixed:
-1. **Interactive Web App (`index.html`):** We added a standalone, mobile-responsive InstaClone web app at the repository root with Tailwind CSS, story carousels, double-tap like animations, comment modals, explore search, direct messaging, and profile management.
-2. **GitHub Actions Android CI (`.github/workflows/android-build.yml`):** Automatically builds the native Android APK (`app-debug.apk`) whenever you push code, downloadable directly from your GitHub repository's **Actions** tab.
+Complete production-ready social media platform featuring:
+1. 📱 **Native Android Application** (`app/`) built with Kotlin, Jetpack Compose (Material 3), Firebase Authentication, and Cloud Firestore.
+2. 🌐 **Live Web Application** (`index.html`) ready for GitHub Pages, Vercel, or Netlify.
+3. ⚙️ **Automated GitHub Actions CI** (`.github/workflows/android-build.yml`) that automatically compiles and releases `InstaClone.apk`.
 
 ---
 
-## 🌐 1. Deploying the Web App to GitHub Pages (1-Minute Setup)
+## 🔧 Solved Issues / Samasyaon ka Samadhan (Fixes Summary)
 
-To have your web app live and working on your GitHub URL:
+### 1. `google-services.json` Missing Problem:
+- **Location:** Android rules require `google-services.json` inside the `app/` folder (`app/google-services.json`).
+- **Solution:** 
+  - Valid `google-services.json` is configured in `app/google-services.json`.
+  - A duplicate copy has also been placed directly at the repository root (`/google-services.json`) so it is never missed.
+  - In `app/build.gradle.kts`, `missingGoogleServicesStrategy = WARN` is enabled so even if the file is absent on a machine, the build will not crash.
+  - The GitHub Actions workflow automatically verifies and links `google-services.json` before building.
 
-1. Go to your repository on **GitHub**.
-2. Click on **Settings** (top tab) ➔ **Pages** (left sidebar under "Code and automation").
-3. Under **Build and deployment**:
-   - **Source**: Select `Deploy from a branch`.
-   - **Branch**: Select `main` (or `master`) and keep folder as `/ (root)`.
+### 2. GitHub 404 Not Found / White Page Error:
+- **Reason:** GitHub Pages runs the Jekyll static generator by default. Jekyll ignores Android files and folders, causing a 404 or white page.
+- **Solution:**
+  - Added `.nojekyll` file at root to tell GitHub Pages to serve static files directly.
+  - Added `404.html` fallback redirect to ensure any subpath immediately opens `index.html`.
+  - Added full responsive `index.html` web application with dark/light mode, feed, explore grid, direct messaging, and profile.
+
+### 3. APK Download & GitHub Actions Deploy Error:
+- **Reason:** Previously, `gradlew` wrapper was missing from the repo, and `debug.keystore` was ignored by `.gitignore`. When GitHub Actions ran, it failed with missing keystore and gradlew errors.
+- **Solution:**
+  - Generated and included `gradlew`, `gradlew.bat`, and `gradle/wrapper/gradle-wrapper.jar`.
+  - Updated `.github/workflows/android-build.yml` to automatically restore `debug.keystore` from `debug.keystore.base64` before compiling.
+  - Added automated GitHub Release & Artifact upload so you can download the APK with one click from GitHub's **Actions** or **Releases** tab!
+
+---
+
+## 🚀 How to Run & Deploy (Step-by-Step)
+
+### A. Deploy to GitHub Pages (Live Web App)
+1. Push this repository to your GitHub account:
+   ```bash
+   git add .
+   git commit -m "Deploy InstaClone Web & Android"
+   git push origin main
+   ```
+2. Go to your repository on **GitHub.com**.
+3. Click on **Settings** (top bar) ➔ **Pages** (left menu).
+4. Under **Build and deployment**:
+   - **Source:** `Deploy from a branch`
+   - **Branch:** `main` (or `master`), Folder: `/ (root)`
    - Click **Save**.
-4. Wait ~60 seconds. Refresh the page:
-   - Your live site will be ready at:  
-     `https://<your-username>.github.io/<your-repo-name>/`
+5. Your live site will be ready at:  
+   `https://<your-username>.github.io/<your-repo-name>/`
 
 ---
 
-## 📱 2. Running & Building the Native Android App
-
-The repository includes a complete Jetpack Compose Android app in `/app`.
-
-### Option A: Automatic APK Download via GitHub Actions
-1. Push this repository to GitHub.
-2. Go to the **Actions** tab in your GitHub repository.
-3. Click on the latest workflow run: **"Android CI & APK Build"**.
-4. Scroll down to **Artifacts** and download **`InstaClone-debug-apk.zip`**.
-5. Install the APK directly on any Android device!
-
-### Option B: Local Android Studio
-1. Open **Android Studio** (Ladybug or newer).
-2. Choose **File ➔ Open** and select this project directory.
-3. Allow Gradle to sync dependencies.
-4. Select an emulator or connected phone and press **Run (Shift + F10)**.
-
-### Option C: Command Line Build
-```bash
-gradle assembleDebug
-# Generated APK:
-# app/build/outputs/apk/debug/app-debug.apk
-```
+### B. Download & Install Android APK from GitHub
+1. Whenever you push to GitHub, the **GitHub Actions** workflow starts automatically.
+2. Click on the **Actions** tab in your repository.
+3. Select the latest run: **"Build Native Android APK"**.
+4. Under **Artifacts** at the bottom, click on **`InstaClone-Android-APK`** to download your APK!
+5. Or check the **Releases** section on the right sidebar of your GitHub repo to download `app-debug.apk`.
 
 ---
 
-## 🛠️ Tech Stack & Features
-
-| Capability | Web Application (`index.html`) | Android Native (`app/`) |
-| :--- | :--- | :--- |
-| **UI Framework** | HTML5, Tailwind CSS, Lucide Icons | Jetpack Compose (Material 3) |
-| **Language** | Modern JavaScript (ES6+) | Kotlin 2.2 |
-| **Authentication** | Session State / Google OAuth | Jetpack Credential Manager + Firebase Auth |
-| **Database** | Interactive state / Firebase SDK | Cloud Firestore (Enterprise custom DB ID) |
-| **Engagement** | Double-tap Heart burst, Comments, Likes | Atomic `WriteBatch` likes, comments, bookmarks |
-| **Discovery** | Search creators & places, Trending grid | Live Firestore query streams & user filters |
-| **Direct Messages** | 1-on-1 real-time chat interface | Real-time participant-isolated subcollections |
-| **Theme** | Persistent Dark & Light modes | System / DataStore-persisted Material 3 Theme |
+### C. Run on Android Studio (Local Development)
+1. Open **Android Studio**.
+2. Click **Open** and select this project folder.
+3. Gradle will automatically sync.
+4. Select an Android Emulator or your USB connected phone.
+5. Click **Run (Shift + F10)**.
 
 ---
 
-## 🗄️ Database Schema & Security Rules (`firestore.rules`)
-
-The backend uses Cloud Firestore with zero-trust security rules:
-- **`profiles/{userId}`**: Public user profiles (avatars, bios, follower counts) with immutable identity checks.
-- **`posts/{postId}`**: Photo posts with caption, location, atomic like/comment counters, and public/private visibility.
-- **`likes/{likeId}`**: Per-user like edge documents (`postId_userId`).
-- **`comments/{commentId}`**: Comments validated against post existence.
-- **`follows/{followId}`**: Follower/following relationships (`followerId_followingId`).
-- **`conversations/{conversationId}`**: 1-on-1 Direct Message threads strictly restricted to authorized participants.
-
----
-
-## 📁 Repository Directory Structure
+## 📁 Project Directory Structure
 
 ```text
-├── index.html                   # 🌐 GitHub Pages Live Web Application
+├── index.html                   # 🌐 Live Web Application (Feed, Explore, DMs, Profile)
+├── 404.html                     # 🔀 GitHub Pages router fallback (prevents 404 errors)
+├── .nojekyll                    # ⚡ Disables Jekyll on GitHub Pages (fixes 404 white screen)
+├── google-services.json         # 🔥 Firebase configuration (Root copy)
+├── gradlew & gradlew.bat        # 🛠️ Gradle executable wrappers
 ├── .github/
 │   └── workflows/
-│       └── android-build.yml   # ⚙️ GitHub Actions CI for automated APK compilation
-├── app/                        # 📱 Native Android application
+│       └── android-build.yml   # 🤖 GitHub Actions CI (Builds & Releases Android APK)
+├── app/
+│   ├── google-services.json    # 🔥 Firebase configuration (Android App module)
+│   ├── build.gradle.kts        # 📦 App build configuration & dependencies
 │   ├── src/main/
 │   │   ├── java/com/example/
 │   │   │   ├── MainActivity.kt
-│   │   │   ├── data/model/     # Firestore Kotlin Models
+│   │   │   ├── data/model/     # Firestore Data Models
 │   │   │   ├── data/repository/# Atomic Firestore Repositories
 │   │   │   ├── ui/auth/        # Google Credential Manager Auth
-│   │   │   ├── ui/components/  # PostCard, StoryRing, BottomSheet
+│   │   │   ├── ui/components/  # PostCard, StoryRing, CommentsSheet
 │   │   │   ├── ui/screens/     # HomeFeed, Explore, CreatePost, DM, Profile
-│   │   │   └── ui/theme/       # Material 3 Editorial Theme & Fonts
-│   │   └── res/                # XML Resources, Drawables, Mipmaps, Fonts
-│   └── build.gradle.kts
-├── firestore.rules             # 🛡️ Hardened Firestore Security Rules
-├── firebase.json               # 🔥 Local Firebase Emulator configuration
-└── README.md                   # 📖 Documentation & Setup Guide
+│   │   │   └── ui/theme/       # Material 3 Editorial Theme
+│   │   └── res/                # Fonts, Drawables, Mipmaps, Strings
+├── firestore.rules             # 🛡️ Hardened Cloud Firestore Security Rules
+└── README.md                   # 📖 Full Guide & Documentation
 ```
