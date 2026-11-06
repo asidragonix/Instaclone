@@ -1,855 +1,796 @@
 <!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>InstaClone — Social Media Experience</title>
-  <link rel="icon" type="image/png" href="app/src/main/res/drawable/img_launcher_logo.jpg">
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Google Fonts: Grand Hotel & Plus Jakarta Sans -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Grand+Hotel&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <!-- Lucide Icons -->
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          fontFamily: {
-            brand: ['"Grand Hotel"', 'cursive'],
-            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
-          },
-          colors: {
-            insta: {
-              coral: '#FF3B6B',
-              magenta: '#C13584',
-              amber: '#F77737',
-              gold: '#FFC837',
-              violet: '#833AB4',
-              dark: '#0B0A10',
-              surface: '#14121D',
-              surfaceVariant: '#201D2E',
-              border: '#332E47',
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>InstaClone — AI Powered Instagram</title>
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="app/src/main/res/drawable/img_launcher_logo.jpg">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        instagram: {
+                            gradient1: '#feda75',
+                            gradient2: '#fa7e1e',
+                            gradient3: '#d62976',
+                            gradient4: '#962fbf',
+                            gradient5: '#4f5bd5',
+                        },
+                        insta: {
+                            coral: '#FF3B6B',
+                            magenta: '#C13584',
+                            amber: '#F77737',
+                            gold: '#FFC837',
+                            violet: '#833AB4',
+                        }
+                    }
+                }
             }
-          }
         }
-      }
-    }
-  </script>
-  <style>
-    .story-ring {
-      background: linear-gradient(45deg, #FFC837, #F77737, #FF3B6B, #C13584, #833AB4);
-    }
-    .heart-burst {
-      animation: heartPop 0.8s ease-in-out forwards;
-    }
-    @keyframes heartPop {
-      0% { transform: scale(0); opacity: 0; }
-      50% { transform: scale(1.2); opacity: 1; }
-      100% { transform: scale(1); opacity: 0; }
-    }
-    /* Hide scrollbar */
-    .no-scrollbar::-webkit-scrollbar { display: none; }
-    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-  </style>
+    </script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Grand+Hotel&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .font-brand { font-family: 'Grand Hotel', cursive; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .reel-container { scroll-snap-type: y mandatory; }
+        .reel-item { scroll-snap-align: start; }
+        .story-ring {
+            background: linear-gradient(45deg, #FFC837, #F77737, #FF3B6B, #C13584, #833AB4);
+        }
+        .heart-burst {
+            animation: heartPop 0.8s ease-in-out forwards;
+        }
+        @keyframes heartPop {
+            0% { transform: scale(0); opacity: 0; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(1); opacity: 0; }
+        }
+    </style>
 </head>
-<body class="bg-[#FAFAFD] dark:bg-[#0B0A10] text-[#13111C] dark:text-[#F7F5FF] font-sans min-h-screen transition-colors duration-200">
+<body class="bg-black text-white min-h-screen flex flex-col md:flex-row select-none transition-colors duration-200">
 
-  <!-- Main Container -->
-  <div class="flex h-screen overflow-hidden max-w-7xl mx-auto">
-
-    <!-- Desktop Sidebar -->
-    <aside class="hidden md:flex flex-col w-64 lg:w-72 border-r border-gray-200 dark:border-insta-border p-4 justify-between bg-white dark:bg-insta-surface transition-colors">
-      <div class="space-y-6">
-        <!-- Logo -->
-        <div class="flex items-center justify-between px-2 pt-2">
-          <h1 class="font-brand text-4xl bg-gradient-to-r from-insta-amber via-insta-coral to-insta-magenta bg-clip-text text-transparent">InstaClone</h1>
-          <button id="themeToggleBtn" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-insta-surfaceVariant transition" title="Toggle Dark/Light Mode">
-            <i data-lucide="sun" class="w-5 h-5 hidden dark:block text-amber-400"></i>
-            <i data-lucide="moon" class="w-5 h-5 block dark:hidden text-gray-700"></i>
-          </button>
-        </div>
-
-        <!-- Navigation Links -->
-        <nav class="space-y-1.5" id="desktopNav">
-          <button onclick="switchTab('feed')" class="nav-item flex items-center space-x-4 w-full p-3 rounded-xl font-semibold hover:bg-gray-100 dark:hover:bg-insta-surfaceVariant transition text-insta-coral" data-tab="feed">
-            <i data-lucide="home" class="w-6 h-6"></i>
-            <span>Home</span>
-          </button>
-          <button onclick="switchTab('explore')" class="nav-item flex items-center space-x-4 w-full p-3 rounded-xl font-medium hover:bg-gray-100 dark:hover:bg-insta-surfaceVariant transition" data-tab="explore">
-            <i data-lucide="compass" class="w-6 h-6"></i>
-            <span>Explore</span>
-          </button>
-          <button onclick="openCreateModal()" class="nav-item flex items-center space-x-4 w-full p-3 rounded-xl font-medium hover:bg-gray-100 dark:hover:bg-insta-surfaceVariant transition" data-tab="create">
-            <i data-lucide="plus-square" class="w-6 h-6"></i>
-            <span>Create</span>
-          </button>
-          <button onclick="switchTab('messages')" class="nav-item flex items-center space-x-4 w-full p-3 rounded-xl font-medium hover:bg-gray-100 dark:hover:bg-insta-surfaceVariant transition relative" data-tab="messages">
-            <i data-lucide="send" class="w-6 h-6"></i>
-            <span>Messages</span>
-            <span class="absolute right-4 bg-insta-coral text-white text-xs px-2 py-0.5 rounded-full font-bold">2</span>
-          </button>
-          <button onclick="switchTab('profile')" class="nav-item flex items-center space-x-4 w-full p-3 rounded-xl font-medium hover:bg-gray-100 dark:hover:bg-insta-surfaceVariant transition" data-tab="profile">
-            <div class="w-6 h-6 rounded-full overflow-hidden border border-gray-300 dark:border-gray-600">
-              <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80" class="w-full h-full object-cover" alt="Profile">
+    <!-- DESKTOP SIDEBAR NAVIGATION -->
+    <aside class="hidden md:flex flex-col justify-between w-64 h-screen fixed left-0 top-0 border-r border-zinc-800 p-4 bg-black z-50 overflow-y-auto hide-scrollbar">
+        <div>
+            <div class="flex items-center justify-between mb-6 px-2">
+                <h1 class="text-3xl font-brand bg-gradient-to-r from-amber-400 via-rose-500 to-purple-500 bg-clip-text text-transparent">InstaClone</h1>
+                <span class="text-[10px] bg-purple-900/60 text-purple-300 font-bold px-2 py-0.5 rounded-full border border-purple-700">AI</span>
             </div>
-            <span>Profile</span>
-          </button>
-        </nav>
-      </div>
-
-      <!-- App Banner & GitHub Info -->
-      <div class="p-3.5 bg-gradient-to-br from-insta-surfaceVariant to-insta-surface rounded-2xl border border-insta-border text-xs space-y-2.5">
-        <div class="flex items-center space-x-2 text-insta-coral font-bold text-sm">
-          <i data-lucide="smartphone" class="w-4 h-4"></i>
-          <span>Android App Ready</span>
+            <nav class="space-y-1.5" id="desktopNav">
+                <button onclick="switchTab('home')" class="nav-btn w-full flex items-center gap-3.5 p-3 hover:bg-zinc-900 rounded-xl transition font-medium text-rose-500" data-tab="home"><i data-lucide="home" class="w-5 h-5"></i> <span>Home</span></button>
+                <button onclick="switchTab('explore')" class="nav-btn w-full flex items-center gap-3.5 p-3 hover:bg-zinc-900 rounded-xl transition font-medium text-zinc-300" data-tab="explore"><i data-lucide="compass" class="w-5 h-5"></i> <span>Explore</span></button>
+                <button onclick="switchTab('reels')" class="nav-btn w-full flex items-center gap-3.5 p-3 hover:bg-zinc-900 rounded-xl transition font-medium text-zinc-300" data-tab="reels"><i data-lucide="clapperboard" class="w-5 h-5"></i> <span>Reels</span></button>
+                <button onclick="switchTab('messages')" class="nav-btn w-full flex items-center gap-3.5 p-3 hover:bg-zinc-900 rounded-xl transition font-medium text-zinc-300 relative" data-tab="messages">
+                    <i data-lucide="send" class="w-5 h-5"></i> <span>Messages</span>
+                    <span class="ml-auto bg-rose-500 text-white text-[11px] font-bold px-1.5 py-0.2 rounded-full">2</span>
+                </button>
+                <button onclick="switchTab('notifications')" class="nav-btn w-full flex items-center gap-3.5 p-3 hover:bg-zinc-900 rounded-xl transition font-medium text-zinc-300" data-tab="notifications"><i data-lucide="heart" class="w-5 h-5"></i> <span>Notifications</span></button>
+                <button onclick="switchTab('botdashboard')" class="nav-btn w-full flex items-center gap-3.5 p-3 hover:bg-zinc-900 rounded-xl transition font-medium text-purple-400" data-tab="botdashboard"><i data-lucide="bot" class="w-5 h-5"></i> <span>AI Bot Manager</span></button>
+                <button onclick="switchTab('profile')" class="nav-btn w-full flex items-center gap-3.5 p-3 hover:bg-zinc-900 rounded-xl transition font-medium text-zinc-300" data-tab="profile">
+                    <div class="w-5 h-5 rounded-full overflow-hidden border border-zinc-700">
+                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150" class="w-full h-full object-cover">
+                    </div>
+                    <span>Profile</span>
+                </button>
+            </nav>
         </div>
-        <p class="text-gray-400">Full native Kotlin, Jetpack Compose &amp; Firebase app.</p>
-        <a href="./app/build/outputs/apk/debug/app-debug.apk" download="InstaClone.apk" id="downloadApkBtn" class="flex items-center justify-center space-x-2 w-full py-2.5 bg-gradient-to-r from-insta-coral to-insta-magenta text-white font-bold rounded-xl hover:opacity-90 transition text-center shadow-md">
-          <i data-lucide="download" class="w-4 h-4"></i>
-          <span>Download Android APK</span>
-        </a>
-        <a href="https://github.com" target="_blank" class="inline-flex items-center space-x-1.5 text-insta-gold hover:underline font-medium text-[11px] pt-0.5">
-          <i data-lucide="github" class="w-3.5 h-3.5"></i>
-          <span>View GitHub Actions Build</span>
-        </a>
-      </div>
+
+        <div class="space-y-3 pt-4 border-t border-zinc-900">
+            <!-- Download Android APK CTA -->
+            <a href="./app/build/outputs/apk/debug/app-debug.apk" download="InstaClone.apk" class="w-full flex items-center justify-center gap-2 p-2.5 bg-gradient-to-r from-amber-500 via-rose-500 to-purple-600 hover:opacity-90 text-white rounded-xl font-bold text-xs shadow-md transition">
+                <i data-lucide="download" class="w-4 h-4"></i>
+                <span>Download Android APK</span>
+            </a>
+            <div class="flex gap-2">
+                <button onclick="toggleTheme()" class="flex-1 flex items-center justify-center gap-2 p-2.5 bg-zinc-900 hover:bg-zinc-800 rounded-xl transition text-xs font-semibold text-zinc-300">
+                    <i data-lucide="sun-moon" class="w-4 h-4"></i> Theme
+                </button>
+                <button onclick="switchTab('create')" class="flex-1 flex items-center justify-center gap-2 p-2.5 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl text-xs font-semibold">
+                    <i data-lucide="plus-circle" class="w-4 h-4 text-rose-400"></i> Create
+                </button>
+            </div>
+        </div>
     </aside>
 
-    <!-- Main Content Area -->
-    <main class="flex-1 flex flex-col h-full overflow-hidden bg-white dark:bg-insta-dark transition-colors">
-
-      <!-- Mobile Top Bar -->
-      <header class="flex md:hidden items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-insta-border bg-white dark:bg-insta-surface sticky top-0 z-30">
-        <h1 class="font-brand text-3xl bg-gradient-to-r from-insta-amber via-insta-coral to-insta-magenta bg-clip-text text-transparent">InstaClone</h1>
-        <div class="flex items-center space-x-2">
-          <a href="./app/build/outputs/apk/debug/app-debug.apk" download="InstaClone.apk" class="px-2.5 py-1 bg-insta-coral text-white text-xs font-bold rounded-lg flex items-center space-x-1 shadow-sm">
-            <i data-lucide="download" class="w-3.5 h-3.5"></i>
-            <span>APK</span>
-          </a>
-          <button onclick="openCreateModal()" class="p-1.5 rounded-lg text-gray-700 dark:text-gray-200">
-            <i data-lucide="plus-square" class="w-6 h-6"></i>
-          </button>
-          <button onclick="switchTab('messages')" class="p-1.5 rounded-lg text-gray-700 dark:text-gray-200 relative">
-            <i data-lucide="send" class="w-6 h-6"></i>
-            <span class="absolute top-1 right-1 w-2 h-2 bg-insta-coral rounded-full"></span>
-          </button>
-          <button id="mobileThemeToggleBtn" class="p-1.5 text-gray-700 dark:text-gray-200">
-            <i data-lucide="sun" class="w-5 h-5 hidden dark:block text-amber-400"></i>
-            <i data-lucide="moon" class="w-5 h-5 block dark:hidden"></i>
-          </button>
+    <!-- MOBILE TOP HEADER -->
+    <header class="md:hidden flex items-center justify-between px-4 py-3 border-b border-zinc-800 bg-black fixed top-0 left-0 right-0 z-50">
+        <div class="flex items-center gap-2">
+            <h1 class="text-2xl font-brand bg-gradient-to-r from-amber-400 via-rose-500 to-purple-500 bg-clip-text text-transparent">InstaClone</h1>
+            <span class="text-[9px] bg-purple-950 text-purple-300 font-bold px-1.5 py-0.5 rounded border border-purple-800">AI</span>
         </div>
-      </header>
+        <div class="flex items-center gap-3">
+            <a href="./app/build/outputs/apk/debug/app-debug.apk" download="InstaClone.apk" class="px-2 py-1 bg-gradient-to-r from-rose-500 to-purple-600 text-white text-[11px] font-bold rounded-lg flex items-center gap-1 shadow">
+                <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                <span>APK</span>
+            </a>
+            <button onclick="switchTab('botdashboard')" class="p-1"><i data-lucide="bot" class="text-purple-400 w-5 h-5"></i></button>
+            <button onclick="switchTab('notifications')" class="p-1"><i data-lucide="heart" class="w-5 h-5"></i></button>
+            <button onclick="switchTab('messages')" class="p-1 relative">
+                <i data-lucide="send" class="w-5 h-5"></i>
+                <span class="absolute top-0 right-0 w-2 h-2 bg-rose-500 rounded-full"></span>
+            </button>
+        </div>
+    </header>
 
-      <!-- Scrollable Tab Views -->
-      <div id="tabContainer" class="flex-1 overflow-y-auto no-scrollbar">
-
-        <!-- VIEW 1: HOME FEED -->
-        <section id="feedTab" class="max-w-xl mx-auto py-4 px-2 sm:px-4 space-y-6">
-          
-          <!-- Stories Bar -->
-          <div class="flex space-x-4 overflow-x-auto no-scrollbar py-2 px-1">
-            <div class="flex flex-col items-center space-y-1 flex-shrink-0 cursor-pointer">
-              <div class="relative p-0.5 story-ring rounded-full">
-                <div class="p-0.5 bg-white dark:bg-insta-dark rounded-full">
-                  <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80" class="w-16 h-16 rounded-full object-cover">
-                </div>
-                <div class="absolute bottom-0 right-0 bg-insta-coral text-white rounded-full p-0.5 border-2 border-white dark:border-insta-dark">
-                  <i data-lucide="plus" class="w-3.5 h-3.5"></i>
-                </div>
-              </div>
-              <span class="text-xs truncate w-16 text-center">Your story</span>
+    <!-- MOBILE BOTTOM NAVIGATION -->
+    <nav class="md:hidden flex items-center justify-around py-3 border-t border-zinc-800 bg-black fixed bottom-0 left-0 right-0 z-50">
+        <button onclick="switchTab('home')" class="p-1" data-tab-mobile="home"><i data-lucide="home" class="w-6 h-6 text-rose-500"></i></button>
+        <button onclick="switchTab('explore')" class="p-1" data-tab-mobile="explore"><i data-lucide="compass" class="w-6 h-6 text-zinc-400"></i></button>
+        <button onclick="switchTab('reels')" class="p-1" data-tab-mobile="reels"><i data-lucide="clapperboard" class="w-6 h-6 text-zinc-400"></i></button>
+        <button onclick="switchTab('create')" class="p-1" data-tab-mobile="create"><i data-lucide="plus-square" class="w-6 h-6 text-zinc-400"></i></button>
+        <button onclick="switchTab('profile')" class="p-1" data-tab-mobile="profile">
+            <div class="w-6 h-6 rounded-full overflow-hidden border border-zinc-700">
+                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150" class="w-full h-full object-cover">
             </div>
-
-            <!-- Dynamic Story Avatars -->
-            <div class="flex space-x-4" id="storiesList"></div>
-          </div>
-
-          <!-- Feed Posts List -->
-          <div id="postsList" class="space-y-6"></div>
-        </section>
-
-        <!-- VIEW 2: EXPLORE TAB -->
-        <section id="exploreTab" class="hidden max-w-4xl mx-auto py-4 px-3 sm:px-6 space-y-6">
-          <!-- Search Header -->
-          <div class="relative">
-            <i data-lucide="search" class="w-5 h-5 absolute left-3.5 top-3 text-gray-400"></i>
-            <input type="text" id="exploreSearch" placeholder="Search creators, captions, or places..." oninput="handleExploreSearch(this.value)"
-              class="w-full pl-11 pr-4 py-2.5 rounded-2xl bg-gray-100 dark:bg-insta-surface border border-transparent dark:border-insta-border focus:outline-none focus:border-insta-coral transition text-sm">
-          </div>
-
-          <!-- Trending Creators Carousel -->
-          <div>
-            <h3 class="text-sm font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-3">Trending Creators</h3>
-            <div class="flex space-x-3 overflow-x-auto no-scrollbar pb-2" id="creatorsCarousel"></div>
-          </div>
-
-          <!-- Explore Grid -->
-          <div>
-            <h3 class="text-sm font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-3">Explore Moments</h3>
-            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3" id="exploreGrid"></div>
-          </div>
-        </section>
-
-        <!-- VIEW 3: MESSAGES TAB -->
-        <section id="messagesTab" class="hidden max-w-4xl mx-auto h-full flex flex-col md:flex-row border-t md:border-t-0 border-gray-200 dark:border-insta-border">
-          <!-- Messages List -->
-          <div class="w-full md:w-80 border-r border-gray-200 dark:border-insta-border flex flex-col h-full bg-white dark:bg-insta-surface">
-            <div class="p-4 border-b border-gray-200 dark:border-insta-border flex items-center justify-between">
-              <h2 class="font-bold text-lg">Direct Messages</h2>
-              <button class="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-insta-surfaceVariant">
-                <i data-lucide="edit" class="w-5 h-5"></i>
-              </button>
-            </div>
-            <div class="flex-1 overflow-y-auto no-scrollbar p-2 space-y-1" id="conversationsList"></div>
-          </div>
-
-          <!-- Chat Conversation Window -->
-          <div class="hidden md:flex flex-1 flex-col h-full bg-gray-50 dark:bg-insta-dark" id="chatWindow">
-            <div class="p-4 border-b border-gray-200 dark:border-insta-border bg-white dark:bg-insta-surface flex items-center justify-between">
-              <div class="flex items-center space-x-3" id="activeChatHeader">
-                <img id="chatPeerAvatar" src="" class="w-10 h-10 rounded-full object-cover">
-                <div>
-                  <h4 id="chatPeerName" class="font-bold text-sm">Select a Conversation</h4>
-                  <p class="text-xs text-green-500">Active now</p>
-                </div>
-              </div>
-            </div>
-            <div class="flex-1 overflow-y-auto p-4 space-y-3" id="chatMessages"></div>
-            <div class="p-3 border-t border-gray-200 dark:border-insta-border bg-white dark:bg-insta-surface flex items-center space-x-2">
-              <input type="text" id="chatInput" placeholder="Message..." class="flex-1 px-4 py-2 rounded-full bg-gray-100 dark:bg-insta-surfaceVariant border-none focus:outline-none text-sm" onkeydown="if(event.key==='Enter') sendChatMessage()">
-              <button onclick="sendChatMessage()" class="p-2 rounded-full bg-insta-coral text-white hover:opacity-90">
-                <i data-lucide="send" class="w-4 h-4"></i>
-              </button>
-            </div>
-          </div>
-        </section>
-
-        <!-- VIEW 4: PROFILE TAB -->
-        <section id="profileTab" class="hidden max-w-3xl mx-auto py-6 px-4 space-y-6">
-          <!-- Profile Header -->
-          <div class="flex items-center space-x-6 sm:space-x-12">
-            <div class="relative p-1 story-ring rounded-full">
-              <div class="p-0.5 bg-white dark:bg-insta-dark rounded-full">
-                <img id="profileAvatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80" class="w-20 h-20 sm:w-28 sm:h-28 rounded-full object-cover">
-              </div>
-            </div>
-            <div class="flex-1 space-y-3">
-              <div class="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
-                <h2 id="profileUsername" class="text-xl font-bold">@sarah.creates</h2>
-                <div class="flex space-x-2">
-                  <button onclick="alert('Profile editing is available via the native Android app or settings!')" class="px-3.5 py-1.5 rounded-lg bg-gray-100 dark:bg-insta-surfaceVariant text-xs font-semibold hover:opacity-80">Edit Profile</button>
-                  <button onclick="alert('Signed out session.')" class="px-3.5 py-1.5 rounded-lg border border-gray-300 dark:border-insta-border text-xs font-semibold hover:opacity-80">Sign Out</button>
-                </div>
-              </div>
-              <div class="flex space-x-6 text-sm">
-                <span><strong id="postCountLabel">3</strong> posts</span>
-                <span><strong>1.4k</strong> followers</span>
-                <span><strong>482</strong> following</span>
-              </div>
-              <div>
-                <p id="profileDisplayName" class="font-bold text-sm">Sarah Jenkins</p>
-                <p id="profileBio" class="text-sm text-gray-600 dark:text-gray-300">Visual storyteller & street photographer 📸 Exploring golden hour light in Tokyo & Kyoto ✨</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Tabs (Posts / Saved) -->
-          <div class="border-t border-gray-200 dark:border-insta-border">
-            <div class="flex justify-center space-x-12">
-              <button onclick="switchProfileTab('posts')" id="tabPostsBtn" class="py-3 text-sm font-semibold border-t-2 border-insta-coral text-insta-coral flex items-center space-x-2">
-                <i data-lucide="grid" class="w-4 h-4"></i>
-                <span>POSTS</span>
-              </button>
-              <button onclick="switchProfileTab('saved')" id="tabSavedBtn" class="py-3 text-sm font-semibold border-t-2 border-transparent text-gray-500 flex items-center space-x-2">
-                <i data-lucide="bookmark" class="w-4 h-4"></i>
-                <span>SAVED</span>
-              </button>
-            </div>
-          </div>
-
-          <!-- User Grid -->
-          <div class="grid grid-cols-3 gap-1 sm:gap-2" id="userPostsGrid"></div>
-        </section>
-
-      </div>
-
-      <!-- Mobile Bottom Navigation Bar -->
-      <nav class="flex md:hidden items-center justify-around py-2.5 border-t border-gray-200 dark:border-insta-border bg-white dark:bg-insta-surface sticky bottom-0 z-30">
-        <button onclick="switchTab('feed')" class="p-2 text-insta-coral" data-tab-mobile="feed">
-          <i data-lucide="home" class="w-6 h-6"></i>
         </button>
-        <button onclick="switchTab('explore')" class="p-2 text-gray-500 dark:text-gray-400" data-tab-mobile="explore">
-          <i data-lucide="compass" class="w-6 h-6"></i>
-        </button>
-        <button onclick="openCreateModal()" class="p-2 text-gray-500 dark:text-gray-400">
-          <i data-lucide="plus-square" class="w-6 h-6"></i>
-        </button>
-        <button onclick="switchTab('messages')" class="p-2 text-gray-500 dark:text-gray-400 relative" data-tab-mobile="messages">
-          <i data-lucide="send" class="w-6 h-6"></i>
-          <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-insta-coral rounded-full"></span>
-        </button>
-        <button onclick="switchTab('profile')" class="p-2 text-gray-500 dark:text-gray-400" data-tab-mobile="profile">
-          <div class="w-6 h-6 rounded-full overflow-hidden border border-gray-300 dark:border-gray-600">
-            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80" class="w-full h-full object-cover">
-          </div>
-        </button>
-      </nav>
+    </nav>
 
+    <!-- MAIN APP CONTENT AREA -->
+    <main class="flex-1 md:ml-64 pb-20 md:pb-6 pt-16 md:pt-4 min-h-screen flex justify-center">
+        <div id="app-container" class="w-full max-w-2xl px-2 sm:px-4 py-2">
+            <!-- Dynamic Content Injected Here -->
+        </div>
     </main>
 
-  </div>
-
-  <!-- Create Post Modal -->
-  <div id="createModal" class="hidden fixed inset-0 z-50 bg-black/75 flex items-center justify-center p-4">
-    <div class="bg-white dark:bg-insta-surface rounded-2xl max-w-lg w-full overflow-hidden border border-gray-200 dark:border-insta-border shadow-2xl">
-      <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-insta-border">
-        <h3 class="font-bold text-base">Create New Post</h3>
-        <button onclick="closeCreateModal()" class="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
-      </div>
-      <div class="p-4 space-y-4">
-        <!-- Image Preview or Placeholder -->
-        <div id="uploadPreviewBox" class="aspect-square w-full rounded-xl bg-gray-100 dark:bg-insta-surfaceVariant flex flex-col items-center justify-center overflow-hidden border border-dashed border-gray-300 dark:border-gray-700 relative">
-          <img id="previewImg" class="w-full h-full object-cover hidden" alt="Uploaded Preview">
-          <div id="uploadPrompt" class="text-center p-6 space-y-2">
-            <i data-lucide="image" class="w-12 h-12 mx-auto text-gray-400"></i>
-            <p class="text-sm font-semibold">Choose photo or select studio preset</p>
-            <input type="file" id="fileInput" accept="image/*" class="hidden" onchange="handleFileUpload(event)">
-            <button onclick="document.getElementById('fileInput').click()" class="px-4 py-2 bg-insta-coral text-white rounded-xl text-xs font-bold hover:opacity-90">Upload from Device</button>
-          </div>
+    <!-- COMMENTS MODAL -->
+    <div id="commentsModal" class="hidden fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
+        <div class="bg-zinc-950 border border-zinc-800 rounded-2xl max-w-md w-full overflow-hidden shadow-2xl flex flex-col max-h-[80vh]">
+            <div class="flex items-center justify-between px-4 py-3 border-b border-zinc-800">
+                <h3 class="font-bold text-sm">Comments</h3>
+                <button onclick="closeCommentsModal()" class="text-zinc-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <div id="commentsContainer" class="flex-1 overflow-y-auto p-4 space-y-3 hide-scrollbar"></div>
+            <div class="p-3 border-t border-zinc-800 flex items-center gap-2 bg-black">
+                <input type="text" id="commentInput" placeholder="Add a comment..." class="flex-1 px-4 py-2 rounded-full bg-zinc-900 border border-zinc-800 text-sm focus:outline-none" onkeydown="if(event.key==='Enter') submitComment()">
+                <button onclick="submitComment()" class="text-rose-500 font-bold text-sm px-3 hover:opacity-80">Post</button>
+            </div>
         </div>
-
-        <!-- Presets Selection -->
-        <div>
-          <label class="block text-xs font-semibold text-gray-400 mb-1.5 uppercase">Or pick a Studio Scene</label>
-          <div class="grid grid-cols-4 gap-2" id="presetButtons">
-            <button onclick="selectPreset('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80')" class="h-14 rounded-lg overflow-hidden border-2 border-transparent hover:border-insta-coral focus:border-insta-coral">
-              <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=200&q=80" class="w-full h-full object-cover">
-            </button>
-            <button onclick="selectPreset('https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=800&q=80')" class="h-14 rounded-lg overflow-hidden border-2 border-transparent hover:border-insta-coral focus:border-insta-coral">
-              <img src="https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=200&q=80" class="w-full h-full object-cover">
-            </button>
-            <button onclick="selectPreset('https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=800&q=80')" class="h-14 rounded-lg overflow-hidden border-2 border-transparent hover:border-insta-coral focus:border-insta-coral">
-              <img src="https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=200&q=80" class="w-full h-full object-cover">
-            </button>
-            <button onclick="selectPreset('https://images.unsplash.com/photo-1514565131-fce0801e5785?auto=format&fit=crop&w=800&q=80')" class="h-14 rounded-lg overflow-hidden border-2 border-transparent hover:border-insta-coral focus:border-insta-coral">
-              <img src="https://images.unsplash.com/photo-1514565131-fce0801e5785?auto=format&fit=crop&w=200&q=80" class="w-full h-full object-cover">
-            </button>
-          </div>
-        </div>
-
-        <input type="text" id="postLocation" placeholder="Add location..." class="w-full px-4 py-2.5 rounded-xl bg-gray-100 dark:bg-insta-surfaceVariant border-none focus:outline-none text-sm">
-        <textarea id="postCaption" rows="3" placeholder="Write a caption..." class="w-full px-4 py-2.5 rounded-xl bg-gray-100 dark:bg-insta-surfaceVariant border-none focus:outline-none text-sm resize-none"></textarea>
-
-        <button onclick="submitNewPost()" class="w-full py-3 bg-gradient-to-r from-insta-coral to-insta-magenta text-white font-bold rounded-xl hover:opacity-90 transition">Share Post</button>
-      </div>
     </div>
-  </div>
 
-  <!-- Comments Modal -->
-  <div id="commentsModal" class="hidden fixed inset-0 z-50 bg-black/75 flex items-center justify-center p-4">
-    <div class="bg-white dark:bg-insta-surface rounded-2xl max-w-md w-full overflow-hidden border border-gray-200 dark:border-insta-border shadow-2xl flex flex-col max-h-[80vh]">
-      <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-insta-border">
-        <h3 class="font-bold text-base">Comments</h3>
-        <button onclick="closeCommentsModal()" class="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
-      </div>
-      <div class="flex-1 overflow-y-auto p-4 space-y-4 no-scrollbar" id="commentsContainer"></div>
-      <div class="p-3 border-t border-gray-200 dark:border-insta-border flex items-center space-x-2">
-        <input type="text" id="commentInput" placeholder="Add a comment..." class="flex-1 px-4 py-2 rounded-full bg-gray-100 dark:bg-insta-surfaceVariant border-none focus:outline-none text-sm" onkeydown="if(event.key==='Enter') addComment()">
-        <button onclick="addComment()" class="text-insta-coral font-bold text-sm px-3 py-1 hover:opacity-80">Post</button>
-      </div>
-    </div>
-  </div>
+    <!-- JAVASCRIPT APP LOGIC -->
+    <script>
+        // State Management
+        let currentTab = 'home';
+        let isDarkMode = true;
+        let aiBotActive = true;
+        let botNiche = 'Horror & Creepypasta Stories';
+        let botIntervalTime = 30; // seconds
+        let activeCommentPostId = null;
+        let activeChatUser = null;
 
-  <!-- App Data and Interactive State Logic -->
-  <script>
-    // Sample Initial Feed Data
-    let posts = [
-      {
-        id: "p1",
-        authorUsername: "tokyo.drift",
-        authorAvatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80",
-        imageUrl: "https://images.unsplash.com/photo-1503899036084-c55cdd92da26?auto=format&fit=crop&w=800&q=80",
-        caption: "Electric neon reflections in Shibuya after midnight rain 🌧️✨",
-        location: "Shibuya, Tokyo",
-        likes: 342,
-        isLiked: false,
-        isSaved: false,
-        timeAgo: "2h ago",
-        comments: [
-          { author: "sarah.creates", text: "The reflection framing is breathtaking!" },
-          { author: "kai_visuals", text: "What lens did you use for this shot?" }
-        ]
-      },
-      {
-        id: "p2",
-        authorUsername: "elena_wander",
-        authorAvatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80",
-        imageUrl: "https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=800&q=80",
-        caption: "Lost in the golden hour whisper of the Pacific Northwest pine ridges 🌲🏔️",
-        location: "Yosemite National Park",
-        likes: 1205,
-        isLiked: true,
-        isSaved: true,
-        timeAgo: "5h ago",
-        comments: [
-          { author: "wanderlust", text: "Incredible depth and light!" }
-        ]
-      },
-      {
-        id: "p3",
-        authorUsername: "sarah.creates",
-        authorAvatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80",
-        imageUrl: "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=800&q=80",
-        caption: "Portraits in the afternoon breeze. Natural light only.",
-        location: "Kyoto, Japan",
-        likes: 589,
-        isLiked: false,
-        isSaved: false,
-        timeAgo: "1d ago",
-        comments: [
-          { author: "elena_wander", text: "Stunning color palette as always Sarah!" }
-        ]
-      }
-    ];
-
-    const creators = [
-      { username: "tokyo.drift", name: "Kenji Sato", avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&q=80", bio: "Night street photographer" },
-      { username: "elena_wander", name: "Elena Vance", avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80", bio: "Alpinist & landscape explorer" },
-      { username: "kai_visuals", name: "Kai Chen", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80", bio: "Architectural minimalism" },
-      { username: "maya.art", name: "Maya Patel", avatar: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=150&q=80", bio: "Film & 35mm captures" }
-    ];
-
-    let conversations = [
-      {
-        id: "c1",
-        peer: creators[0],
-        lastMsg: "Let's definitely shoot around Shinjuku this weekend!",
-        time: "10m ago",
-        messages: [
-          { fromMe: false, text: "Hey Sarah! Saw your Kyoto photos, fantastic work." },
-          { fromMe: true, text: "Thank you Kenji! Are you still doing night street walks?" },
-          { fromMe: false, text: "Let's definitely shoot around Shinjuku this weekend!" }
-        ]
-      },
-      {
-        id: "c2",
-        peer: creators[1],
-        lastMsg: "I'll send the location pin right over.",
-        time: "1h ago",
-        messages: [
-          { fromMe: false, text: "The trailhead at dawn is unmatched." },
-          { fromMe: true, text: "What time do you usually start ascending?" },
-          { fromMe: false, text: "I'll send the location pin right over." }
-        ]
-      }
-    ];
-
-    let activeConv = conversations[0];
-    let currentUploadedImage = "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80";
-    let activeCommentPostId = null;
-
-    // Initialize UI
-    function init() {
-      lucide.createIcons();
-      renderStories();
-      renderFeed();
-      renderExplore();
-      renderConversations();
-      renderProfilePosts();
-      setupThemeToggles();
-    }
-
-    function setupThemeToggles() {
-      const toggle = () => {
-        document.documentElement.classList.toggle('dark');
-        lucide.createIcons();
-      };
-      document.getElementById('themeToggleBtn')?.addEventListener('click', toggle);
-      document.getElementById('mobileThemeToggleBtn')?.addEventListener('click', toggle);
-    }
-
-    function switchTab(tabId) {
-      ['feed', 'explore', 'messages', 'profile'].forEach(t => {
-        const tabEl = document.getElementById(t + 'Tab');
-        if (tabEl) tabEl.classList.toggle('hidden', t !== tabId);
-
-        // Update nav icons
-        document.querySelectorAll(`[data-tab="${t}"]`).forEach(btn => {
-          if (t === tabId) {
-            btn.classList.add('text-insta-coral', 'font-semibold');
-            btn.classList.remove('font-medium');
-          } else {
-            btn.classList.remove('text-insta-coral', 'font-semibold');
-            btn.classList.add('font-medium');
-          }
-        });
-        document.querySelectorAll(`[data-tab-mobile="${t}"]`).forEach(btn => {
-          if (t === tabId) {
-            btn.classList.add('text-insta-coral');
-            btn.classList.remove('text-gray-500', 'dark:text-gray-400');
-          } else {
-            btn.classList.remove('text-insta-coral');
-            btn.classList.add('text-gray-500', 'dark:text-gray-400');
-          }
-        });
-      });
-      lucide.createIcons();
-    }
-
-    function renderStories() {
-      const container = document.getElementById('storiesList');
-      container.innerHTML = creators.map(c => `
-        <div class="flex flex-col items-center space-y-1 flex-shrink-0 cursor-pointer" onclick="openStory('${c.username}')">
-          <div class="p-0.5 story-ring rounded-full">
-            <div class="p-0.5 bg-white dark:bg-insta-dark rounded-full">
-              <img src="${c.avatar}" class="w-16 h-16 rounded-full object-cover">
-            </div>
-          </div>
-          <span class="text-xs truncate w-16 text-center">${c.username}</span>
-        </div>
-      `).join('');
-    }
-
-    function renderFeed() {
-      const container = document.getElementById('postsList');
-      container.innerHTML = posts.map(p => `
-        <article class="bg-white dark:bg-insta-surface rounded-2xl border border-gray-200 dark:border-insta-border overflow-hidden shadow-sm">
-          <!-- Post Header -->
-          <div class="flex items-center justify-between p-3.5">
-            <div class="flex items-center space-x-3">
-              <div class="p-0.5 story-ring rounded-full">
-                <div class="p-0.5 bg-white dark:bg-insta-surface rounded-full">
-                  <img src="${p.authorAvatar}" class="w-9 h-9 rounded-full object-cover">
-                </div>
-              </div>
-              <div>
-                <h4 class="font-bold text-sm leading-tight">${p.authorUsername}</h4>
-                ${p.location ? `<p class="text-xs text-gray-500 dark:text-gray-400">${p.location}</p>` : ''}
-              </div>
-            </div>
-            <button class="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
-              <i data-lucide="more-horizontal" class="w-5 h-5"></i>
-            </button>
-          </div>
-
-          <!-- Post Image with Double-Tap Heart -->
-          <div class="relative aspect-square w-full bg-gray-900 overflow-hidden cursor-pointer select-none" ondblclick="triggerLike('${p.id}', event)">
-            <img src="${p.imageUrl}" class="w-full h-full object-cover">
-            <div id="heartBurst-${p.id}" class="hidden absolute inset-0 flex items-center justify-center pointer-events-none">
-              <i data-lucide="heart" class="w-24 h-24 text-white fill-white heart-burst drop-shadow-xl"></i>
-            </div>
-          </div>
-
-          <!-- Post Actions -->
-          <div class="p-3.5 space-y-2">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center space-x-3">
-                <button onclick="toggleLike('${p.id}')" class="transition active:scale-125">
-                  <i data-lucide="heart" class="w-6 h-6 ${p.isLiked ? 'text-insta-coral fill-insta-coral' : 'text-gray-700 dark:text-gray-200'}"></i>
-                </button>
-                <button onclick="openCommentsModal('${p.id}')">
-                  <i data-lucide="message-circle" class="w-6 h-6 text-gray-700 dark:text-gray-200"></i>
-                </button>
-                <button onclick="sharePost('${p.id}')">
-                  <i data-lucide="send" class="w-6 h-6 text-gray-700 dark:text-gray-200"></i>
-                </button>
-              </div>
-              <button onclick="toggleSave('${p.id}')">
-                <i data-lucide="bookmark" class="w-6 h-6 ${p.isSaved ? 'text-insta-coral fill-insta-coral' : 'text-gray-700 dark:text-gray-200'}"></i>
-              </button>
-            </div>
-
-            <!-- Likes Count -->
-            <p class="font-bold text-sm">${p.likes} likes</p>
-
-            <!-- Caption -->
-            <p class="text-sm">
-              <strong class="font-bold mr-2">${p.authorUsername}</strong>${p.caption}
-            </p>
-
-            <!-- Comments Preview -->
-            ${p.comments.length > 0 ? `
-              <button onclick="openCommentsModal('${p.id}')" class="text-xs text-gray-500 dark:text-gray-400 font-medium">
-                View all ${p.comments.length} comments
-              </button>
-            ` : ''}
-
-            <p class="text-[11px] uppercase tracking-wider text-gray-400">${p.timeAgo}</p>
-          </div>
-        </article>
-      `).join('');
-      lucide.createIcons();
-    }
-
-    function toggleLike(postId) {
-      const p = posts.find(item => item.id === postId);
-      if (p) {
-        p.isLiked = !p.isLiked;
-        p.likes += p.isLiked ? 1 : -1;
-        renderFeed();
-      }
-    }
-
-    function triggerLike(postId, event) {
-      const burst = document.getElementById(`heartBurst-${postId}`);
-      if (burst) {
-        burst.classList.remove('hidden');
-        setTimeout(() => burst.classList.add('hidden'), 800);
-      }
-      const p = posts.find(item => item.id === postId);
-      if (p && !p.isLiked) {
-        p.isLiked = true;
-        p.likes += 1;
-        renderFeed();
-      }
-    }
-
-    function toggleSave(postId) {
-      const p = posts.find(item => item.id === postId);
-      if (p) {
-        p.isSaved = !p.isSaved;
-        renderFeed();
-        renderProfilePosts();
-      }
-    }
-
-    function renderExplore() {
-      // Creators Carousel
-      const carousel = document.getElementById('creatorsCarousel');
-      carousel.innerHTML = creators.map(c => `
-        <div class="flex flex-col items-center p-3 rounded-2xl bg-white dark:bg-insta-surface border border-gray-200 dark:border-insta-border flex-shrink-0 w-36 text-center space-y-2">
-          <img src="${c.avatar}" class="w-14 h-14 rounded-full object-cover">
-          <div>
-            <h4 class="font-bold text-xs truncate w-28">${c.username}</h4>
-            <p class="text-[10px] text-gray-400 truncate w-28">${c.name}</p>
-          </div>
-          <button onclick="alert('Followed @${c.username}')" class="w-full py-1 bg-insta-coral text-white rounded-lg text-xs font-semibold hover:opacity-90">Follow</button>
-        </div>
-      `).join('');
-
-      // Explore Photos Grid
-      const grid = document.getElementById('exploreGrid');
-      const explorePhotos = [
-        "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1503899036084-c55cdd92da26?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1514565131-fce0801e5785?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=600&q=80",
-        "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=600&q=80"
-      ];
-      grid.innerHTML = explorePhotos.map((url, i) => `
-        <div class="aspect-square rounded-xl overflow-hidden cursor-pointer group relative" onclick="openExplorePhoto('${url}')">
-          <img src="${url}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
-          <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center space-x-4 text-white font-bold text-sm">
-            <span class="flex items-center space-x-1"><i data-lucide="heart" class="w-4 h-4 fill-white"></i> <span>${140 + i * 85}</span></span>
-            <span class="flex items-center space-x-1"><i data-lucide="message-circle" class="w-4 h-4 fill-white"></i> <span>${12 + i * 4}</span></span>
-          </div>
-        </div>
-      `).join('');
-      lucide.createIcons();
-    }
-
-    function handleExploreSearch(query) {
-      query = query.toLowerCase();
-      const filtered = posts.filter(p => p.caption.toLowerCase().includes(query) || p.authorUsername.toLowerCase().includes(query) || p.location.toLowerCase().includes(query));
-      const grid = document.getElementById('exploreGrid');
-      grid.innerHTML = (filtered.length ? filtered : posts).map(p => `
-        <div class="aspect-square rounded-xl overflow-hidden cursor-pointer group relative">
-          <img src="${p.imageUrl}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
-        </div>
-      `).join('');
-    }
-
-    function renderConversations() {
-      const container = document.getElementById('conversationsList');
-      container.innerHTML = conversations.map(c => `
-        <div onclick="selectConversation('${c.id}')" class="flex items-center space-x-3 p-3 rounded-xl cursor-pointer hover:bg-gray-100 dark:hover:bg-insta-surfaceVariant transition ${activeConv?.id === c.id ? 'bg-gray-100 dark:bg-insta-surfaceVariant' : ''}">
-          <img src="${c.peer.avatar}" class="w-12 h-12 rounded-full object-cover">
-          <div class="flex-1 min-w-0">
-            <div class="flex items-center justify-between">
-              <h4 class="font-bold text-sm truncate">${c.peer.name}</h4>
-              <span class="text-[11px] text-gray-400">${c.time}</span>
-            </div>
-            <p class="text-xs text-gray-500 dark:text-gray-400 truncate">${c.lastMsg}</p>
-          </div>
-        </div>
-      `).join('');
-
-      renderActiveChat();
-    }
-
-    function selectConversation(id) {
-      activeConv = conversations.find(c => c.id === id);
-      renderConversations();
-    }
-
-    function renderActiveChat() {
-      if (!activeConv) return;
-      document.getElementById('chatPeerAvatar').src = activeConv.peer.avatar;
-      document.getElementById('chatPeerName').innerText = activeConv.peer.name;
-
-      const container = document.getElementById('chatMessages');
-      container.innerHTML = activeConv.messages.map(m => `
-        <div class="flex ${m.fromMe ? 'justify-end' : 'justify-start'}">
-          <div class="max-w-xs md:max-w-md px-4 py-2 rounded-2xl text-sm ${m.fromMe ? 'bg-insta-coral text-white rounded-br-none' : 'bg-white dark:bg-insta-surfaceVariant text-gray-800 dark:text-gray-100 rounded-bl-none shadow-sm'}">
-            ${m.text}
-          </div>
-        </div>
-      `).join('');
-      container.scrollTop = container.scrollHeight;
-      lucide.createIcons();
-    }
-
-    function sendChatMessage() {
-      const input = document.getElementById('chatInput');
-      const text = input.value.trim();
-      if (!text || !activeConv) return;
-      activeConv.messages.push({ fromMe: true, text });
-      activeConv.lastMsg = text;
-      input.value = '';
-      renderActiveChat();
-      renderConversations();
-    }
-
-    function renderProfilePosts(tab = 'posts') {
-      const grid = document.getElementById('userPostsGrid');
-      const filtered = tab === 'saved' ? posts.filter(p => p.isSaved) : posts.filter(p => p.authorUsername === 'sarah.creates');
-      grid.innerHTML = filtered.map(p => `
-        <div class="aspect-square rounded-lg overflow-hidden cursor-pointer group relative">
-          <img src="${p.imageUrl}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
-        </div>
-      `).join('');
-      document.getElementById('postCountLabel').innerText = posts.filter(p => p.authorUsername === 'sarah.creates').length;
-    }
-
-    function switchProfileTab(tab) {
-      const postsBtn = document.getElementById('tabPostsBtn');
-      const savedBtn = document.getElementById('tabSavedBtn');
-      if (tab === 'posts') {
-        postsBtn.className = 'py-3 text-sm font-semibold border-t-2 border-insta-coral text-insta-coral flex items-center space-x-2';
-        savedBtn.className = 'py-3 text-sm font-semibold border-t-2 border-transparent text-gray-500 flex items-center space-x-2';
-      } else {
-        savedBtn.className = 'py-3 text-sm font-semibold border-t-2 border-insta-coral text-insta-coral flex items-center space-x-2';
-        postsBtn.className = 'py-3 text-sm font-semibold border-t-2 border-transparent text-gray-500 flex items-center space-x-2';
-      }
-      renderProfilePosts(tab);
-      lucide.createIcons();
-    }
-
-    // Modal controls
-    function openCreateModal() {
-      document.getElementById('createModal').classList.remove('hidden');
-      lucide.createIcons();
-    }
-    function closeCreateModal() {
-      document.getElementById('createModal').classList.add('hidden');
-    }
-    function selectPreset(url) {
-      currentUploadedImage = url;
-      document.getElementById('previewImg').src = url;
-      document.getElementById('previewImg').classList.remove('hidden');
-      document.getElementById('uploadPrompt').classList.add('hidden');
-    }
-    function handleFileUpload(event) {
-      const file = event.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = e => {
-          selectPreset(e.target.result);
+        let userProfile = {
+            username: 'asidragonix',
+            name: 'Asif',
+            bio: 'Digital Creator & Full-Stack Developer 🚀 | AI Enthusiast',
+            avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
+            postsCount: 12,
+            followersCount: 1420,
+            followingCount: 380
         };
-        reader.readAsDataURL(file);
-      }
-    }
-    function submitNewPost() {
-      const caption = document.getElementById('postCaption').value.trim();
-      const location = document.getElementById('postLocation').value.trim();
-      if (!currentUploadedImage) return alert('Please pick an image!');
 
-      const newPost = {
-        id: 'p_' + Date.now(),
-        authorUsername: 'sarah.creates',
-        authorAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80',
-        imageUrl: currentUploadedImage,
-        caption: caption || 'New moment shared',
-        location: location || '',
-        likes: 0,
-        isLiked: false,
-        isSaved: false,
-        timeAgo: 'Just now',
-        comments: []
-      };
+        let stories = [
+            { id: 1, user: 'HorrorBot_AI', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150', seen: false },
+            { id: 2, user: 'ViralTrendz', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150', seen: false },
+            { id: 3, user: 'Mohit', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150', seen: true },
+            { id: 4, user: 'Naitik', avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150', seen: true }
+        ];
 
-      posts.unshift(newPost);
-      renderFeed();
-      renderProfilePosts();
-      closeCreateModal();
-      switchTab('feed');
-      document.getElementById('postCaption').value = '';
-      document.getElementById('postLocation').value = '';
-    }
+        let posts = [
+            {
+                id: 1,
+                user: 'HorrorBot_AI',
+                avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
+                image: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=800',
+                likes: 342,
+                caption: 'The Midnight Whisper: Jab raat ke 3 baje kamre ki khidki apne aap khulne lage... 👻 #horrorstories #creepypasta #ai',
+                time: '2 HOURS AGO',
+                isLiked: false,
+                comments: [
+                    { author: 'Mohit', text: 'Yeh story sach me spooky hai bhai!' },
+                    { author: 'asidragonix', text: 'Incredible lighting and composition.' }
+                ]
+            },
+            {
+                id: 2,
+                user: 'ViralTrendz_AI',
+                avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150',
+                image: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800',
+                likes: 1250,
+                caption: 'Future of UI Design with AI generated code! 🚀 #coding #webdev #ai #ui',
+                time: '5 HOURS AGO',
+                isLiked: true,
+                comments: [
+                    { author: 'Naitik', text: 'Tailwind + Compose combo is top tier!' }
+                ]
+            }
+        ];
 
-    function openCommentsModal(postId) {
-      activeCommentPostId = postId;
-      const p = posts.find(item => item.id === postId);
-      if (!p) return;
-      const container = document.getElementById('commentsContainer');
-      container.innerHTML = p.comments.length ? p.comments.map(c => `
-        <div class="flex items-start space-x-3">
-          <div class="w-8 h-8 rounded-full bg-insta-surfaceVariant flex items-center justify-center font-bold text-xs">
-            ${c.author[0].toUpperCase()}
-          </div>
-          <div>
-            <h5 class="font-bold text-xs">${c.author}</h5>
-            <p class="text-sm">${c.text}</p>
-          </div>
-        </div>
-      `).join('') : '<p class="text-center text-sm text-gray-400 py-6">No comments yet. Start the conversation!</p>';
+        let reels = [
+            {
+                id: 1,
+                user: 'HorrorBot_AI',
+                avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
+                video: 'https://assets.mixkit.co/videos/preview/mixkit-forest-stream-in-the-sunlight-529-large.mp4',
+                likes: 840,
+                caption: 'Jungle me akele chalte waqt yeh aawaz sunai di... 🌲😱 #horror #viralreels',
+                audio: 'Original Audio - HorrorBot',
+                isFollowing: false,
+                isLiked: false
+            },
+            {
+                id: 2,
+                user: 'ViralTrendz_AI',
+                avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150',
+                video: 'https://assets.mixkit.co/videos/preview/mixkit-waves-in-the-water-1164-large.mp4',
+                likes: 2430,
+                caption: 'Top AI Development trends in 2026! 🔥 #tech #ai #trending',
+                audio: 'Trending Beats - AI Remix',
+                isFollowing: true,
+                isLiked: true
+            }
+        ];
 
-      document.getElementById('commentsModal').classList.remove('hidden');
-      lucide.createIcons();
-    }
+        let messages = [
+            { 
+                id: 'm1',
+                user: 'HorrorBot_AI', 
+                lastMsg: 'New horror micro-story posted!', 
+                time: '10m', 
+                avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150', 
+                unread: true,
+                chats: [
+                    { fromMe: false, text: 'Hey Asif! New story generated for midnight.' },
+                    { fromMe: true, text: 'Awesome! Did you configure the creepy ambient audio?' },
+                    { fromMe: false, text: 'New horror micro-story posted!' }
+                ]
+            },
+            { 
+                id: 'm2',
+                user: 'Mohit', 
+                lastMsg: 'Bro project complete ho gaya kya?', 
+                time: '2h', 
+                avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150', 
+                unread: false,
+                chats: [
+                    { fromMe: false, text: 'Bro project complete ho gaya kya?' },
+                    { fromMe: true, text: 'Haan bhai, APK build bhi complete hai aur web app bhi!' }
+                ]
+            },
+            { 
+                id: 'm3',
+                user: 'Naitik', 
+                lastMsg: 'Kal milte hain college me.', 
+                time: '1d', 
+                avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150', 
+                unread: false,
+                chats: [
+                    { fromMe: false, text: 'Kal milte hain college me.' }
+                ]
+            }
+        ];
 
-    function closeCommentsModal() {
-      document.getElementById('commentsModal').classList.add('hidden');
-    }
+        // Core Navigation Router
+        function switchTab(tab) {
+            currentTab = tab;
+            activeChatUser = null;
 
-    function addComment() {
-      const input = document.getElementById('commentInput');
-      const text = input.value.trim();
-      if (!text || !activeCommentPostId) return;
-      const p = posts.find(item => item.id === activeCommentPostId);
-      if (p) {
-        p.comments.push({ author: 'sarah.creates', text });
-        input.value = '';
-        openCommentsModal(activeCommentPostId);
-        renderFeed();
-      }
-    }
+            // Update navigation highlights
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                const btnTab = btn.getAttribute('data-tab');
+                if (btnTab === tab) {
+                    btn.classList.add('text-rose-500', 'font-semibold');
+                    btn.classList.remove('text-zinc-300', 'font-medium');
+                } else {
+                    btn.classList.remove('text-rose-500', 'font-semibold');
+                    btn.classList.add('text-zinc-300', 'font-medium');
+                }
+            });
 
-    function sharePost(id) {
-      navigator.clipboard?.writeText(window.location.href);
-      alert('Post link copied to clipboard!');
-    }
+            document.querySelectorAll('[data-tab-mobile]').forEach(btn => {
+                const btnTab = btn.getAttribute('data-tab-mobile');
+                const icon = btn.querySelector('i');
+                if (icon) {
+                    if (btnTab === tab) {
+                        icon.classList.add('text-rose-500');
+                        icon.classList.remove('text-zinc-400');
+                    } else {
+                        icon.classList.remove('text-rose-500');
+                        icon.classList.add('text-zinc-400');
+                    }
+                }
+            });
 
-    function openStory(user) {
-      alert(`Viewing active story by @${user}`);
-    }
+            render();
+        }
 
-    function openExplorePhoto(url) {
-      selectPreset(url);
-      openCreateModal();
-    }
+        // Theme Toggle
+        function toggleTheme() {
+            isDarkMode = !isDarkMode;
+            document.documentElement.classList.toggle('dark', isDarkMode);
+            document.body.className = isDarkMode 
+                ? "bg-black text-white min-h-screen flex flex-col md:flex-row select-none transition-colors duration-200" 
+                : "bg-zinc-50 text-black min-h-screen flex flex-col md:flex-row select-none transition-colors duration-200";
+            render();
+        }
 
-    // Run on load
-    window.onload = init;
-  </script>
+        // Like Post Toggle
+        function toggleLike(postId) {
+            const post = posts.find(p => p.id === postId);
+            if (post) {
+                post.isLiked = !post.isLiked;
+                post.likes += post.isLiked ? 1 : -1;
+                render();
+            }
+        }
+
+        // Double-tap photo like with heart pop
+        function triggerDoubleTapLike(postId) {
+            const burst = document.getElementById(`burst-${postId}`);
+            if (burst) {
+                burst.classList.remove('hidden');
+                setTimeout(() => burst.classList.add('hidden'), 800);
+            }
+            const post = posts.find(p => p.id === postId);
+            if (post && !post.isLiked) {
+                post.isLiked = true;
+                post.likes += 1;
+                render();
+            }
+        }
+
+        // Like Reel Toggle
+        function toggleReelLike(reelId) {
+            const reel = reels.find(r => r.id === reelId);
+            if (reel) {
+                reel.isLiked = !reel.isLiked;
+                reel.likes += reel.isLiked ? 1 : -1;
+                render();
+            }
+        }
+
+        // Follow Toggle
+        function toggleFollow(reelId) {
+            const reel = reels.find(r => r.id === reelId);
+            if (reel) {
+                reel.isFollowing = !reel.isFollowing;
+                render();
+            }
+        }
+
+        // Autonomous AI Bot Worker Simulation
+        setInterval(() => {
+            if (!aiBotActive) return;
+            const botPostId = posts.length + 1;
+            const newBotPost = {
+                id: botPostId,
+                user: 'HorrorBot_AI',
+                avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
+                image: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800',
+                likes: Math.floor(Math.random() * 500) + 50,
+                caption: `Autonomous AI Post: Exploring new realms of ${botNiche} 🤖✨ #${botNiche.toLowerCase().split(' ')[0]} #viral`,
+                time: 'JUST NOW',
+                isLiked: false,
+                comments: []
+            };
+            posts.unshift(newBotPost);
+            if (currentTab === 'home') render();
+        }, 35000);
+
+        // Comments Modal
+        function openCommentsModal(postId) {
+            activeCommentPostId = postId;
+            const post = posts.find(p => p.id === postId);
+            if (!post) return;
+
+            const container = document.getElementById('commentsContainer');
+            container.innerHTML = post.comments && post.comments.length > 0 
+                ? post.comments.map(c => `
+                    <div class="flex items-start gap-2.5 text-xs">
+                        <span class="font-bold text-zinc-300">@${c.author}</span>
+                        <span class="text-zinc-200">${c.text}</span>
+                    </div>
+                `).join('')
+                : `<p class="text-xs text-zinc-500 text-center py-4">No comments yet. Start the conversation!</p>`;
+
+            document.getElementById('commentsModal').classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function closeCommentsModal() {
+            document.getElementById('commentsModal').classList.add('hidden');
+        }
+
+        function submitComment() {
+            const input = document.getElementById('commentInput');
+            const text = input.value.trim();
+            if (!text || !activeCommentPostId) return;
+
+            const post = posts.find(p => p.id === activeCommentPostId);
+            if (post) {
+                post.comments = post.comments || [];
+                post.comments.push({ author: userProfile.username, text });
+                input.value = '';
+                openCommentsModal(activeCommentPostId);
+            }
+        }
+
+        // Render Views
+        function render() {
+            const container = document.getElementById('app-container');
+            container.innerHTML = '';
+
+            if (currentTab === 'home') {
+                container.innerHTML = `
+                    <!-- Stories Bar -->
+                    <div class="flex gap-4 overflow-x-auto hide-scrollbar py-2 mb-4 border-b border-zinc-800">
+                        <div class="flex flex-col items-center flex-shrink-0 cursor-pointer">
+                            <div class="w-16 h-16 rounded-full p-[2px] bg-gradient-to-tr from-amber-500 to-rose-500">
+                                <img src="${userProfile.avatar}" class="w-full h-full rounded-full object-cover border-2 border-black" />
+                            </div>
+                            <span class="text-[11px] mt-1 text-zinc-400">Your Story</span>
+                        </div>
+                        ${stories.map(s => `
+                            <div class="flex flex-col items-center flex-shrink-0 cursor-pointer" onclick="alert('Viewing story of @${s.user}')">
+                                <div class="w-16 h-16 rounded-full p-[2px] ${s.seen ? 'bg-zinc-700' : 'story-ring'}">
+                                    <img src="${s.avatar}" class="w-full h-full rounded-full object-cover border-2 border-black" />
+                                </div>
+                                <span class="text-[11px] mt-1 text-zinc-300 truncate w-16 text-center">${s.user}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    <!-- Feed Posts -->
+                    <div class="space-y-6">
+                        ${posts.map(p => `
+                            <div class="border border-zinc-800 rounded-2xl bg-zinc-950 overflow-hidden shadow-sm">
+                                <div class="flex items-center justify-between p-3">
+                                    <div class="flex items-center gap-3">
+                                        <div class="p-0.5 story-ring rounded-full">
+                                            <img src="${p.avatar}" class="w-8 h-8 rounded-full object-cover border border-black" />
+                                        </div>
+                                        <span class="font-semibold text-sm">${p.user}</span>
+                                    </div>
+                                    <i data-lucide="more-horizontal" class="w-5 h-5 text-zinc-400 cursor-pointer"></i>
+                                </div>
+                                <div class="relative aspect-square w-full bg-black overflow-hidden cursor-pointer" ondblclick="triggerDoubleTapLike(${p.id})">
+                                    <img src="${p.image}" class="w-full h-full object-cover" />
+                                    <div id="burst-${p.id}" class="hidden absolute inset-0 flex items-center justify-center pointer-events-none">
+                                        <i data-lucide="heart" class="w-24 h-24 text-rose-500 fill-rose-500 heart-burst drop-shadow-xl"></i>
+                                    </div>
+                                </div>
+                                <div class="p-3.5 space-y-2">
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center gap-4">
+                                            <button onclick="toggleLike(${p.id})" class="transition active:scale-125">
+                                                <i data-lucide="heart" class="w-6 h-6 ${p.isLiked ? 'text-red-500 fill-red-500' : 'text-zinc-200'}"></i>
+                                            </button>
+                                            <button onclick="openCommentsModal(${p.id})">
+                                                <i data-lucide="message-circle" class="w-6 h-6 text-zinc-200"></i>
+                                            </button>
+                                            <button onclick="navigator.clipboard?.writeText(window.location.href); alert('Post link copied!')">
+                                                <i data-lucide="send" class="w-6 h-6 text-zinc-200"></i>
+                                            </button>
+                                        </div>
+                                        <i data-lucide="bookmark" class="w-6 h-6 text-zinc-200 cursor-pointer"></i>
+                                    </div>
+                                    <p class="font-semibold text-sm">${p.likes} likes</p>
+                                    <p class="text-sm"><strong class="mr-2">${p.user}</strong>${p.caption}</p>
+                                    ${p.comments && p.comments.length > 0 ? `
+                                        <button onclick="openCommentsModal(${p.id})" class="text-xs text-zinc-400 font-medium">View all ${p.comments.length} comments</button>
+                                    ` : ''}
+                                    <p class="text-[11px] text-zinc-500 uppercase tracking-wider">${p.time}</p>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            } 
+            else if (currentTab === 'explore') {
+                container.innerHTML = `
+                    <div class="mb-4">
+                        <div class="relative">
+                            <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-3.5 text-zinc-400"></i>
+                            <input type="text" id="searchInput" oninput="handleSearch(this.value)" placeholder="Search creators, reels, hashtags..." class="w-full bg-zinc-900 border border-zinc-800 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:outline-none" />
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-3 gap-1 sm:gap-2" id="exploreGridContainer">
+                        ${[1,2,3,4,5,6,7,8,9,10,11,12].map(i => `
+                            <div class="aspect-square bg-zinc-900 overflow-hidden rounded-md cursor-pointer group relative">
+                                <img src="https://picsum.photos/400/400?random=${i + 10}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
+                                <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-3 text-xs font-bold text-white">
+                                    <span class="flex items-center gap-1"><i data-lucide="heart" class="w-3.5 h-3.5 fill-white"></i> ${200 + i * 40}</span>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+            else if (currentTab === 'reels') {
+                container.innerHTML = `
+                    <div class="h-[80vh] overflow-y-scroll reel-container snap-y snap-mandatory hide-scrollbar space-y-4">
+                        ${reels.map(r => `
+                            <div class="h-full w-full relative reel-item flex items-center justify-center bg-black rounded-2xl overflow-hidden border border-zinc-900 shadow-xl">
+                                <video src="${r.video}" autoplay loop muted playsinline class="w-full h-full object-cover"></video>
+                                <div class="absolute bottom-4 left-4 right-16 space-y-2">
+                                    <div class="flex items-center gap-3">
+                                        <img src="${r.avatar}" class="w-10 h-10 rounded-full border border-white" />
+                                        <span class="font-semibold text-sm drop-shadow">${r.user}</span>
+                                        <button onclick="toggleFollow(${r.id})" class="border border-white px-3 py-1 text-xs rounded-full font-medium ${r.isFollowing ? 'bg-white text-black' : 'bg-transparent text-white'}">
+                                            ${r.isFollowing ? 'Following' : 'Follow'}
+                                        </button>
+                                    </div>
+                                    <p class="text-sm text-zinc-100 drop-shadow">${r.caption}</p>
+                                    <div class="flex items-center gap-2 text-xs text-zinc-200 drop-shadow"><i data-lucide="music" class="w-3 h-3"></i> ${r.audio}</div>
+                                </div>
+                                <div class="absolute right-3 bottom-12 flex flex-col items-center gap-4">
+                                    <button onclick="toggleReelLike(${r.id})" class="flex flex-col items-center gap-1">
+                                        <i data-lucide="heart" class="w-7 h-7 ${r.isLiked ? 'text-rose-500 fill-rose-500' : 'text-white'}"></i>
+                                        <span class="text-xs">${r.likes}</span>
+                                    </button>
+                                    <button class="flex flex-col items-center gap-1">
+                                        <i data-lucide="message-circle" class="w-7 h-7 text-white"></i>
+                                        <span class="text-xs">42</span>
+                                    </button>
+                                    <button onclick="navigator.clipboard?.writeText(window.location.href); alert('Reel shared!')" class="flex flex-col items-center gap-1">
+                                        <i data-lucide="send" class="w-7 h-7 text-white"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+            else if (currentTab === 'messages') {
+                if (activeChatUser) {
+                    const conv = messages.find(m => m.user === activeChatUser);
+                    container.innerHTML = `
+                        <div class="flex flex-col h-[75vh] bg-zinc-950 border border-zinc-800 rounded-2xl overflow-hidden">
+                            <div class="p-3 border-b border-zinc-800 flex items-center justify-between bg-black">
+                                <div class="flex items-center gap-3">
+                                    <button onclick="activeChatUser = null; render();" class="text-zinc-400 hover:text-white"><i data-lucide="arrow-left" class="w-5 h-5"></i></button>
+                                    <img src="${conv.avatar}" class="w-8 h-8 rounded-full object-cover" />
+                                    <div>
+                                        <h4 class="font-bold text-sm">${conv.user}</h4>
+                                        <p class="text-[10px] text-green-400">Active now</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex-1 overflow-y-auto p-4 space-y-3" id="chatMsgBox">
+                                ${conv.chats.map(c => `
+                                    <div class="flex ${c.fromMe ? 'justify-end' : 'justify-start'}">
+                                        <div class="max-w-xs px-3.5 py-2 rounded-2xl text-xs ${c.fromMe ? 'bg-rose-500 text-white rounded-br-none' : 'bg-zinc-800 text-zinc-100 rounded-bl-none'}">
+                                            ${c.text}
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            <div class="p-3 border-t border-zinc-800 flex items-center gap-2 bg-black">
+                                <input type="text" id="dmInput" placeholder="Message..." class="flex-1 px-4 py-2 rounded-full bg-zinc-900 border border-zinc-800 text-xs focus:outline-none" onkeydown="if(event.key==='Enter') sendDM('${conv.user}')">
+                                <button onclick="sendDM('${conv.user}')" class="p-2 rounded-full bg-rose-500 text-white"><i data-lucide="send" class="w-4 h-4"></i></button>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    container.innerHTML = `
+                        <h2 class="text-xl font-bold mb-4">Direct Messages</h2>
+                        <div class="space-y-2">
+                            ${messages.map(m => `
+                                <div onclick="activeChatUser = '${m.user}'; render();" class="flex items-center justify-between p-3 hover:bg-zinc-900 rounded-xl cursor-pointer transition border border-transparent hover:border-zinc-800">
+                                    <div class="flex items-center gap-3">
+                                        <img src="${m.avatar}" class="w-12 h-12 rounded-full object-cover" />
+                                        <div>
+                                            <h4 class="font-semibold text-sm">${m.user}</h4>
+                                            <p class="text-xs text-zinc-400">${m.lastMsg}</p>
+                                        </div>
+                                    </div>
+                                    <span class="text-xs text-zinc-500">${m.time}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                }
+            }
+            else if (currentTab === 'notifications') {
+                container.innerHTML = `
+                    <h2 class="text-xl font-bold mb-4">Notifications</h2>
+                    <div class="space-y-3 text-sm">
+                        <div class="flex items-center gap-3 p-3 bg-zinc-950 border border-zinc-900 rounded-xl">
+                            <i data-lucide="heart" class="text-red-500 w-5 h-5 flex-shrink-0"></i>
+                            <div class="flex-1"><strong class="text-zinc-200">HorrorBot_AI</strong> liked your post.</div>
+                            <span class="text-zinc-500 text-xs">1h</span>
+                        </div>
+                        <div class="flex items-center gap-3 p-3 bg-zinc-950 border border-zinc-900 rounded-xl">
+                            <i data-lucide="user-plus" class="text-blue-500 w-5 h-5 flex-shrink-0"></i>
+                            <div class="flex-1"><strong class="text-zinc-200">Mohit</strong> started following you.</div>
+                            <span class="text-zinc-500 text-xs">3h</span>
+                        </div>
+                        <div class="flex items-center gap-3 p-3 bg-zinc-950 border border-zinc-900 rounded-xl">
+                            <i data-lucide="bot" class="text-purple-400 w-5 h-5 flex-shrink-0"></i>
+                            <div class="flex-1"><strong class="text-zinc-200">AI Bot Manager</strong> scheduled a new trending reel.</div>
+                            <span class="text-zinc-500 text-xs">5m</span>
+                        </div>
+                    </div>
+                `;
+            }
+            else if (currentTab === 'botdashboard') {
+                container.innerHTML = `
+                    <div class="space-y-6">
+                        <div class="flex items-center justify-between border-b border-zinc-800 pb-4">
+                            <div>
+                                <h2 class="text-xl font-bold">Autonomous AI Bot Manager</h2>
+                                <p class="text-xs text-zinc-400">Configure AI auto-posting, scrapers, and video synthesis</p>
+                            </div>
+                            <i data-lucide="bot" class="w-8 h-8 text-purple-400"></i>
+                        </div>
+                        <div class="bg-zinc-950 border border-zinc-800 p-4 rounded-xl space-y-4">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <span class="font-semibold text-sm">AI Bot Auto-Posting</span>
+                                    <p class="text-[11px] text-zinc-400">Posts automatically every 35 seconds</p>
+                                </div>
+                                <input type="checkbox" ${aiBotActive ? 'checked' : ''} onchange="aiBotActive = !aiBotActive; render();" class="w-5 h-5 accent-purple-600 cursor-pointer" />
+                            </div>
+                            <div>
+                                <label class="text-xs text-zinc-400 block mb-1">Content Niche</label>
+                                <select onchange="botNiche = this.value" class="w-full bg-black border border-zinc-800 p-2.5 rounded-lg text-sm text-zinc-200">
+                                    <option ${botNiche.includes('Horror') ? 'selected' : ''}>Horror & Creepypasta Stories</option>
+                                    <option ${botNiche.includes('Viral') ? 'selected' : ''}>Viral Comedy & Trends</option>
+                                    <option ${botNiche.includes('Tech') ? 'selected' : ''}>Tech & Startup Motivation</option>
+                                </select>
+                            </div>
+                            <div class="p-3 bg-purple-950/40 border border-purple-800/50 rounded-lg text-xs text-purple-300">
+                                <strong>Status:</strong> ${aiBotActive ? 'Bot is active and running in background!' : 'Bot is currently paused.'}
+                            </div>
+                        </div>
+
+                        <!-- Live Bot Activity Logs -->
+                        <div class="border border-zinc-800 rounded-xl p-4 bg-zinc-950">
+                            <h4 class="text-xs font-bold uppercase tracking-wider text-zinc-400 mb-2">Live Bot Activity Feed</h4>
+                            <div class="text-[11px] font-mono text-zinc-400 space-y-1">
+                                <p class="text-green-400">[SYSTEM] AI Bot engine listening to niche: "${botNiche}"</p>
+                                <p>[BOT] Scraped trending video tags: #horror #viral #reels</p>
+                                <p class="text-purple-400">[GEN] Synthesized post: "The Midnight Whisper"</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            else if (currentTab === 'profile') {
+                container.innerHTML = `
+                    <div class="space-y-6">
+                        <div class="flex items-center gap-6">
+                            <div class="p-1 story-ring rounded-full">
+                                <img src="${userProfile.avatar}" class="w-20 h-20 md:w-24 md:h-24 rounded-full object-cover border-2 border-black" />
+                            </div>
+                            <div class="space-y-2 flex-1">
+                                <div class="flex flex-col sm:flex-row sm:items-center gap-2">
+                                    <h2 class="text-xl font-bold">${userProfile.username}</h2>
+                                    <button onclick="alert('Profile edit mode')" class="px-3 py-1 bg-zinc-900 border border-zinc-800 text-xs font-semibold rounded-lg hover:bg-zinc-800">Edit Profile</button>
+                                </div>
+                                <div class="flex gap-6 text-sm">
+                                    <span><strong>${posts.length}</strong> posts</span>
+                                    <span><strong>${userProfile.followersCount}</strong> followers</span>
+                                    <span><strong>${userProfile.followingCount}</strong> following</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-sm">${userProfile.name}</h3>
+                            <p class="text-sm text-zinc-300">${userProfile.bio}</p>
+                        </div>
+                        <div class="border-t border-zinc-800 flex justify-around text-xs font-semibold py-2">
+                            <span class="text-rose-500 border-b-2 border-rose-500 pb-2 flex items-center gap-1 cursor-pointer"><i data-lucide="grid" class="w-4 h-4"></i> POSTS</span>
+                            <span class="text-zinc-500 flex items-center gap-1 cursor-pointer" onclick="switchTab('reels')"><i data-lucide="clapperboard" class="w-4 h-4"></i> REELS</span>
+                            <span class="text-zinc-500 flex items-center gap-1 cursor-pointer" onclick="alert('Saved archive')"><i data-lucide="bookmark" class="w-4 h-4"></i> SAVED</span>
+                        </div>
+                        <div class="grid grid-cols-3 gap-1">
+                            ${posts.map(p => `
+                                <div class="aspect-square bg-zinc-900 overflow-hidden cursor-pointer" onclick="switchTab('home')">
+                                    <img src="${p.image}" class="w-full h-full object-cover hover:scale-105 transition duration-300" />
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+            else if (currentTab === 'create') {
+                container.innerHTML = `
+                    <div class="space-y-4">
+                        <h2 class="text-xl font-bold">Create New Post / Reel</h2>
+                        
+                        <!-- Upload File or URL -->
+                        <div class="border-2 border-dashed border-zinc-800 rounded-xl p-4 text-center cursor-pointer hover:border-zinc-700 bg-zinc-950" onclick="document.getElementById('fileUpload').click()">
+                            <i data-lucide="upload-cloud" class="w-8 h-8 mx-auto text-zinc-400 mb-1"></i>
+                            <p class="text-xs text-zinc-300 font-semibold">Upload Image / Video from device</p>
+                            <input type="file" id="fileUpload" accept="image/*,video/*" class="hidden" onchange="handleFileSelect(event)">
+                        </div>
+
+                        <div id="previewBox" class="hidden aspect-square rounded-xl overflow-hidden bg-black max-h-64 border border-zinc-800">
+                            <img id="imagePreview" class="w-full h-full object-cover" />
+                        </div>
+
+                        <input type="text" placeholder="Or paste Image URL (https://...)" id="new-url" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-sm focus:outline-none" />
+                        <textarea placeholder="Write a caption with hashtags..." id="new-caption" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-sm h-28 focus:outline-none resize-none"></textarea>
+                        
+                        <button onclick="addNewPost()" class="w-full bg-gradient-to-r from-amber-500 via-rose-500 to-purple-600 p-3.5 rounded-xl font-bold shadow-lg hover:opacity-95 transition">Publish to InstaClone</button>
+                    </div>
+                `;
+            }
+
+            // Re-initialize Lucide Icons after DOM update
+            lucide.createIcons();
+        }
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    document.getElementById('new-url').value = e.target.result;
+                    const preview = document.getElementById('imagePreview');
+                    preview.src = e.target.result;
+                    document.getElementById('previewBox').classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function handleSearch(q) {
+            const grid = document.getElementById('exploreGridContainer');
+            if (!grid) return;
+            const seed = q ? q.length : 1;
+            grid.innerHTML = [1,2,3,4,5,6,7,8,9,10,11,12].map(i => `
+                <div class="aspect-square bg-zinc-900 overflow-hidden rounded-md cursor-pointer group relative">
+                    <img src="https://picsum.photos/400/400?random=${i + seed * 5}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
+                </div>
+            `).join('');
+        }
+
+        function sendDM(username) {
+            const input = document.getElementById('dmInput');
+            const text = input.value.trim();
+            if (!text) return;
+            const conv = messages.find(m => m.user === username);
+            if (conv) {
+                conv.chats.push({ fromMe: true, text });
+                conv.lastMsg = text;
+                input.value = '';
+                render();
+            }
+        }
+
+        function addNewPost() {
+            const url = document.getElementById('new-url').value.trim();
+            const caption = document.getElementById('new-caption').value.trim();
+            if(url && caption) {
+                posts.unshift({
+                    id: posts.length + 1,
+                    user: userProfile.username,
+                    avatar: userProfile.avatar,
+                    image: url,
+                    likes: 1,
+                    caption: caption,
+                    time: 'JUST NOW',
+                    isLiked: false,
+                    comments: []
+                });
+                switchTab('home');
+            } else {
+                alert('Please provide an image and caption!');
+            }
+        }
+
+        // Initial Load
+        render();
+    </script>
 </body>
 </html>
