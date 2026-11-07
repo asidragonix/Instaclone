@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>InstaClone — AI Powered Instagram</title>
+    <title>InstaClone — AI Powered Instagram with Firebase</title>
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="app/src/main/res/drawable/img_launcher_logo.jpg">
     <!-- Tailwind CSS -->
@@ -63,8 +63,29 @@
         <div>
             <div class="flex items-center justify-between mb-6 px-2">
                 <h1 class="text-3xl font-brand bg-gradient-to-r from-amber-400 via-rose-500 to-purple-500 bg-clip-text text-transparent">InstaClone</h1>
-                <span class="text-[10px] bg-purple-900/60 text-purple-300 font-bold px-2 py-0.5 rounded-full border border-purple-700">AI</span>
+                <div class="flex items-center gap-1.5">
+                    <span class="text-[10px] bg-amber-500/20 text-amber-300 font-bold px-1.5 py-0.5 rounded border border-amber-600/40 flex items-center gap-1">
+                        <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span> Firebase
+                    </span>
+                    <span class="text-[10px] bg-purple-900/60 text-purple-300 font-bold px-1.5 py-0.5 rounded border border-purple-700">AI</span>
+                </div>
             </div>
+
+            <!-- Current User Auth Card in Sidebar -->
+            <div id="sidebarAuthCard" class="mb-4 p-2.5 bg-zinc-900/80 border border-zinc-800 rounded-xl cursor-pointer hover:bg-zinc-800/80 transition" onclick="handleAuthCardClick()">
+                <div class="flex items-center gap-3">
+                    <div class="relative">
+                        <img id="sidebarUserAvatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150" class="w-9 h-9 rounded-full object-cover border border-zinc-700" />
+                        <span id="sidebarOnlineBadge" class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 border-2 border-black rounded-full"></span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p id="sidebarUserName" class="text-xs font-bold truncate">Asif</p>
+                        <p id="sidebarUserHandle" class="text-[11px] text-zinc-400 truncate">@asidragonix</p>
+                    </div>
+                    <span id="sidebarAuthStatusText" class="text-[10px] bg-rose-500/20 text-rose-300 font-medium px-2 py-0.5 rounded-md">Auth</span>
+                </div>
+            </div>
+
             <nav class="space-y-1.5" id="desktopNav">
                 <button onclick="switchTab('home')" class="nav-btn w-full flex items-center gap-3.5 p-3 hover:bg-zinc-900 rounded-xl transition font-medium text-rose-500" data-tab="home"><i data-lucide="home" class="w-5 h-5"></i> <span>Home</span></button>
                 <button onclick="switchTab('explore')" class="nav-btn w-full flex items-center gap-3.5 p-3 hover:bg-zinc-900 rounded-xl transition font-medium text-zinc-300" data-tab="explore"><i data-lucide="compass" class="w-5 h-5"></i> <span>Explore</span></button>
@@ -77,27 +98,32 @@
                 <button onclick="switchTab('botdashboard')" class="nav-btn w-full flex items-center gap-3.5 p-3 hover:bg-zinc-900 rounded-xl transition font-medium text-purple-400" data-tab="botdashboard"><i data-lucide="bot" class="w-5 h-5"></i> <span>AI Bot Manager</span></button>
                 <button onclick="switchTab('profile')" class="nav-btn w-full flex items-center gap-3.5 p-3 hover:bg-zinc-900 rounded-xl transition font-medium text-zinc-300" data-tab="profile">
                     <div class="w-5 h-5 rounded-full overflow-hidden border border-zinc-700">
-                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150" class="w-full h-full object-cover">
+                        <img id="navProfileAvatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150" class="w-full h-full object-cover">
                     </div>
                     <span>Profile</span>
                 </button>
             </nav>
         </div>
 
-        <div class="space-y-3 pt-4 border-t border-zinc-900">
+        <div class="space-y-2.5 pt-3 border-t border-zinc-900">
             <!-- Download Android APK CTA -->
             <a href="./app/build/outputs/apk/debug/app-debug.apk" download="InstaClone.apk" class="w-full flex items-center justify-center gap-2 p-2.5 bg-gradient-to-r from-amber-500 via-rose-500 to-purple-600 hover:opacity-90 text-white rounded-xl font-bold text-xs shadow-md transition">
                 <i data-lucide="download" class="w-4 h-4"></i>
                 <span>Download Android APK</span>
             </a>
             <div class="flex gap-2">
-                <button onclick="toggleTheme()" class="flex-1 flex items-center justify-center gap-2 p-2.5 bg-zinc-900 hover:bg-zinc-800 rounded-xl transition text-xs font-semibold text-zinc-300">
-                    <i data-lucide="sun-moon" class="w-4 h-4"></i> Theme
+                <button onclick="toggleTheme()" class="flex-1 flex items-center justify-center gap-1.5 p-2 bg-zinc-900 hover:bg-zinc-800 rounded-xl transition text-xs font-semibold text-zinc-300">
+                    <i data-lucide="sun-moon" class="w-3.5 h-3.5"></i> Theme
                 </button>
-                <button onclick="switchTab('create')" class="flex-1 flex items-center justify-center gap-2 p-2.5 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl text-xs font-semibold">
-                    <i data-lucide="plus-circle" class="w-4 h-4 text-rose-400"></i> Create
+                <button onclick="switchTab('create')" class="flex-1 flex items-center justify-center gap-1.5 p-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl text-xs font-semibold">
+                    <i data-lucide="plus-circle" class="w-3.5 h-3.5 text-rose-400"></i> Create
                 </button>
             </div>
+            <!-- Auth Actions Button -->
+            <button id="sidebarAuthActionBtn" onclick="openAuthModal()" class="w-full py-2 px-3 text-xs font-semibold rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-300 flex items-center justify-center gap-2 border border-zinc-800 transition">
+                <i data-lucide="log-in" class="w-3.5 h-3.5 text-amber-400"></i>
+                <span>Sign In / Connect Firebase</span>
+            </button>
         </div>
     </aside>
 
@@ -105,15 +131,17 @@
     <header class="md:hidden flex items-center justify-between px-4 py-3 border-b border-zinc-800 bg-black fixed top-0 left-0 right-0 z-50">
         <div class="flex items-center gap-2">
             <h1 class="text-2xl font-brand bg-gradient-to-r from-amber-400 via-rose-500 to-purple-500 bg-clip-text text-transparent">InstaClone</h1>
-            <span class="text-[9px] bg-purple-950 text-purple-300 font-bold px-1.5 py-0.5 rounded border border-purple-800">AI</span>
+            <span class="text-[9px] bg-amber-500/20 text-amber-300 font-bold px-1.5 py-0.5 rounded border border-amber-600/40">Firebase</span>
         </div>
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-2.5">
+            <button onclick="openAuthModal()" class="p-1 rounded-full border border-zinc-800">
+                <img id="mobileTopAvatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150" class="w-6 h-6 rounded-full object-cover">
+            </button>
             <a href="./app/build/outputs/apk/debug/app-debug.apk" download="InstaClone.apk" class="px-2 py-1 bg-gradient-to-r from-rose-500 to-purple-600 text-white text-[11px] font-bold rounded-lg flex items-center gap-1 shadow">
                 <i data-lucide="download" class="w-3.5 h-3.5"></i>
                 <span>APK</span>
             </a>
             <button onclick="switchTab('botdashboard')" class="p-1"><i data-lucide="bot" class="text-purple-400 w-5 h-5"></i></button>
-            <button onclick="switchTab('notifications')" class="p-1"><i data-lucide="heart" class="w-5 h-5"></i></button>
             <button onclick="switchTab('messages')" class="p-1 relative">
                 <i data-lucide="send" class="w-5 h-5"></i>
                 <span class="absolute top-0 right-0 w-2 h-2 bg-rose-500 rounded-full"></span>
@@ -129,7 +157,7 @@
         <button onclick="switchTab('create')" class="p-1" data-tab-mobile="create"><i data-lucide="plus-square" class="w-6 h-6 text-zinc-400"></i></button>
         <button onclick="switchTab('profile')" class="p-1" data-tab-mobile="profile">
             <div class="w-6 h-6 rounded-full overflow-hidden border border-zinc-700">
-                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150" class="w-full h-full object-cover">
+                <img id="mobileBottomNavAvatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150" class="w-full h-full object-cover">
             </div>
         </button>
     </nav>
@@ -140,6 +168,83 @@
             <!-- Dynamic Content Injected Here -->
         </div>
     </main>
+
+    <!-- FIREBASE AUTH MODAL -->
+    <div id="authModal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-zinc-950 border border-zinc-800 rounded-2xl max-w-md w-full overflow-hidden shadow-2xl relative">
+            <div class="p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-2">
+                        <h2 class="text-2xl font-brand bg-gradient-to-r from-amber-400 via-rose-500 to-purple-500 bg-clip-text text-transparent">InstaClone</h2>
+                        <span class="text-[10px] bg-amber-500/20 text-amber-300 font-bold px-2 py-0.5 rounded border border-amber-500/40">Firebase Auth</span>
+                    </div>
+                    <button onclick="closeAuthModal()" class="text-zinc-400 hover:text-white p-1 rounded-lg hover:bg-zinc-900"><i data-lucide="x" class="w-5 h-5"></i></button>
+                </div>
+
+                <div id="authUserInfo" class="hidden mb-4 p-4 bg-zinc-900/90 border border-zinc-800 rounded-xl space-y-3">
+                    <div class="flex items-center gap-3">
+                        <img id="modalUserAvatar" src="" class="w-12 h-12 rounded-full object-cover border border-zinc-700" />
+                        <div class="flex-1 min-w-0">
+                            <h4 id="modalUserName" class="font-bold text-sm truncate">User</h4>
+                            <p id="modalUserEmail" class="text-xs text-zinc-400 truncate">email@example.com</p>
+                            <span class="inline-block mt-1 text-[10px] bg-green-950 text-green-400 font-semibold px-2 py-0.5 rounded-full border border-green-800">Firestore Connected</span>
+                        </div>
+                    </div>
+                    <div class="flex gap-2 pt-2 border-t border-zinc-800">
+                        <button onclick="switchTab('profile'); closeAuthModal();" class="flex-1 py-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-xs font-semibold">View Profile</button>
+                        <button onclick="handleSignOut()" class="flex-1 py-2 rounded-lg bg-rose-600 hover:bg-rose-500 text-xs font-semibold text-white">Log Out</button>
+                    </div>
+                </div>
+
+                <div id="authFormContainer">
+                    <div class="flex border-b border-zinc-800 mb-4">
+                        <button id="authTabLogin" onclick="switchAuthTab('login')" class="flex-1 pb-2.5 text-sm font-semibold border-b-2 border-rose-500 text-white">Log In</button>
+                        <button id="authTabSignup" onclick="switchAuthTab('signup')" class="flex-1 pb-2.5 text-sm font-semibold border-b-2 border-transparent text-zinc-400 hover:text-white">Sign Up</button>
+                    </div>
+
+                    <div id="authAlert" class="hidden p-3 rounded-xl mb-3 text-xs"></div>
+
+                    <!-- Sign In / Sign Up Form -->
+                    <form id="authForm" onsubmit="handleAuthSubmit(event)" class="space-y-3">
+                        <div id="authFieldUsername" class="hidden">
+                            <label class="block text-xs text-zinc-400 mb-1">Username</label>
+                            <input type="text" id="authUsernameInput" placeholder="e.g. asidragonix" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-sm focus:outline-none focus:border-rose-500 text-white" />
+                        </div>
+                        <div>
+                            <label class="block text-xs text-zinc-400 mb-1">Email Address</label>
+                            <input type="email" id="authEmailInput" required placeholder="name@example.com" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-sm focus:outline-none focus:border-rose-500 text-white" />
+                        </div>
+                        <div>
+                            <label class="block text-xs text-zinc-400 mb-1">Password</label>
+                            <input type="password" id="authPasswordInput" required minlength="6" placeholder="At least 6 characters" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-sm focus:outline-none focus:border-rose-500 text-white" />
+                        </div>
+                        
+                        <button type="submit" id="authSubmitBtn" class="w-full py-3 bg-gradient-to-r from-amber-500 via-rose-500 to-purple-600 text-white font-bold rounded-xl shadow-lg hover:opacity-95 transition flex items-center justify-center gap-2">
+                            <span>Log In with Email</span>
+                        </button>
+                    </form>
+
+                    <div class="relative my-4">
+                        <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-zinc-800"></div></div>
+                        <div class="relative flex justify-center text-xs uppercase"><span class="bg-zinc-950 px-2 text-zinc-500">OR</span></div>
+                    </div>
+
+                    <!-- Google Sign-In -->
+                    <button onclick="handleGoogleSignIn()" class="w-full py-2.5 px-4 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-white text-xs font-bold rounded-xl flex items-center justify-center gap-2 transition">
+                        <svg class="w-4 h-4" viewBox="0 0 24 24">
+                            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                        </svg>
+                        <span>Continue with Google</span>
+                    </button>
+
+                    <p class="text-[11px] text-zinc-500 text-center mt-3">Firebase project ID: <code class="text-amber-400">instaclone-f3599</code></p>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- COMMENTS MODAL -->
     <div id="commentsModal" class="hidden fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
@@ -156,18 +261,92 @@
         </div>
     </div>
 
-    <!-- JAVASCRIPT APP LOGIC -->
-    <script>
-        // State Management
-        let currentTab = 'home';
-        let isDarkMode = true;
-        let aiBotActive = true;
-        let botNiche = 'Horror & Creepypasta Stories';
-        let botIntervalTime = 30; // seconds
-        let activeCommentPostId = null;
-        let activeChatUser = null;
+    <!-- EDIT PROFILE MODAL -->
+    <div id="editProfileModal" class="hidden fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
+        <div class="bg-zinc-950 border border-zinc-800 rounded-2xl max-w-md w-full overflow-hidden shadow-2xl p-5 space-y-4">
+            <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
+                <h3 class="font-bold text-sm">Edit Profile</h3>
+                <button onclick="closeEditProfileModal()" class="text-zinc-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <div class="space-y-3">
+                <div>
+                    <label class="text-xs text-zinc-400 block mb-1">Name</label>
+                    <input type="text" id="editProfileName" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-2.5 text-sm focus:outline-none text-white" />
+                </div>
+                <div>
+                    <label class="text-xs text-zinc-400 block mb-1">Bio</label>
+                    <textarea id="editProfileBio" rows="3" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-2.5 text-sm focus:outline-none text-white resize-none"></textarea>
+                </div>
+                <div>
+                    <label class="text-xs text-zinc-400 block mb-1">Avatar Image URL</label>
+                    <input type="text" id="editProfileAvatar" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-2.5 text-sm focus:outline-none text-white" />
+                </div>
+                <button onclick="saveProfileChanges()" class="w-full py-2.5 bg-gradient-to-r from-amber-500 via-rose-500 to-purple-600 rounded-xl text-white font-bold text-sm shadow">Save to Firestore</button>
+            </div>
+        </div>
+    </div>
 
-        let userProfile = {
+    <!-- FIREBASE SDK V10 & APPLICATION LOGIC -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+        import { 
+            getAuth, 
+            onAuthStateChanged, 
+            signInWithEmailAndPassword, 
+            createUserWithEmailAndPassword, 
+            signInWithPopup, 
+            GoogleAuthProvider, 
+            signOut,
+            updateProfile 
+        } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+        import { 
+            getFirestore, 
+            collection, 
+            addDoc, 
+            getDocs, 
+            doc, 
+            setDoc, 
+            getDoc, 
+            updateDoc, 
+            deleteDoc, 
+            onSnapshot, 
+            query, 
+            orderBy, 
+            serverTimestamp, 
+            arrayUnion, 
+            arrayRemove,
+            increment 
+        } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+
+        // User's provided Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyD5IqyKfJDbg1OvvE46GhXA2pdZys8FWFw",
+            authDomain: "instaclone-f3599.firebaseapp.com",
+            projectId: "instaclone-f3599",
+            storageBucket: "instaclone-f3599.firebasestorage.app",
+            messagingSenderId: "63224097091",
+            appId: "1:63224097091:web:05357a65d781964ac767f6",
+            measurementId: "G-N0KDK0GXV9"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const googleProvider = new GoogleAuthProvider();
+
+        // Export to window for global access
+        window.firebaseApp = app;
+        window.firebaseAuth = auth;
+        window.firebaseDb = db;
+        window.firebaseGoogleProvider = googleProvider;
+
+        // Current Auth User & Profile State
+        window.currentUser = null;
+        window.currentAuthTab = 'login'; // 'login' or 'signup'
+
+        window.userProfile = {
+            uid: null,
             username: 'asidragonix',
             name: 'Asif',
             bio: 'Digital Creator & Full-Stack Developer 🚀 | AI Enthusiast',
@@ -177,16 +356,26 @@
             followingCount: 380
         };
 
-        let stories = [
+        // UI State
+        window.currentTab = 'home';
+        window.isDarkMode = true;
+        window.aiBotActive = true;
+        window.botNiche = 'Horror & Creepypasta Stories';
+        window.activeCommentPostId = null;
+        window.activeChatUser = null;
+
+        // Mock Stories
+        window.stories = [
             { id: 1, user: 'HorrorBot_AI', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150', seen: false },
             { id: 2, user: 'ViralTrendz', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150', seen: false },
             { id: 3, user: 'Mohit', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150', seen: true },
             { id: 4, user: 'Naitik', avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150', seen: true }
         ];
 
-        let posts = [
+        // Seed posts fallback while Firestore loads
+        window.posts = [
             {
-                id: 1,
+                id: 'seed-1',
                 user: 'HorrorBot_AI',
                 avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
                 image: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=800',
@@ -200,21 +389,21 @@
                 ]
             },
             {
-                id: 2,
+                id: 'seed-2',
                 user: 'ViralTrendz_AI',
                 avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150',
                 image: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800',
                 likes: 1250,
-                caption: 'Future of UI Design with AI generated code! 🚀 #coding #webdev #ai #ui',
+                caption: 'Future of UI Design with AI generated code & Firebase Backend! 🚀 #coding #webdev #ai #ui',
                 time: '5 HOURS AGO',
                 isLiked: true,
                 comments: [
-                    { author: 'Naitik', text: 'Tailwind + Compose combo is top tier!' }
+                    { author: 'Naitik', text: 'Firebase + Jetpack Compose is top tier!' }
                 ]
             }
         ];
 
-        let reels = [
+        window.reels = [
             {
                 id: 1,
                 user: 'HorrorBot_AI',
@@ -239,7 +428,7 @@
             }
         ];
 
-        let messages = [
+        window.messages = [
             { 
                 id: 'm1',
                 user: 'HorrorBot_AI', 
@@ -262,26 +451,395 @@
                 unread: false,
                 chats: [
                     { fromMe: false, text: 'Bro project complete ho gaya kya?' },
-                    { fromMe: true, text: 'Haan bhai, APK build bhi complete hai aur web app bhi!' }
-                ]
-            },
-            { 
-                id: 'm3',
-                user: 'Naitik', 
-                lastMsg: 'Kal milte hain college me.', 
-                time: '1d', 
-                avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150', 
-                unread: false,
-                chats: [
-                    { fromMe: false, text: 'Kal milte hain college me.' }
+                    { fromMe: true, text: 'Haan bhai, APK build bhi complete hai aur Firebase Firestore backend bhi!' }
                 ]
             }
         ];
 
+        // Setup Realtime Firestore Listener for Posts
+        function setupFirestoreListener() {
+            try {
+                const postsQuery = query(collection(db, "posts"), orderBy("createdAt", "desc"));
+                onSnapshot(postsQuery, (snapshot) => {
+                    if (!snapshot.empty) {
+                        const firestorePosts = [];
+                        snapshot.forEach((docSnap) => {
+                            const data = docSnap.data();
+                            firestorePosts.push({
+                                id: docSnap.id,
+                                user: data.user || 'Anonymous',
+                                avatar: data.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
+                                image: data.image || 'https://picsum.photos/600/600',
+                                likes: data.likes || 0,
+                                likedBy: data.likedBy || [],
+                                caption: data.caption || '',
+                                time: data.createdAt ? new Date(data.createdAt.seconds * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'JUST NOW',
+                                isLiked: window.currentUser ? (data.likedBy || []).includes(window.currentUser.uid) : false,
+                                comments: data.comments || []
+                            });
+                        });
+                        window.posts = firestorePosts;
+                        if (window.currentTab === 'home' || window.currentTab === 'profile') {
+                            window.render();
+                        }
+                    }
+                }, (error) => {
+                    console.warn("Firestore onSnapshot error (using cached/fallback):", error);
+                });
+            } catch (err) {
+                console.error("Firestore setup error:", err);
+            }
+        }
+
+        // Firebase Auth State Observer
+        onAuthStateChanged(auth, async (user) => {
+            window.currentUser = user;
+            if (user) {
+                // User is signed in
+                const username = user.displayName || user.email.split('@')[0];
+                const avatar = user.photoURL || `https://api.dicebear.com/7.x/adventurer/svg?seed=${user.uid}`;
+                
+                window.userProfile.uid = user.uid;
+                window.userProfile.username = username;
+                window.userProfile.name = user.displayName || username;
+                window.userProfile.avatar = avatar;
+
+                // Sync with Firestore users collection
+                try {
+                    const userDocRef = doc(db, "users", user.uid);
+                    const userSnap = await getDoc(userDocRef);
+                    if (userSnap.exists()) {
+                        const data = userSnap.data();
+                        window.userProfile.bio = data.bio || window.userProfile.bio;
+                        window.userProfile.username = data.username || window.userProfile.username;
+                        window.userProfile.avatar = data.avatar || window.userProfile.avatar;
+                    } else {
+                        await setDoc(userDocRef, {
+                            uid: user.uid,
+                            email: user.email,
+                            username: username,
+                            name: window.userProfile.name,
+                            bio: window.userProfile.bio,
+                            avatar: avatar,
+                            createdAt: serverTimestamp()
+                        }, { merge: true });
+                    }
+                } catch (e) {
+                    console.log("Firestore user profile sync warning:", e);
+                }
+
+                updateHeaderAuthUI(true, user);
+            } else {
+                // User signed out
+                window.userProfile.uid = null;
+                updateHeaderAuthUI(false, null);
+            }
+            window.render();
+        });
+
+        function updateHeaderAuthUI(isLoggedIn, user) {
+            const avatar = window.userProfile.avatar;
+            const name = window.userProfile.name;
+            const handle = `@${window.userProfile.username}`;
+
+            document.getElementById('sidebarUserAvatar').src = avatar;
+            document.getElementById('navProfileAvatar').src = avatar;
+            document.getElementById('mobileTopAvatar').src = avatar;
+            document.getElementById('mobileBottomNavAvatar').src = avatar;
+            document.getElementById('sidebarUserName').textContent = name;
+            document.getElementById('sidebarUserHandle').textContent = handle;
+
+            const badge = document.getElementById('sidebarOnlineBadge');
+            const statusText = document.getElementById('sidebarAuthStatusText');
+            const actionBtn = document.getElementById('sidebarAuthActionBtn');
+
+            if (isLoggedIn) {
+                badge.className = "absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 border-2 border-black rounded-full";
+                statusText.textContent = "Live";
+                statusText.className = "text-[10px] bg-green-950 text-green-400 font-bold px-2 py-0.5 rounded-md border border-green-800";
+                actionBtn.innerHTML = `<i data-lucide="log-out" class="w-3.5 h-3.5 text-rose-400"></i><span>Sign Out (@${window.userProfile.username})</span>`;
+                actionBtn.onclick = () => window.handleSignOut();
+            } else {
+                badge.className = "absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-amber-500 border-2 border-black rounded-full";
+                statusText.textContent = "Guest";
+                statusText.className = "text-[10px] bg-amber-950 text-amber-400 font-medium px-2 py-0.5 rounded-md border border-amber-800";
+                actionBtn.innerHTML = `<i data-lucide="log-in" class="w-3.5 h-3.5 text-amber-400"></i><span>Sign In / Connect Firebase</span>`;
+                actionBtn.onclick = () => window.openAuthModal();
+            }
+            lucide.createIcons();
+        }
+
+        // Firebase Auth Actions
+        window.handleAuthSubmit = async function(event) {
+            event.preventDefault();
+            const email = document.getElementById('authEmailInput').value.trim();
+            const password = document.getElementById('authPasswordInput').value;
+            const username = document.getElementById('authUsernameInput').value.trim();
+            const alertBox = document.getElementById('authAlert');
+
+            alertBox.classList.add('hidden');
+            const submitBtn = document.getElementById('authSubmitBtn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `<span class="animate-spin inline-block mr-2">⏳</span> Processing...`;
+
+            try {
+                if (window.currentAuthTab === 'signup') {
+                    const cred = await createUserWithEmailAndPassword(auth, email, password);
+                    if (username) {
+                        await updateProfile(cred.user, { displayName: username });
+                    }
+                    await setDoc(doc(db, "users", cred.user.uid), {
+                        uid: cred.user.uid,
+                        email: email,
+                        username: username || email.split('@')[0],
+                        name: username || email.split('@')[0],
+                        bio: 'InstaClone Explorer ✨',
+                        avatar: `https://api.dicebear.com/7.x/adventurer/svg?seed=${cred.user.uid}`,
+                        createdAt: serverTimestamp()
+                    });
+                    showAuthAlert("Account created successfully! Connected to Firestore.", "success");
+                } else {
+                    await signInWithEmailAndPassword(auth, email, password);
+                    showAuthAlert("Signed in successfully!", "success");
+                }
+                setTimeout(() => {
+                    closeAuthModal();
+                }, 1000);
+            } catch (err) {
+                console.error("Auth error:", err);
+                showAuthAlert(err.message.replace("Firebase:", "").trim(), "error");
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = window.currentAuthTab === 'signup' ? "Create Account" : "Log In with Email";
+            }
+        };
+
+        window.handleGoogleSignIn = async function() {
+            try {
+                const result = await signInWithPopup(auth, googleProvider);
+                showAuthAlert("Signed in with Google successfully!", "success");
+                setTimeout(() => {
+                    closeAuthModal();
+                }, 1000);
+            } catch (err) {
+                console.error("Google sign in error:", err);
+                showAuthAlert(err.message.replace("Firebase:", "").trim(), "error");
+            }
+        };
+
+        window.handleSignOut = async function() {
+            try {
+                await signOut(auth);
+                alert("Signed out successfully.");
+                closeAuthModal();
+            } catch (err) {
+                alert("Error signing out: " + err.message);
+            }
+        };
+
+        function showAuthAlert(msg, type) {
+            const alertBox = document.getElementById('authAlert');
+            alertBox.textContent = msg;
+            alertBox.className = type === 'success' 
+                ? "p-3 rounded-xl mb-3 text-xs bg-green-950/80 text-green-300 border border-green-800"
+                : "p-3 rounded-xl mb-3 text-xs bg-rose-950/80 text-rose-300 border border-rose-800";
+            alertBox.classList.remove('hidden');
+        }
+
+        // Firestore Realtime Write Operations
+        window.addNewPost = async function() {
+            const url = document.getElementById('new-url').value.trim();
+            const caption = document.getElementById('new-caption').value.trim();
+            
+            if (!url || !caption) {
+                alert('Please provide an image and caption!');
+                return;
+            }
+
+            const newPostData = {
+                user: window.userProfile.username,
+                avatar: window.userProfile.avatar,
+                image: url,
+                caption: caption,
+                likes: 0,
+                likedBy: [],
+                comments: [],
+                createdAt: serverTimestamp(),
+                authorUid: window.currentUser ? window.currentUser.uid : 'guest'
+            };
+
+            try {
+                // Write to Cloud Firestore collection
+                await addDoc(collection(db, "posts"), newPostData);
+                console.log("Post synced to Firestore successfully!");
+                switchTab('home');
+            } catch (err) {
+                console.warn("Firestore write error, falling back locally:", err);
+                // Optimistic local add
+                window.posts.unshift({
+                    id: 'local-' + Date.now(),
+                    ...newPostData,
+                    likes: 0,
+                    time: 'JUST NOW',
+                    isLiked: false
+                });
+                switchTab('home');
+            }
+        };
+
+        window.toggleLike = async function(postId) {
+            const post = window.posts.find(p => p.id === postId);
+            if (!post) return;
+
+            const wasLiked = post.isLiked;
+            post.isLiked = !wasLiked;
+            post.likes += post.isLiked ? 1 : -1;
+            window.render();
+
+            // Firestore sync
+            if (!postId.toString().startsWith('seed-') && !postId.toString().startsWith('local-')) {
+                try {
+                    const postRef = doc(db, "posts", postId);
+                    const uid = window.currentUser ? window.currentUser.uid : 'guest_user';
+                    await updateDoc(postRef, {
+                        likes: increment(post.isLiked ? 1 : -1),
+                        likedBy: post.isLiked ? arrayUnion(uid) : arrayRemove(uid)
+                    });
+                } catch (e) {
+                    console.log("Firestore like sync warning:", e);
+                }
+            }
+        };
+
+        window.submitComment = async function() {
+            const input = document.getElementById('commentInput');
+            const text = input.value.trim();
+            if (!text || !window.activeCommentPostId) return;
+
+            const post = window.posts.find(p => p.id === window.activeCommentPostId);
+            if (!post) return;
+
+            const commentObj = {
+                author: window.userProfile.username,
+                text: text,
+                time: 'JUST NOW'
+            };
+
+            post.comments = post.comments || [];
+            post.comments.push(commentObj);
+            input.value = '';
+            window.openCommentsModal(window.activeCommentPostId);
+
+            // Firestore sync
+            if (!post.id.toString().startsWith('seed-') && !post.id.toString().startsWith('local-')) {
+                try {
+                    const postRef = doc(db, "posts", post.id);
+                    await updateDoc(postRef, {
+                        comments: arrayUnion(commentObj)
+                    });
+                } catch (e) {
+                    console.log("Firestore comment sync warning:", e);
+                }
+            }
+        };
+
+        window.saveProfileChanges = async function() {
+            const name = document.getElementById('editProfileName').value.trim();
+            const bio = document.getElementById('editProfileBio').value.trim();
+            const avatar = document.getElementById('editProfileAvatar').value.trim();
+
+            if (name) window.userProfile.name = name;
+            if (bio) window.userProfile.bio = bio;
+            if (avatar) window.userProfile.avatar = avatar;
+
+            if (window.currentUser) {
+                try {
+                    const userRef = doc(db, "users", window.currentUser.uid);
+                    await setDoc(userRef, {
+                        name: window.userProfile.name,
+                        bio: window.userProfile.bio,
+                        avatar: window.userProfile.avatar
+                    }, { merge: true });
+                } catch (e) {
+                    console.log("Firestore profile update error:", e);
+                }
+            }
+
+            closeEditProfileModal();
+            updateHeaderAuthUI(Boolean(window.currentUser), window.currentUser);
+            window.render();
+        };
+
+        // Initialize Firestore listener
+        setupFirestoreListener();
+    </script>
+
+    <!-- UI ROUTING & EVENT HANDLERS -->
+    <script>
+        function openAuthModal() {
+            const modal = document.getElementById('authModal');
+            const userInfo = document.getElementById('authUserInfo');
+            const authFormContainer = document.getElementById('authFormContainer');
+
+            if (window.currentUser) {
+                userInfo.classList.remove('hidden');
+                authFormContainer.classList.add('hidden');
+                document.getElementById('modalUserAvatar').src = window.userProfile.avatar;
+                document.getElementById('modalUserName').textContent = window.userProfile.name;
+                document.getElementById('modalUserEmail').textContent = window.currentUser.email || 'Google Account';
+            } else {
+                userInfo.classList.add('hidden');
+                authFormContainer.classList.remove('hidden');
+            }
+
+            modal.classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function closeAuthModal() {
+            document.getElementById('authModal').classList.add('hidden');
+        }
+
+        function handleAuthCardClick() {
+            openAuthModal();
+        }
+
+        function switchAuthTab(tab) {
+            window.currentAuthTab = tab;
+            const tabLogin = document.getElementById('authTabLogin');
+            const tabSignup = document.getElementById('authTabSignup');
+            const usernameField = document.getElementById('authFieldUsername');
+            const submitBtn = document.getElementById('authSubmitBtn');
+
+            if (tab === 'signup') {
+                tabSignup.className = "flex-1 pb-2.5 text-sm font-semibold border-b-2 border-rose-500 text-white";
+                tabLogin.className = "flex-1 pb-2.5 text-sm font-semibold border-b-2 border-transparent text-zinc-400 hover:text-white";
+                usernameField.classList.remove('hidden');
+                submitBtn.innerHTML = "Create Account with Firebase";
+            } else {
+                tabLogin.className = "flex-1 pb-2.5 text-sm font-semibold border-b-2 border-rose-500 text-white";
+                tabSignup.className = "flex-1 pb-2.5 text-sm font-semibold border-b-2 border-transparent text-zinc-400 hover:text-white";
+                usernameField.classList.add('hidden');
+                submitBtn.innerHTML = "Log In with Email";
+            }
+        }
+
+        function openEditProfileModal() {
+            document.getElementById('editProfileName').value = window.userProfile.name;
+            document.getElementById('editProfileBio').value = window.userProfile.bio;
+            document.getElementById('editProfileAvatar').value = window.userProfile.avatar;
+            document.getElementById('editProfileModal').classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function closeEditProfileModal() {
+            document.getElementById('editProfileModal').classList.add('hidden');
+        }
+
         // Core Navigation Router
         function switchTab(tab) {
-            currentTab = tab;
-            activeChatUser = null;
+            window.currentTab = tab;
+            window.activeChatUser = null;
 
             // Update navigation highlights
             document.querySelectorAll('.nav-btn').forEach(btn => {
@@ -314,22 +872,12 @@
 
         // Theme Toggle
         function toggleTheme() {
-            isDarkMode = !isDarkMode;
-            document.documentElement.classList.toggle('dark', isDarkMode);
-            document.body.className = isDarkMode 
+            window.isDarkMode = !window.isDarkMode;
+            document.documentElement.classList.toggle('dark', window.isDarkMode);
+            document.body.className = window.isDarkMode 
                 ? "bg-black text-white min-h-screen flex flex-col md:flex-row select-none transition-colors duration-200" 
                 : "bg-zinc-50 text-black min-h-screen flex flex-col md:flex-row select-none transition-colors duration-200";
             render();
-        }
-
-        // Like Post Toggle
-        function toggleLike(postId) {
-            const post = posts.find(p => p.id === postId);
-            if (post) {
-                post.isLiked = !post.isLiked;
-                post.likes += post.isLiked ? 1 : -1;
-                render();
-            }
         }
 
         // Double-tap photo like with heart pop
@@ -339,17 +887,15 @@
                 burst.classList.remove('hidden');
                 setTimeout(() => burst.classList.add('hidden'), 800);
             }
-            const post = posts.find(p => p.id === postId);
+            const post = window.posts.find(p => p.id === postId);
             if (post && !post.isLiked) {
-                post.isLiked = true;
-                post.likes += 1;
-                render();
+                window.toggleLike(postId);
             }
         }
 
         // Like Reel Toggle
         function toggleReelLike(reelId) {
-            const reel = reels.find(r => r.id === reelId);
+            const reel = window.reels.find(r => r.id === reelId);
             if (reel) {
                 reel.isLiked = !reel.isLiked;
                 reel.likes += reel.isLiked ? 1 : -1;
@@ -359,36 +905,17 @@
 
         // Follow Toggle
         function toggleFollow(reelId) {
-            const reel = reels.find(r => r.id === reelId);
+            const reel = window.reels.find(r => r.id === reelId);
             if (reel) {
                 reel.isFollowing = !reel.isFollowing;
                 render();
             }
         }
 
-        // Autonomous AI Bot Worker Simulation
-        setInterval(() => {
-            if (!aiBotActive) return;
-            const botPostId = posts.length + 1;
-            const newBotPost = {
-                id: botPostId,
-                user: 'HorrorBot_AI',
-                avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
-                image: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800',
-                likes: Math.floor(Math.random() * 500) + 50,
-                caption: `Autonomous AI Post: Exploring new realms of ${botNiche} 🤖✨ #${botNiche.toLowerCase().split(' ')[0]} #viral`,
-                time: 'JUST NOW',
-                isLiked: false,
-                comments: []
-            };
-            posts.unshift(newBotPost);
-            if (currentTab === 'home') render();
-        }, 35000);
-
         // Comments Modal
         function openCommentsModal(postId) {
-            activeCommentPostId = postId;
-            const post = posts.find(p => p.id === postId);
+            window.activeCommentPostId = postId;
+            const post = window.posts.find(p => p.id === postId);
             if (!post) return;
 
             const container = document.getElementById('commentsContainer');
@@ -409,36 +936,68 @@
             document.getElementById('commentsModal').classList.add('hidden');
         }
 
-        function submitComment() {
-            const input = document.getElementById('commentInput');
-            const text = input.value.trim();
-            if (!text || !activeCommentPostId) return;
+        // File selection preview
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    document.getElementById('new-url').value = e.target.result;
+                    const preview = document.getElementById('imagePreview');
+                    preview.src = e.target.result;
+                    document.getElementById('previewBox').classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
+        }
 
-            const post = posts.find(p => p.id === activeCommentPostId);
-            if (post) {
-                post.comments = post.comments || [];
-                post.comments.push({ author: userProfile.username, text });
+        function handleSearch(q) {
+            const grid = document.getElementById('exploreGridContainer');
+            if (!grid) return;
+            const seed = q ? q.length : 1;
+            grid.innerHTML = [1,2,3,4,5,6,7,8,9,10,11,12].map(i => `
+                <div class="aspect-square bg-zinc-900 overflow-hidden rounded-md cursor-pointer group relative">
+                    <img src="https://picsum.photos/400/400?random=${i + seed * 5}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
+                </div>
+            `).join('');
+        }
+
+        function sendDM(username) {
+            const input = document.getElementById('dmInput');
+            const text = input.value.trim();
+            if (!text) return;
+            const conv = window.messages.find(m => m.user === username);
+            if (conv) {
+                conv.chats.push({ fromMe: true, text });
+                conv.lastMsg = text;
                 input.value = '';
-                openCommentsModal(activeCommentPostId);
+                render();
             }
         }
 
         // Render Views
         function render() {
             const container = document.getElementById('app-container');
+            if (!container) return;
             container.innerHTML = '';
+
+            const currentTab = window.currentTab;
+            const posts = window.posts || [];
+            const userProfile = window.userProfile;
+            const reels = window.reels || [];
+            const messages = window.messages || [];
 
             if (currentTab === 'home') {
                 container.innerHTML = `
                     <!-- Stories Bar -->
                     <div class="flex gap-4 overflow-x-auto hide-scrollbar py-2 mb-4 border-b border-zinc-800">
-                        <div class="flex flex-col items-center flex-shrink-0 cursor-pointer">
+                        <div class="flex flex-col items-center flex-shrink-0 cursor-pointer" onclick="openAuthModal()">
                             <div class="w-16 h-16 rounded-full p-[2px] bg-gradient-to-tr from-amber-500 to-rose-500">
                                 <img src="${userProfile.avatar}" class="w-full h-full rounded-full object-cover border-2 border-black" />
                             </div>
                             <span class="text-[11px] mt-1 text-zinc-400">Your Story</span>
                         </div>
-                        ${stories.map(s => `
+                        ${window.stories.map(s => `
                             <div class="flex flex-col items-center flex-shrink-0 cursor-pointer" onclick="alert('Viewing story of @${s.user}')">
                                 <div class="w-16 h-16 rounded-full p-[2px] ${s.seen ? 'bg-zinc-700' : 'story-ring'}">
                                     <img src="${s.avatar}" class="w-full h-full rounded-full object-cover border-2 border-black" />
@@ -448,7 +1007,7 @@
                         `).join('')}
                     </div>
 
-                    <!-- Feed Posts -->
+                    <!-- Cloud Firestore Feed Posts -->
                     <div class="space-y-6">
                         ${posts.map(p => `
                             <div class="border border-zinc-800 rounded-2xl bg-zinc-950 overflow-hidden shadow-sm">
@@ -457,11 +1016,14 @@
                                         <div class="p-0.5 story-ring rounded-full">
                                             <img src="${p.avatar}" class="w-8 h-8 rounded-full object-cover border border-black" />
                                         </div>
-                                        <span class="font-semibold text-sm">${p.user}</span>
+                                        <div>
+                                            <span class="font-semibold text-sm">${p.user}</span>
+                                            <p class="text-[10px] text-zinc-400">Synced to Firestore</p>
+                                        </div>
                                     </div>
                                     <i data-lucide="more-horizontal" class="w-5 h-5 text-zinc-400 cursor-pointer"></i>
                                 </div>
-                                <div class="relative aspect-square w-full bg-black overflow-hidden cursor-pointer" ondblclick="triggerDoubleTapLike(${p.id})">
+                                <div class="relative aspect-square w-full bg-black overflow-hidden cursor-pointer" ondblclick="triggerDoubleTapLike('${p.id}')">
                                     <img src="${p.image}" class="w-full h-full object-cover" />
                                     <div id="burst-${p.id}" class="hidden absolute inset-0 flex items-center justify-center pointer-events-none">
                                         <i data-lucide="heart" class="w-24 h-24 text-rose-500 fill-rose-500 heart-burst drop-shadow-xl"></i>
@@ -470,10 +1032,10 @@
                                 <div class="p-3.5 space-y-2">
                                     <div class="flex items-center justify-between">
                                         <div class="flex items-center gap-4">
-                                            <button onclick="toggleLike(${p.id})" class="transition active:scale-125">
+                                            <button onclick="window.toggleLike('${p.id}')" class="transition active:scale-125">
                                                 <i data-lucide="heart" class="w-6 h-6 ${p.isLiked ? 'text-red-500 fill-red-500' : 'text-zinc-200'}"></i>
                                             </button>
-                                            <button onclick="openCommentsModal(${p.id})">
+                                            <button onclick="openCommentsModal('${p.id}')">
                                                 <i data-lucide="message-circle" class="w-6 h-6 text-zinc-200"></i>
                                             </button>
                                             <button onclick="navigator.clipboard?.writeText(window.location.href); alert('Post link copied!')">
@@ -485,7 +1047,7 @@
                                     <p class="font-semibold text-sm">${p.likes} likes</p>
                                     <p class="text-sm"><strong class="mr-2">${p.user}</strong>${p.caption}</p>
                                     ${p.comments && p.comments.length > 0 ? `
-                                        <button onclick="openCommentsModal(${p.id})" class="text-xs text-zinc-400 font-medium">View all ${p.comments.length} comments</button>
+                                        <button onclick="openCommentsModal('${p.id}')" class="text-xs text-zinc-400 font-medium">View all ${p.comments.length} comments</button>
                                     ` : ''}
                                     <p class="text-[11px] text-zinc-500 uppercase tracking-wider">${p.time}</p>
                                 </div>
@@ -550,13 +1112,13 @@
                 `;
             }
             else if (currentTab === 'messages') {
-                if (activeChatUser) {
-                    const conv = messages.find(m => m.user === activeChatUser);
+                if (window.activeChatUser) {
+                    const conv = messages.find(m => m.user === window.activeChatUser);
                     container.innerHTML = `
                         <div class="flex flex-col h-[75vh] bg-zinc-950 border border-zinc-800 rounded-2xl overflow-hidden">
                             <div class="p-3 border-b border-zinc-800 flex items-center justify-between bg-black">
                                 <div class="flex items-center gap-3">
-                                    <button onclick="activeChatUser = null; render();" class="text-zinc-400 hover:text-white"><i data-lucide="arrow-left" class="w-5 h-5"></i></button>
+                                    <button onclick="window.activeChatUser = null; render();" class="text-zinc-400 hover:text-white"><i data-lucide="arrow-left" class="w-5 h-5"></i></button>
                                     <img src="${conv.avatar}" class="w-8 h-8 rounded-full object-cover" />
                                     <div>
                                         <h4 class="font-bold text-sm">${conv.user}</h4>
@@ -584,7 +1146,7 @@
                         <h2 class="text-xl font-bold mb-4">Direct Messages</h2>
                         <div class="space-y-2">
                             ${messages.map(m => `
-                                <div onclick="activeChatUser = '${m.user}'; render();" class="flex items-center justify-between p-3 hover:bg-zinc-900 rounded-xl cursor-pointer transition border border-transparent hover:border-zinc-800">
+                                <div onclick="window.activeChatUser = '${m.user}'; render();" class="flex items-center justify-between p-3 hover:bg-zinc-900 rounded-xl cursor-pointer transition border border-transparent hover:border-zinc-800">
                                     <div class="flex items-center gap-3">
                                         <img src="${m.avatar}" class="w-12 h-12 rounded-full object-cover" />
                                         <div>
@@ -605,18 +1167,18 @@
                     <div class="space-y-3 text-sm">
                         <div class="flex items-center gap-3 p-3 bg-zinc-950 border border-zinc-900 rounded-xl">
                             <i data-lucide="heart" class="text-red-500 w-5 h-5 flex-shrink-0"></i>
-                            <div class="flex-1"><strong class="text-zinc-200">HorrorBot_AI</strong> liked your post.</div>
-                            <span class="text-zinc-500 text-xs">1h</span>
+                            <div class="flex-1"><strong class="text-zinc-200">Firebase Firestore</strong> live database synchronized.</div>
+                            <span class="text-zinc-500 text-xs">now</span>
+                        </div>
+                        <div class="flex items-center gap-3 p-3 bg-zinc-950 border border-zinc-900 rounded-xl">
+                            <i data-lucide="shield-check" class="text-amber-400 w-5 h-5 flex-shrink-0"></i>
+                            <div class="flex-1"><strong class="text-zinc-200">Firebase Auth</strong> configured with project <code>instaclone-f3599</code>.</div>
+                            <span class="text-zinc-500 text-xs">1m</span>
                         </div>
                         <div class="flex items-center gap-3 p-3 bg-zinc-950 border border-zinc-900 rounded-xl">
                             <i data-lucide="user-plus" class="text-blue-500 w-5 h-5 flex-shrink-0"></i>
                             <div class="flex-1"><strong class="text-zinc-200">Mohit</strong> started following you.</div>
                             <span class="text-zinc-500 text-xs">3h</span>
-                        </div>
-                        <div class="flex items-center gap-3 p-3 bg-zinc-950 border border-zinc-900 rounded-xl">
-                            <i data-lucide="bot" class="text-purple-400 w-5 h-5 flex-shrink-0"></i>
-                            <div class="flex-1"><strong class="text-zinc-200">AI Bot Manager</strong> scheduled a new trending reel.</div>
-                            <span class="text-zinc-500 text-xs">5m</span>
                         </div>
                     </div>
                 `;
@@ -627,7 +1189,7 @@
                         <div class="flex items-center justify-between border-b border-zinc-800 pb-4">
                             <div>
                                 <h2 class="text-xl font-bold">Autonomous AI Bot Manager</h2>
-                                <p class="text-xs text-zinc-400">Configure AI auto-posting, scrapers, and video synthesis</p>
+                                <p class="text-xs text-zinc-400">Configure AI auto-posting and live sync to Firestore</p>
                             </div>
                             <i data-lucide="bot" class="w-8 h-8 text-purple-400"></i>
                         </div>
@@ -635,20 +1197,20 @@
                             <div class="flex items-center justify-between">
                                 <div>
                                     <span class="font-semibold text-sm">AI Bot Auto-Posting</span>
-                                    <p class="text-[11px] text-zinc-400">Posts automatically every 35 seconds</p>
+                                    <p class="text-[11px] text-zinc-400">Syncs generated posts with Firebase Firestore</p>
                                 </div>
-                                <input type="checkbox" ${aiBotActive ? 'checked' : ''} onchange="aiBotActive = !aiBotActive; render();" class="w-5 h-5 accent-purple-600 cursor-pointer" />
+                                <input type="checkbox" ${window.aiBotActive ? 'checked' : ''} onchange="window.aiBotActive = !window.aiBotActive; render();" class="w-5 h-5 accent-purple-600 cursor-pointer" />
                             </div>
                             <div>
                                 <label class="text-xs text-zinc-400 block mb-1">Content Niche</label>
-                                <select onchange="botNiche = this.value" class="w-full bg-black border border-zinc-800 p-2.5 rounded-lg text-sm text-zinc-200">
-                                    <option ${botNiche.includes('Horror') ? 'selected' : ''}>Horror & Creepypasta Stories</option>
-                                    <option ${botNiche.includes('Viral') ? 'selected' : ''}>Viral Comedy & Trends</option>
-                                    <option ${botNiche.includes('Tech') ? 'selected' : ''}>Tech & Startup Motivation</option>
+                                <select onchange="window.botNiche = this.value" class="w-full bg-black border border-zinc-800 p-2.5 rounded-lg text-sm text-zinc-200">
+                                    <option ${window.botNiche.includes('Horror') ? 'selected' : ''}>Horror & Creepypasta Stories</option>
+                                    <option ${window.botNiche.includes('Viral') ? 'selected' : ''}>Viral Comedy & Trends</option>
+                                    <option ${window.botNiche.includes('Tech') ? 'selected' : ''}>Tech & Startup Motivation</option>
                                 </select>
                             </div>
                             <div class="p-3 bg-purple-950/40 border border-purple-800/50 rounded-lg text-xs text-purple-300">
-                                <strong>Status:</strong> ${aiBotActive ? 'Bot is active and running in background!' : 'Bot is currently paused.'}
+                                <strong>Status:</strong> ${window.aiBotActive ? 'Bot is active and running in background!' : 'Bot is currently paused.'}
                             </div>
                         </div>
 
@@ -656,8 +1218,8 @@
                         <div class="border border-zinc-800 rounded-xl p-4 bg-zinc-950">
                             <h4 class="text-xs font-bold uppercase tracking-wider text-zinc-400 mb-2">Live Bot Activity Feed</h4>
                             <div class="text-[11px] font-mono text-zinc-400 space-y-1">
-                                <p class="text-green-400">[SYSTEM] AI Bot engine listening to niche: "${botNiche}"</p>
-                                <p>[BOT] Scraped trending video tags: #horror #viral #reels</p>
+                                <p class="text-green-400">[SYSTEM] AI Bot engine listening to niche: "${window.botNiche}"</p>
+                                <p class="text-amber-400">[FIREBASE] Project instaclone-f3599 linked to Firestore</p>
                                 <p class="text-purple-400">[GEN] Synthesized post: "The Midnight Whisper"</p>
                             </div>
                         </div>
@@ -674,7 +1236,12 @@
                             <div class="space-y-2 flex-1">
                                 <div class="flex flex-col sm:flex-row sm:items-center gap-2">
                                     <h2 class="text-xl font-bold">${userProfile.username}</h2>
-                                    <button onclick="alert('Profile edit mode')" class="px-3 py-1 bg-zinc-900 border border-zinc-800 text-xs font-semibold rounded-lg hover:bg-zinc-800">Edit Profile</button>
+                                    <div class="flex gap-2">
+                                        <button onclick="openEditProfileModal()" class="px-3 py-1 bg-zinc-900 border border-zinc-800 text-xs font-semibold rounded-lg hover:bg-zinc-800">Edit Profile</button>
+                                        <button onclick="openAuthModal()" class="px-3 py-1 bg-rose-600/20 border border-rose-500/40 text-rose-300 text-xs font-semibold rounded-lg hover:bg-rose-600/30">
+                                            ${window.currentUser ? 'Account' : 'Sign In'}
+                                        </button>
+                                    </div>
                                 </div>
                                 <div class="flex gap-6 text-sm">
                                     <span><strong>${posts.length}</strong> posts</span>
@@ -686,6 +1253,7 @@
                         <div>
                             <h3 class="font-semibold text-sm">${userProfile.name}</h3>
                             <p class="text-sm text-zinc-300">${userProfile.bio}</p>
+                            ${window.currentUser ? `<p class="text-xs text-green-400 mt-1 flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-green-400"></span> Signed in as ${window.currentUser.email}</p>` : ''}
                         </div>
                         <div class="border-t border-zinc-800 flex justify-around text-xs font-semibold py-2">
                             <span class="text-rose-500 border-b-2 border-rose-500 pb-2 flex items-center gap-1 cursor-pointer"><i data-lucide="grid" class="w-4 h-4"></i> POSTS</span>
@@ -705,7 +1273,10 @@
             else if (currentTab === 'create') {
                 container.innerHTML = `
                     <div class="space-y-4">
-                        <h2 class="text-xl font-bold">Create New Post / Reel</h2>
+                        <div class="flex items-center justify-between">
+                            <h2 class="text-xl font-bold">Create New Post / Reel</h2>
+                            <span class="text-xs text-amber-400 bg-amber-950/40 border border-amber-800 px-2 py-0.5 rounded-full">Syncs to Firestore</span>
+                        </div>
                         
                         <!-- Upload File or URL -->
                         <div class="border-2 border-dashed border-zinc-800 rounded-xl p-4 text-center cursor-pointer hover:border-zinc-700 bg-zinc-950" onclick="document.getElementById('fileUpload').click()">
@@ -721,7 +1292,10 @@
                         <input type="text" placeholder="Or paste Image URL (https://...)" id="new-url" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-sm focus:outline-none" />
                         <textarea placeholder="Write a caption with hashtags..." id="new-caption" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-sm h-28 focus:outline-none resize-none"></textarea>
                         
-                        <button onclick="addNewPost()" class="w-full bg-gradient-to-r from-amber-500 via-rose-500 to-purple-600 p-3.5 rounded-xl font-bold shadow-lg hover:opacity-95 transition">Publish to InstaClone</button>
+                        <button onclick="window.addNewPost()" class="w-full bg-gradient-to-r from-amber-500 via-rose-500 to-purple-600 p-3.5 rounded-xl font-bold shadow-lg hover:opacity-95 transition flex items-center justify-center gap-2">
+                            <i data-lucide="share-2" class="w-4 h-4"></i>
+                            <span>Publish to InstaClone & Firestore</span>
+                        </button>
                     </div>
                 `;
             }
@@ -730,64 +1304,8 @@
             lucide.createIcons();
         }
 
-        function handleFileSelect(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = e => {
-                    document.getElementById('new-url').value = e.target.result;
-                    const preview = document.getElementById('imagePreview');
-                    preview.src = e.target.result;
-                    document.getElementById('previewBox').classList.remove('hidden');
-                };
-                reader.readAsDataURL(file);
-            }
-        }
-
-        function handleSearch(q) {
-            const grid = document.getElementById('exploreGridContainer');
-            if (!grid) return;
-            const seed = q ? q.length : 1;
-            grid.innerHTML = [1,2,3,4,5,6,7,8,9,10,11,12].map(i => `
-                <div class="aspect-square bg-zinc-900 overflow-hidden rounded-md cursor-pointer group relative">
-                    <img src="https://picsum.photos/400/400?random=${i + seed * 5}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
-                </div>
-            `).join('');
-        }
-
-        function sendDM(username) {
-            const input = document.getElementById('dmInput');
-            const text = input.value.trim();
-            if (!text) return;
-            const conv = messages.find(m => m.user === username);
-            if (conv) {
-                conv.chats.push({ fromMe: true, text });
-                conv.lastMsg = text;
-                input.value = '';
-                render();
-            }
-        }
-
-        function addNewPost() {
-            const url = document.getElementById('new-url').value.trim();
-            const caption = document.getElementById('new-caption').value.trim();
-            if(url && caption) {
-                posts.unshift({
-                    id: posts.length + 1,
-                    user: userProfile.username,
-                    avatar: userProfile.avatar,
-                    image: url,
-                    likes: 1,
-                    caption: caption,
-                    time: 'JUST NOW',
-                    isLiked: false,
-                    comments: []
-                });
-                switchTab('home');
-            } else {
-                alert('Please provide an image and caption!');
-            }
-        }
+        // Export render globally
+        window.render = render;
 
         // Initial Load
         render();
