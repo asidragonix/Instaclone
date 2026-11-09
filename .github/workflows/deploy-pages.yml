@@ -35,6 +35,10 @@ jobs:
           cp index.html _site/
           cp 404.html _site/
           cp .nojekyll _site/
+          if [ -f instaclone.apk ]; then
+            cp instaclone.apk _site/
+            cp instaclone.apk _site/app-debug.apk
+          fi
           if [ -d app/src/main/res ]; then
             mkdir -p _site/app/src/main/res
             cp -r app/src/main/res _site/app/src/main/

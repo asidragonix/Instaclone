@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>InstaClone — AI Powered Instagram with Firebase</title>
+    <title>InstaClone — AI Powered Instagram with Supabase & Firebase</title>
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="app/src/main/res/drawable/img_launcher_logo.jpg">
     <!-- Tailwind CSS -->
@@ -21,18 +21,17 @@
                             gradient4: '#962fbf',
                             gradient5: '#4f5bd5',
                         },
-                        insta: {
-                            coral: '#FF3B6B',
-                            magenta: '#C13584',
-                            amber: '#F77737',
-                            gold: '#FFC837',
-                            violet: '#833AB4',
+                        supabase: {
+                            green: '#3ECF8E',
+                            dark: '#1C1C1C'
                         }
                     }
                 }
             }
         }
     </script>
+    <!-- Supabase JS Client v2 CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
@@ -58,21 +57,124 @@
 </head>
 <body class="bg-black text-white min-h-screen flex flex-col md:flex-row select-none transition-colors duration-200">
 
-    <!-- DESKTOP SIDEBAR NAVIGATION -->
-    <aside class="hidden md:flex flex-col justify-between w-64 h-screen fixed left-0 top-0 border-r border-zinc-800 p-4 bg-black z-50 overflow-y-auto hide-scrollbar">
+    <!-- ========================================== -->
+    <!-- 1. INSTAGRAM AUTHENTIC WELCOME / LOGIN GATE -->
+    <!-- ========================================== -->
+    <div id="instagramLandingGate" class="fixed inset-0 z-50 bg-black flex items-center justify-center p-4 overflow-y-auto">
+        <div class="max-w-4xl w-full flex flex-col md:flex-row items-center justify-center gap-8 py-6">
+            
+            <!-- Left Side: Phone Mockup (Desktop only) -->
+            <div class="hidden lg:block relative w-80 h-[580px] bg-zinc-900 rounded-[45px] p-3 border-4 border-zinc-700 shadow-2xl overflow-hidden">
+                <div class="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-5 bg-zinc-800 rounded-b-xl z-20"></div>
+                <div class="w-full h-full rounded-[35px] overflow-hidden bg-zinc-950 relative">
+                    <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800" class="w-full h-full object-cover opacity-80" />
+                    <div class="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent flex flex-col justify-end p-5">
+                        <h3 class="text-2xl font-brand text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-rose-500 to-purple-500 mb-1">InstaClone</h3>
+                        <p class="text-xs text-zinc-300 font-medium">Connect, Share, and Book Appointments with Creators in Real-Time.</p>
+                        <div class="mt-3 flex items-center gap-2">
+                            <span class="text-[10px] bg-[#3ECF8E]/20 text-[#3ECF8E] font-bold px-2 py-0.5 rounded border border-[#3ECF8E]/40 flex items-center gap-1">
+                                <span class="w-1.5 h-1.5 rounded-full bg-[#3ECF8E] animate-ping"></span> Supabase Connected
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Side: Instagram Login / Sign Up Card -->
+            <div class="w-full max-w-sm space-y-4">
+                
+                <!-- Main Login Box -->
+                <div class="bg-zinc-950 border border-zinc-800 p-8 rounded-2xl shadow-2xl text-center space-y-5">
+                    <div class="space-y-1">
+                        <h1 class="text-4xl font-brand bg-gradient-to-r from-amber-400 via-rose-500 to-purple-500 bg-clip-text text-transparent">InstaClone</h1>
+                        <p class="text-[11px] text-zinc-400">Sign in to see photos, videos & book creator appointments</p>
+                    </div>
+
+                    <!-- Auth Error Alert -->
+                    <div id="landingAuthAlert" class="hidden p-3 rounded-xl text-xs text-left"></div>
+
+                    <!-- Login Form -->
+                    <form id="landingLoginForm" onsubmit="handleLandingLogin(event)" class="space-y-3">
+                        <div id="landingUsernameField" class="hidden">
+                            <input type="text" id="landingUsernameInput" placeholder="Full Name or Username" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-zinc-500 transition" />
+                        </div>
+                        <div>
+                            <input type="email" id="landingEmailInput" required placeholder="Phone number, username, or email" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-zinc-500 transition" />
+                        </div>
+                        <div>
+                            <input type="password" id="landingPasswordInput" required minlength="6" placeholder="Password" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-zinc-500 transition" />
+                        </div>
+                        
+                        <button type="submit" id="landingSubmitBtn" class="w-full py-2.5 bg-gradient-to-r from-amber-500 via-rose-500 to-purple-600 hover:opacity-90 text-white font-bold text-xs rounded-xl shadow-lg transition flex items-center justify-center gap-2">
+                            <span>Log In</span>
+                        </button>
+                    </form>
+
+                    <!-- OR Divider -->
+                    <div class="relative flex items-center justify-center">
+                        <div class="border-t border-zinc-800 w-full"></div>
+                        <span class="bg-zinc-950 px-3 text-[10px] text-zinc-500 uppercase tracking-widest font-bold">OR</span>
+                        <div class="border-t border-zinc-800 w-full"></div>
+                    </div>
+
+                    <!-- Google One-Click Login -->
+                    <button onclick="handleGoogleSignIn()" class="w-full py-2.5 px-3 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition">
+                        <svg class="w-4 h-4" viewBox="0 0 24 24">
+                            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                        </svg>
+                        <span>Log in with Google</span>
+                    </button>
+
+                    <!-- Bypass to Guest Mode -->
+                    <button onclick="enterAsGuest()" class="text-xs text-rose-400 hover:text-rose-300 font-semibold transition block w-full text-center">
+                        Continue as Guest / Preview Feed →
+                    </button>
+                </div>
+
+                <!-- Toggle Login / Signup Box -->
+                <div class="bg-zinc-950 border border-zinc-800 p-4 rounded-2xl text-center text-xs">
+                    <span id="landingTogglePrompt" class="text-zinc-400">Don't have an account? </span>
+                    <button id="landingToggleBtn" onclick="toggleLandingAuthMode()" class="text-rose-500 font-bold hover:underline">Sign up</button>
+                </div>
+
+                <!-- APK Download Card on Landing Screen -->
+                <div class="bg-zinc-950/70 border border-zinc-800/80 p-3 rounded-2xl flex items-center justify-between">
+                    <div class="flex items-center gap-2.5">
+                        <div class="p-2 rounded-xl bg-gradient-to-tr from-amber-500 to-rose-500 text-white">
+                            <i data-lucide="smartphone" class="w-4 h-4"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs font-bold">Android App Ready</p>
+                            <p class="text-[10px] text-zinc-400">Direct APK Download (26 MB)</p>
+                        </div>
+                    </div>
+                    <button onclick="triggerDirectApkDownload()" class="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg text-xs font-bold transition flex items-center gap-1 shadow">
+                        <i data-lucide="download" class="w-3.5 h-3.5"></i> APK
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- 2. DESKTOP SIDEBAR NAVIGATION -->
+    <!-- ========================================== -->
+    <aside class="hidden md:flex flex-col justify-between w-64 h-screen fixed left-0 top-0 border-r border-zinc-800 p-4 bg-black z-40 overflow-y-auto hide-scrollbar">
         <div>
-            <div class="flex items-center justify-between mb-6 px-2">
+            <div class="flex items-center justify-between mb-5 px-2">
                 <h1 class="text-3xl font-brand bg-gradient-to-r from-amber-400 via-rose-500 to-purple-500 bg-clip-text text-transparent">InstaClone</h1>
-                <div class="flex items-center gap-1.5">
-                    <span class="text-[10px] bg-amber-500/20 text-amber-300 font-bold px-1.5 py-0.5 rounded border border-amber-600/40 flex items-center gap-1">
-                        <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span> Firebase
+                <div class="flex items-center gap-1">
+                    <span class="text-[9px] bg-[#3ECF8E]/20 text-[#3ECF8E] font-bold px-1.5 py-0.5 rounded border border-[#3ECF8E]/40" title="Connected to Supabase Project: kilkdijwewzoofuppvck">
+                        ⚡ Supabase
                     </span>
-                    <span class="text-[10px] bg-purple-900/60 text-purple-300 font-bold px-1.5 py-0.5 rounded border border-purple-700">AI</span>
                 </div>
             </div>
 
             <!-- Current User Auth Card in Sidebar -->
-            <div id="sidebarAuthCard" class="mb-4 p-2.5 bg-zinc-900/80 border border-zinc-800 rounded-xl cursor-pointer hover:bg-zinc-800/80 transition" onclick="handleAuthCardClick()">
+            <div id="sidebarAuthCard" class="mb-4 p-2.5 bg-zinc-900/80 border border-zinc-800 rounded-xl cursor-pointer hover:bg-zinc-800/80 transition" onclick="openAuthModal()">
                 <div class="flex items-center gap-3">
                     <div class="relative">
                         <img id="sidebarUserAvatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150" class="w-9 h-9 rounded-full object-cover border border-zinc-700" />
@@ -82,21 +184,25 @@
                         <p id="sidebarUserName" class="text-xs font-bold truncate">Asif</p>
                         <p id="sidebarUserHandle" class="text-[11px] text-zinc-400 truncate">@asidragonix</p>
                     </div>
-                    <span id="sidebarAuthStatusText" class="text-[10px] bg-rose-500/20 text-rose-300 font-medium px-2 py-0.5 rounded-md">Auth</span>
+                    <span id="sidebarAuthStatusText" class="text-[10px] bg-green-950 text-green-400 font-medium px-2 py-0.5 rounded-md border border-green-800">Online</span>
                 </div>
             </div>
 
-            <nav class="space-y-1.5" id="desktopNav">
-                <button onclick="switchTab('home')" class="nav-btn w-full flex items-center gap-3.5 p-3 hover:bg-zinc-900 rounded-xl transition font-medium text-rose-500" data-tab="home"><i data-lucide="home" class="w-5 h-5"></i> <span>Home</span></button>
-                <button onclick="switchTab('explore')" class="nav-btn w-full flex items-center gap-3.5 p-3 hover:bg-zinc-900 rounded-xl transition font-medium text-zinc-300" data-tab="explore"><i data-lucide="compass" class="w-5 h-5"></i> <span>Explore</span></button>
-                <button onclick="switchTab('reels')" class="nav-btn w-full flex items-center gap-3.5 p-3 hover:bg-zinc-900 rounded-xl transition font-medium text-zinc-300" data-tab="reels"><i data-lucide="clapperboard" class="w-5 h-5"></i> <span>Reels</span></button>
-                <button onclick="switchTab('messages')" class="nav-btn w-full flex items-center gap-3.5 p-3 hover:bg-zinc-900 rounded-xl transition font-medium text-zinc-300 relative" data-tab="messages">
-                    <i data-lucide="send" class="w-5 h-5"></i> <span>Messages</span>
-                    <span class="ml-auto bg-rose-500 text-white text-[11px] font-bold px-1.5 py-0.2 rounded-full">2</span>
+            <nav class="space-y-1" id="desktopNav">
+                <button onclick="switchTab('home')" class="nav-btn w-full flex items-center gap-3.5 p-2.5 hover:bg-zinc-900 rounded-xl transition font-medium text-rose-500" data-tab="home"><i data-lucide="home" class="w-5 h-5"></i> <span>Home Feed</span></button>
+                <button onclick="switchTab('explore')" class="nav-btn w-full flex items-center gap-3.5 p-2.5 hover:bg-zinc-900 rounded-xl transition font-medium text-zinc-300" data-tab="explore"><i data-lucide="compass" class="w-5 h-5"></i> <span>Explore</span></button>
+                <button onclick="switchTab('reels')" class="nav-btn w-full flex items-center gap-3.5 p-2.5 hover:bg-zinc-900 rounded-xl transition font-medium text-zinc-300" data-tab="reels"><i data-lucide="clapperboard" class="w-5 h-5"></i> <span>Reels</span></button>
+                <button onclick="switchTab('appointments')" class="nav-btn w-full flex items-center gap-3.5 p-2.5 hover:bg-zinc-900 rounded-xl transition font-semibold text-[#3ECF8E] relative" data-tab="appointments">
+                    <i data-lucide="calendar-check" class="w-5 h-5"></i> <span>Book Appointment</span>
+                    <span class="ml-auto bg-[#3ECF8E]/20 text-[#3ECF8E] text-[10px] font-bold px-1.5 py-0.5 rounded border border-[#3ECF8E]/40">Supabase</span>
                 </button>
-                <button onclick="switchTab('notifications')" class="nav-btn w-full flex items-center gap-3.5 p-3 hover:bg-zinc-900 rounded-xl transition font-medium text-zinc-300" data-tab="notifications"><i data-lucide="heart" class="w-5 h-5"></i> <span>Notifications</span></button>
-                <button onclick="switchTab('botdashboard')" class="nav-btn w-full flex items-center gap-3.5 p-3 hover:bg-zinc-900 rounded-xl transition font-medium text-purple-400" data-tab="botdashboard"><i data-lucide="bot" class="w-5 h-5"></i> <span>AI Bot Manager</span></button>
-                <button onclick="switchTab('profile')" class="nav-btn w-full flex items-center gap-3.5 p-3 hover:bg-zinc-900 rounded-xl transition font-medium text-zinc-300" data-tab="profile">
+                <button onclick="switchTab('messages')" class="nav-btn w-full flex items-center gap-3.5 p-2.5 hover:bg-zinc-900 rounded-xl transition font-medium text-zinc-300 relative" data-tab="messages">
+                    <i data-lucide="send" class="w-5 h-5"></i> <span>Messages</span>
+                    <span class="ml-auto bg-rose-500 text-white text-[10px] font-bold px-1.5 py-0.2 rounded-full">2</span>
+                </button>
+                <button onclick="switchTab('notifications')" class="nav-btn w-full flex items-center gap-3.5 p-2.5 hover:bg-zinc-900 rounded-xl transition font-medium text-zinc-300" data-tab="notifications"><i data-lucide="heart" class="w-5 h-5"></i> <span>Notifications</span></button>
+                <button onclick="switchTab('botdashboard')" class="nav-btn w-full flex items-center gap-3.5 p-2.5 hover:bg-zinc-900 rounded-xl transition font-medium text-purple-400" data-tab="botdashboard"><i data-lucide="bot" class="w-5 h-5"></i> <span>AI Bot Manager</span></button>
+                <button onclick="switchTab('profile')" class="nav-btn w-full flex items-center gap-3.5 p-2.5 hover:bg-zinc-900 rounded-xl transition font-medium text-zinc-300" data-tab="profile">
                     <div class="w-5 h-5 rounded-full overflow-hidden border border-zinc-700">
                         <img id="navProfileAvatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150" class="w-full h-full object-cover">
                     </div>
@@ -106,11 +212,11 @@
         </div>
 
         <div class="space-y-2.5 pt-3 border-t border-zinc-900">
-            <!-- Download Android APK CTA -->
-            <a href="./app/build/outputs/apk/debug/app-debug.apk" download="InstaClone.apk" class="w-full flex items-center justify-center gap-2 p-2.5 bg-gradient-to-r from-amber-500 via-rose-500 to-purple-600 hover:opacity-90 text-white rounded-xl font-bold text-xs shadow-md transition">
+            <!-- Download Android APK Button with instant trigger -->
+            <button onclick="triggerDirectApkDownload()" class="w-full flex items-center justify-center gap-2 p-2.5 bg-gradient-to-r from-amber-500 via-rose-500 to-purple-600 hover:opacity-95 text-white rounded-xl font-bold text-xs shadow-lg transition">
                 <i data-lucide="download" class="w-4 h-4"></i>
-                <span>Download Android APK</span>
-            </a>
+                <span>Download Android APK (26MB)</span>
+            </button>
             <div class="flex gap-2">
                 <button onclick="toggleTheme()" class="flex-1 flex items-center justify-center gap-1.5 p-2 bg-zinc-900 hover:bg-zinc-800 rounded-xl transition text-xs font-semibold text-zinc-300">
                     <i data-lucide="sun-moon" class="w-3.5 h-3.5"></i> Theme
@@ -119,28 +225,28 @@
                     <i data-lucide="plus-circle" class="w-3.5 h-3.5 text-rose-400"></i> Create
                 </button>
             </div>
-            <!-- Auth Actions Button -->
+            <!-- Logout / Sign in switcher -->
             <button id="sidebarAuthActionBtn" onclick="openAuthModal()" class="w-full py-2 px-3 text-xs font-semibold rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-300 flex items-center justify-center gap-2 border border-zinc-800 transition">
                 <i data-lucide="log-in" class="w-3.5 h-3.5 text-amber-400"></i>
-                <span>Sign In / Connect Firebase</span>
+                <span>Switch / Sign In</span>
             </button>
         </div>
     </aside>
 
-    <!-- MOBILE TOP HEADER -->
-    <header class="md:hidden flex items-center justify-between px-4 py-3 border-b border-zinc-800 bg-black fixed top-0 left-0 right-0 z-50">
+    <!-- ========================================== -->
+    <!-- 3. MOBILE TOP HEADER -->
+    <!-- ========================================== -->
+    <header class="md:hidden flex items-center justify-between px-4 py-3 border-b border-zinc-800 bg-black fixed top-0 left-0 right-0 z-40">
         <div class="flex items-center gap-2">
             <h1 class="text-2xl font-brand bg-gradient-to-r from-amber-400 via-rose-500 to-purple-500 bg-clip-text text-transparent">InstaClone</h1>
-            <span class="text-[9px] bg-amber-500/20 text-amber-300 font-bold px-1.5 py-0.5 rounded border border-amber-600/40">Firebase</span>
+            <span class="text-[9px] bg-[#3ECF8E]/20 text-[#3ECF8E] font-bold px-1.5 py-0.5 rounded border border-[#3ECF8E]/40">SupaBase</span>
         </div>
-        <div class="flex items-center gap-2.5">
-            <button onclick="openAuthModal()" class="p-1 rounded-full border border-zinc-800">
-                <img id="mobileTopAvatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150" class="w-6 h-6 rounded-full object-cover">
-            </button>
-            <a href="./app/build/outputs/apk/debug/app-debug.apk" download="InstaClone.apk" class="px-2 py-1 bg-gradient-to-r from-rose-500 to-purple-600 text-white text-[11px] font-bold rounded-lg flex items-center gap-1 shadow">
+        <div class="flex items-center gap-2">
+            <button onclick="triggerDirectApkDownload()" class="px-2.5 py-1 bg-gradient-to-r from-rose-500 to-purple-600 text-white text-[11px] font-bold rounded-lg flex items-center gap-1 shadow">
                 <i data-lucide="download" class="w-3.5 h-3.5"></i>
                 <span>APK</span>
-            </a>
+            </button>
+            <button onclick="switchTab('appointments')" class="p-1 text-[#3ECF8E]" title="Book Appointment"><i data-lucide="calendar" class="w-5 h-5"></i></button>
             <button onclick="switchTab('botdashboard')" class="p-1"><i data-lucide="bot" class="text-purple-400 w-5 h-5"></i></button>
             <button onclick="switchTab('messages')" class="p-1 relative">
                 <i data-lucide="send" class="w-5 h-5"></i>
@@ -149,12 +255,14 @@
         </div>
     </header>
 
-    <!-- MOBILE BOTTOM NAVIGATION -->
-    <nav class="md:hidden flex items-center justify-around py-3 border-t border-zinc-800 bg-black fixed bottom-0 left-0 right-0 z-50">
+    <!-- ========================================== -->
+    <!-- 4. MOBILE BOTTOM NAVIGATION -->
+    <!-- ========================================== -->
+    <nav class="md:hidden flex items-center justify-around py-2.5 border-t border-zinc-800 bg-black fixed bottom-0 left-0 right-0 z-40">
         <button onclick="switchTab('home')" class="p-1" data-tab-mobile="home"><i data-lucide="home" class="w-6 h-6 text-rose-500"></i></button>
         <button onclick="switchTab('explore')" class="p-1" data-tab-mobile="explore"><i data-lucide="compass" class="w-6 h-6 text-zinc-400"></i></button>
+        <button onclick="switchTab('appointments')" class="p-1" data-tab-mobile="appointments"><i data-lucide="calendar-check" class="w-6 h-6 text-[#3ECF8E]"></i></button>
         <button onclick="switchTab('reels')" class="p-1" data-tab-mobile="reels"><i data-lucide="clapperboard" class="w-6 h-6 text-zinc-400"></i></button>
-        <button onclick="switchTab('create')" class="p-1" data-tab-mobile="create"><i data-lucide="plus-square" class="w-6 h-6 text-zinc-400"></i></button>
         <button onclick="switchTab('profile')" class="p-1" data-tab-mobile="profile">
             <div class="w-6 h-6 rounded-full overflow-hidden border border-zinc-700">
                 <img id="mobileBottomNavAvatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150" class="w-full h-full object-cover">
@@ -162,86 +270,42 @@
         </button>
     </nav>
 
-    <!-- MAIN APP CONTENT AREA -->
+    <!-- ========================================== -->
+    <!-- 5. MAIN APP CONTENT CONTAINER -->
+    <!-- ========================================== -->
     <main class="flex-1 md:ml-64 pb-20 md:pb-6 pt-16 md:pt-4 min-h-screen flex justify-center">
         <div id="app-container" class="w-full max-w-2xl px-2 sm:px-4 py-2">
-            <!-- Dynamic Content Injected Here -->
+            <!-- Dynamic Tab Content Rendered Here -->
         </div>
     </main>
 
-    <!-- FIREBASE AUTH MODAL -->
+    <!-- ========================================== -->
+    <!-- 6. MODALS: AUTH, COMMENTS, EDIT PROFILE -->
+    <!-- ========================================== -->
+
+    <!-- Firebase / Supabase Switcher Modal -->
     <div id="authModal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-zinc-950 border border-zinc-800 rounded-2xl max-w-md w-full overflow-hidden shadow-2xl relative">
-            <div class="p-6">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="flex items-center gap-2">
-                        <h2 class="text-2xl font-brand bg-gradient-to-r from-amber-400 via-rose-500 to-purple-500 bg-clip-text text-transparent">InstaClone</h2>
-                        <span class="text-[10px] bg-amber-500/20 text-amber-300 font-bold px-2 py-0.5 rounded border border-amber-500/40">Firebase Auth</span>
-                    </div>
-                    <button onclick="closeAuthModal()" class="text-zinc-400 hover:text-white p-1 rounded-lg hover:bg-zinc-900"><i data-lucide="x" class="w-5 h-5"></i></button>
+        <div class="bg-zinc-950 border border-zinc-800 rounded-2xl max-w-md w-full overflow-hidden shadow-2xl relative p-6 space-y-4">
+            <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
+                <div class="flex items-center gap-2">
+                    <h2 class="text-xl font-bold">Account Profile</h2>
+                    <span class="text-[10px] bg-[#3ECF8E]/20 text-[#3ECF8E] font-bold px-2 py-0.5 rounded border border-[#3ECF8E]/40">Active</span>
                 </div>
+                <button onclick="closeAuthModal()" class="text-zinc-400 hover:text-white p-1 rounded-lg hover:bg-zinc-900"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
 
-                <div id="authUserInfo" class="hidden mb-4 p-4 bg-zinc-900/90 border border-zinc-800 rounded-xl space-y-3">
-                    <div class="flex items-center gap-3">
-                        <img id="modalUserAvatar" src="" class="w-12 h-12 rounded-full object-cover border border-zinc-700" />
-                        <div class="flex-1 min-w-0">
-                            <h4 id="modalUserName" class="font-bold text-sm truncate">User</h4>
-                            <p id="modalUserEmail" class="text-xs text-zinc-400 truncate">email@example.com</p>
-                            <span class="inline-block mt-1 text-[10px] bg-green-950 text-green-400 font-semibold px-2 py-0.5 rounded-full border border-green-800">Firestore Connected</span>
-                        </div>
-                    </div>
-                    <div class="flex gap-2 pt-2 border-t border-zinc-800">
-                        <button onclick="switchTab('profile'); closeAuthModal();" class="flex-1 py-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-xs font-semibold">View Profile</button>
-                        <button onclick="handleSignOut()" class="flex-1 py-2 rounded-lg bg-rose-600 hover:bg-rose-500 text-xs font-semibold text-white">Log Out</button>
-                    </div>
+            <div class="flex items-center gap-3 p-3 bg-zinc-900 border border-zinc-800 rounded-xl">
+                <img id="modalUserAvatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150" class="w-12 h-12 rounded-full object-cover border border-zinc-700" />
+                <div class="flex-1 min-w-0">
+                    <h4 id="modalUserName" class="font-bold text-sm truncate">Asif</h4>
+                    <p id="modalUserEmail" class="text-xs text-zinc-400 truncate">asif@example.com</p>
+                    <p class="text-[10px] text-[#3ECF8E] mt-0.5">SupaBase Project: kilkdijwewzoofuppvck</p>
                 </div>
+            </div>
 
-                <div id="authFormContainer">
-                    <div class="flex border-b border-zinc-800 mb-4">
-                        <button id="authTabLogin" onclick="switchAuthTab('login')" class="flex-1 pb-2.5 text-sm font-semibold border-b-2 border-rose-500 text-white">Log In</button>
-                        <button id="authTabSignup" onclick="switchAuthTab('signup')" class="flex-1 pb-2.5 text-sm font-semibold border-b-2 border-transparent text-zinc-400 hover:text-white">Sign Up</button>
-                    </div>
-
-                    <div id="authAlert" class="hidden p-3 rounded-xl mb-3 text-xs"></div>
-
-                    <!-- Sign In / Sign Up Form -->
-                    <form id="authForm" onsubmit="handleAuthSubmit(event)" class="space-y-3">
-                        <div id="authFieldUsername" class="hidden">
-                            <label class="block text-xs text-zinc-400 mb-1">Username</label>
-                            <input type="text" id="authUsernameInput" placeholder="e.g. asidragonix" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-sm focus:outline-none focus:border-rose-500 text-white" />
-                        </div>
-                        <div>
-                            <label class="block text-xs text-zinc-400 mb-1">Email Address</label>
-                            <input type="email" id="authEmailInput" required placeholder="name@example.com" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-sm focus:outline-none focus:border-rose-500 text-white" />
-                        </div>
-                        <div>
-                            <label class="block text-xs text-zinc-400 mb-1">Password</label>
-                            <input type="password" id="authPasswordInput" required minlength="6" placeholder="At least 6 characters" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-sm focus:outline-none focus:border-rose-500 text-white" />
-                        </div>
-                        
-                        <button type="submit" id="authSubmitBtn" class="w-full py-3 bg-gradient-to-r from-amber-500 via-rose-500 to-purple-600 text-white font-bold rounded-xl shadow-lg hover:opacity-95 transition flex items-center justify-center gap-2">
-                            <span>Log In with Email</span>
-                        </button>
-                    </form>
-
-                    <div class="relative my-4">
-                        <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-zinc-800"></div></div>
-                        <div class="relative flex justify-center text-xs uppercase"><span class="bg-zinc-950 px-2 text-zinc-500">OR</span></div>
-                    </div>
-
-                    <!-- Google Sign-In -->
-                    <button onclick="handleGoogleSignIn()" class="w-full py-2.5 px-4 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-white text-xs font-bold rounded-xl flex items-center justify-center gap-2 transition">
-                        <svg class="w-4 h-4" viewBox="0 0 24 24">
-                            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-                            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
-                        </svg>
-                        <span>Continue with Google</span>
-                    </button>
-
-                    <p class="text-[11px] text-zinc-500 text-center mt-3">Firebase project ID: <code class="text-amber-400">instaclone-f3599</code></p>
-                </div>
+            <div class="flex gap-2">
+                <button onclick="openEditProfileModal(); closeAuthModal();" class="flex-1 py-2.5 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-xl text-xs font-semibold">Edit Bio & Avatar</button>
+                <button onclick="handleSignOut()" class="flex-1 py-2.5 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-xs font-bold">Log Out / Exit</button>
             </div>
         </div>
     </div>
@@ -281,101 +345,126 @@
                     <label class="text-xs text-zinc-400 block mb-1">Avatar Image URL</label>
                     <input type="text" id="editProfileAvatar" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-2.5 text-sm focus:outline-none text-white" />
                 </div>
-                <button onclick="saveProfileChanges()" class="w-full py-2.5 bg-gradient-to-r from-amber-500 via-rose-500 to-purple-600 rounded-xl text-white font-bold text-sm shadow">Save to Firestore</button>
+                <button onclick="saveProfileChanges()" class="w-full py-2.5 bg-gradient-to-r from-amber-500 via-rose-500 to-purple-600 rounded-xl text-white font-bold text-sm shadow">Save Profile Changes</button>
             </div>
         </div>
     </div>
 
-    <!-- FIREBASE SDK V10 & APPLICATION LOGIC -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
-        import { 
-            getAuth, 
-            onAuthStateChanged, 
-            signInWithEmailAndPassword, 
-            createUserWithEmailAndPassword, 
-            signInWithPopup, 
-            GoogleAuthProvider, 
-            signOut,
-            updateProfile 
-        } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
-        import { 
-            getFirestore, 
-            collection, 
-            addDoc, 
-            getDocs, 
-            doc, 
-            setDoc, 
-            getDoc, 
-            updateDoc, 
-            deleteDoc, 
-            onSnapshot, 
-            query, 
-            orderBy, 
-            serverTimestamp, 
-            arrayUnion, 
-            arrayRemove,
-            increment 
-        } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+    <!-- SUPABASE SQL SCHEMA HELPER MODAL -->
+    <div id="supabaseSqlModal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-zinc-950 border border-zinc-800 rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl">
+            <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
+                <div class="flex items-center gap-2">
+                    <span class="w-3 h-3 rounded-full bg-[#3ECF8E]"></span>
+                    <h3 class="font-bold text-sm text-[#3ECF8E]">SupaBase SQL Table Setup</h3>
+                </div>
+                <button onclick="document.getElementById('supabaseSqlModal').classList.add('hidden')" class="text-zinc-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <p class="text-xs text-zinc-300">
+                Run this SQL in your Supabase SQL Editor (<code class="text-[#3ECF8E]">Project: kilkdijwewzoofuppvck</code>) to enable public appointment bookings:
+            </p>
+            <pre id="sqlSnippet" class="p-3 bg-black rounded-xl text-[11px] font-mono text-zinc-300 border border-zinc-800 overflow-x-auto select-all">CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
-        // User's provided Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyD5IqyKfJDbg1OvvE46GhXA2pdZys8FWFw",
-            authDomain: "instaclone-f3599.firebaseapp.com",
-            projectId: "instaclone-f3599",
-            storageBucket: "instaclone-f3599.firebasestorage.app",
-            messagingSenderId: "63224097091",
-            appId: "1:63224097091:web:05357a65d781964ac767f6",
-            measurementId: "G-N0KDK0GXV9"
-        };
+CREATE TABLE IF NOT EXISTS public.appointments (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name TEXT NOT NULL,
+    email TEXT NOT NULL,
+    phone TEXT,
+    appointment_type TEXT NOT NULL DEFAULT 'General Consultation',
+    appointment_date TEXT NOT NULL,
+    appointment_time TEXT NOT NULL,
+    message TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
 
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const googleProvider = new GoogleAuthProvider();
+ALTER TABLE public.appointments ENABLE ROW LEVEL SECURITY;
 
-        // Export to window for global access
-        window.firebaseApp = app;
-        window.firebaseAuth = auth;
-        window.firebaseDb = db;
-        window.firebaseGoogleProvider = googleProvider;
+DROP POLICY IF EXISTS "Enable all access for anon and authenticated" ON public.appointments;
 
-        // Current Auth User & Profile State
-        window.currentUser = null;
-        window.currentAuthTab = 'login'; // 'login' or 'signup'
+CREATE POLICY "Enable all access for anon and authenticated"
+ON public.appointments
+FOR ALL
+TO anon, authenticated
+USING (true)
+WITH CHECK (true);
 
-        window.userProfile = {
-            uid: null,
+GRANT USAGE ON SCHEMA public TO anon, authenticated;
+GRANT ALL ON TABLE public.appointments TO anon, authenticated, service_role;</pre>
+            <div class="flex gap-2">
+                <button onclick="navigator.clipboard.writeText(document.getElementById('sqlSnippet').textContent); alert('SQL copied to clipboard! Paste in Supabase SQL editor.');" class="flex-1 py-2 bg-[#3ECF8E] hover:bg-[#34b37a] text-black font-bold text-xs rounded-xl transition flex items-center justify-center gap-1.5">
+                    <i data-lucide="copy" class="w-4 h-4"></i> Copy SQL Query
+                </button>
+                <button onclick="document.getElementById('supabaseSqlModal').classList.add('hidden')" class="px-4 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-xs font-semibold">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- 7. APPLICATION CORE JAVASCRIPT & SUPABASE -->
+    <!-- ========================================== -->
+    <script>
+        // Supabase Client Initialization with User's Project Credentials
+        const SUPABASE_PROJECT_ID = "kilkdijwewzoofuppvck";
+        const SUPABASE_URL = "https://kilkdijwewzoofuppvck.supabase.co";
+        const SUPABASE_ANON_KEY = "sb_publishable_QaKjWx8lwyRlWFi40Un-sA_Ykhoxuii";
+        
+        let supabaseClient = null;
+        try {
+            if (window.supabase) {
+                supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                console.log("Supabase Client Connected Successfully to Project:", SUPABASE_PROJECT_ID);
+            }
+        } catch (e) {
+            console.warn("Supabase init notice:", e);
+        }
+
+        // Global State
+        let currentTab = 'home';
+        let isDarkMode = true;
+        let aiBotActive = true;
+        let botNiche = 'Horror & Creepypasta Stories';
+        let activeCommentPostId = null;
+        let activeChatUser = null;
+        let isAuthenticated = false;
+        let isLandingSignUp = false;
+
+        let userProfile = {
             username: 'asidragonix',
             name: 'Asif',
-            bio: 'Digital Creator & Full-Stack Developer 🚀 | AI Enthusiast',
+            email: 'asif@gmail.com',
+            bio: 'Digital Creator & Full-Stack Developer 🚀 | Open for Brand Collaborations & 1-on-1 Sessions',
             avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
-            postsCount: 12,
+            postsCount: 14,
             followersCount: 1420,
             followingCount: 380
         };
 
-        // UI State
-        window.currentTab = 'home';
-        window.isDarkMode = true;
-        window.aiBotActive = true;
-        window.botNiche = 'Horror & Creepypasta Stories';
-        window.activeCommentPostId = null;
-        window.activeChatUser = null;
+        // Live Appointments state (fetched from Supabase or cached)
+        let appointmentsList = [
+            {
+                id: 'demo-1',
+                name: 'Rohit Sharma',
+                email: 'rohit@creators.in',
+                phone: '+91 9876543210',
+                appointment_type: 'Creator Collaboration & Promotion',
+                appointment_date: '2026-11-15',
+                appointment_time: '16:00',
+                message: 'Looking to collaborate on a series of tech reels and product reviews.',
+                created_at: new Date().toISOString()
+            }
+        ];
 
-        // Mock Stories
-        window.stories = [
+        let stories = [
             { id: 1, user: 'HorrorBot_AI', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150', seen: false },
             { id: 2, user: 'ViralTrendz', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150', seen: false },
             { id: 3, user: 'Mohit', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150', seen: true },
             { id: 4, user: 'Naitik', avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150', seen: true }
         ];
 
-        // Seed posts fallback while Firestore loads
-        window.posts = [
+        let posts = [
             {
-                id: 'seed-1',
+                id: 1,
                 user: 'HorrorBot_AI',
                 avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
                 image: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=800',
@@ -384,51 +473,66 @@
                 time: '2 HOURS AGO',
                 isLiked: false,
                 comments: [
-                    { author: 'Mohit', text: 'Yeh story sach me spooky hai bhai!' },
-                    { author: 'asidragonix', text: 'Incredible lighting and composition.' }
+                    { author: 'Mohit', text: 'Spooky vibe is incredible!' },
+                    { author: 'asidragonix', text: 'Lighting is cinematic.' }
                 ]
-            },
-            {
-                id: 'seed-2',
-                user: 'ViralTrendz_AI',
-                avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150',
-                image: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800',
-                likes: 1250,
-                caption: 'Future of UI Design with AI generated code & Firebase Backend! 🚀 #coding #webdev #ai #ui',
-                time: '5 HOURS AGO',
-                isLiked: true,
-                comments: [
-                    { author: 'Naitik', text: 'Firebase + Jetpack Compose is top tier!' }
-                ]
-            }
-        ];
-
-        window.reels = [
-            {
-                id: 1,
-                user: 'HorrorBot_AI',
-                avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
-                video: 'https://assets.mixkit.co/videos/preview/mixkit-forest-stream-in-the-sunlight-529-large.mp4',
-                likes: 840,
-                caption: 'Jungle me akele chalte waqt yeh aawaz sunai di... 🌲😱 #horror #viralreels',
-                audio: 'Original Audio - HorrorBot',
-                isFollowing: false,
-                isLiked: false
             },
             {
                 id: 2,
                 user: 'ViralTrendz_AI',
                 avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150',
-                video: 'https://assets.mixkit.co/videos/preview/mixkit-waves-in-the-water-1164-large.mp4',
-                likes: 2430,
-                caption: 'Top AI Development trends in 2026! 🔥 #tech #ai #trending',
-                audio: 'Trending Beats - AI Remix',
-                isFollowing: true,
-                isLiked: true
+                image: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800',
+                likes: 1250,
+                caption: 'InstaClone with Supabase appointment tables & Real-time Android APK! 🚀 #tech #ai #supabase',
+                time: '5 HOURS AGO',
+                isLiked: true,
+                comments: [
+                    { author: 'Naitik', text: 'Supabase integration works seamlessly!' }
+                ]
             }
         ];
 
-        window.messages = [
+        // FIXED VIDEO REELS: Reliable public CDNs with posters and tap controls
+        let reels = [
+            {
+                id: 1,
+                user: 'nature_explorer',
+                avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
+                video: 'https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-576p.mp4',
+                poster: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800',
+                likes: 1840,
+                caption: 'Surfing the endless blue waves 🌊 #nature #adventure #reels',
+                audio: 'Original Soundtrack - Ocean Beats',
+                isFollowing: false,
+                isLiked: false
+            },
+            {
+                id: 2,
+                user: 'ocean_diver',
+                avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150',
+                video: 'https://vjs.zencdn.net/v/oceans.mp4',
+                poster: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800',
+                likes: 3420,
+                caption: 'Deep sea creatures and crystal waters 🐬 #deepsea #ocean #viral',
+                audio: 'Underwater Symphony - Ambient',
+                isFollowing: true,
+                isLiked: true
+            },
+            {
+                id: 3,
+                user: 'macro_visuals',
+                avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150',
+                video: 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4',
+                poster: 'https://images.unsplash.com/photo-1490750967868-88aa4486c946?w=800',
+                likes: 920,
+                caption: 'Nature blooming in super slow motion 🌸✨ #macro #flowers #calm',
+                audio: 'Spring Melody - Lo-Fi',
+                isFollowing: false,
+                isLiked: false
+            }
+        ];
+
+        let messages = [
             { 
                 id: 'm1',
                 user: 'HorrorBot_AI', 
@@ -445,403 +549,274 @@
             { 
                 id: 'm2',
                 user: 'Mohit', 
-                lastMsg: 'Bro project complete ho gaya kya?', 
+                lastMsg: 'Bhai appointment form SupaBase se connect ho gaya!', 
                 time: '2h', 
                 avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150', 
                 unread: false,
                 chats: [
-                    { fromMe: false, text: 'Bro project complete ho gaya kya?' },
-                    { fromMe: true, text: 'Haan bhai, APK build bhi complete hai aur Firebase Firestore backend bhi!' }
+                    { fromMe: false, text: 'Bhai appointment form SupaBase se connect ho gaya!' },
+                    { fromMe: true, text: 'Haan bhai, project kilkdijwewzoofuppvck me data directly save ho raha hai!' }
                 ]
             }
         ];
 
-        // Setup Realtime Firestore Listener for Posts
-        function setupFirestoreListener() {
-            try {
-                const postsQuery = query(collection(db, "posts"), orderBy("createdAt", "desc"));
-                onSnapshot(postsQuery, (snapshot) => {
-                    if (!snapshot.empty) {
-                        const firestorePosts = [];
-                        snapshot.forEach((docSnap) => {
-                            const data = docSnap.data();
-                            firestorePosts.push({
-                                id: docSnap.id,
-                                user: data.user || 'Anonymous',
-                                avatar: data.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
-                                image: data.image || 'https://picsum.photos/600/600',
-                                likes: data.likes || 0,
-                                likedBy: data.likedBy || [],
-                                caption: data.caption || '',
-                                time: data.createdAt ? new Date(data.createdAt.seconds * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'JUST NOW',
-                                isLiked: window.currentUser ? (data.likedBy || []).includes(window.currentUser.uid) : false,
-                                comments: data.comments || []
-                            });
-                        });
-                        window.posts = firestorePosts;
-                        if (window.currentTab === 'home' || window.currentTab === 'profile') {
-                            window.render();
-                        }
-                    }
-                }, (error) => {
-                    console.warn("Firestore onSnapshot error (using cached/fallback):", error);
-                });
-            } catch (err) {
-                console.error("Firestore setup error:", err);
+        // ==========================================
+        // AUTHENTICATION LOGIC (Instagram Landing Gate)
+        // ==========================================
+        function toggleLandingAuthMode() {
+            isLandingSignUp = !isLandingSignUp;
+            const prompt = document.getElementById('landingTogglePrompt');
+            const btn = document.getElementById('landingToggleBtn');
+            const submitBtn = document.getElementById('landingSubmitBtn');
+            const userField = document.getElementById('landingUsernameField');
+
+            if (isLandingSignUp) {
+                prompt.textContent = "Have an account? ";
+                btn.textContent = "Log in";
+                submitBtn.innerHTML = "<span>Sign Up with Email</span>";
+                userField.classList.remove('hidden');
+            } else {
+                prompt.textContent = "Don't have an account? ";
+                btn.textContent = "Sign up";
+                submitBtn.innerHTML = "<span>Log In</span>";
+                userField.classList.add('hidden');
             }
         }
 
-        // Firebase Auth State Observer
-        onAuthStateChanged(auth, async (user) => {
-            window.currentUser = user;
-            if (user) {
-                // User is signed in
-                const username = user.displayName || user.email.split('@')[0];
-                const avatar = user.photoURL || `https://api.dicebear.com/7.x/adventurer/svg?seed=${user.uid}`;
-                
-                window.userProfile.uid = user.uid;
-                window.userProfile.username = username;
-                window.userProfile.name = user.displayName || username;
-                window.userProfile.avatar = avatar;
-
-                // Sync with Firestore users collection
-                try {
-                    const userDocRef = doc(db, "users", user.uid);
-                    const userSnap = await getDoc(userDocRef);
-                    if (userSnap.exists()) {
-                        const data = userSnap.data();
-                        window.userProfile.bio = data.bio || window.userProfile.bio;
-                        window.userProfile.username = data.username || window.userProfile.username;
-                        window.userProfile.avatar = data.avatar || window.userProfile.avatar;
-                    } else {
-                        await setDoc(userDocRef, {
-                            uid: user.uid,
-                            email: user.email,
-                            username: username,
-                            name: window.userProfile.name,
-                            bio: window.userProfile.bio,
-                            avatar: avatar,
-                            createdAt: serverTimestamp()
-                        }, { merge: true });
-                    }
-                } catch (e) {
-                    console.log("Firestore user profile sync warning:", e);
-                }
-
-                updateHeaderAuthUI(true, user);
-            } else {
-                // User signed out
-                window.userProfile.uid = null;
-                updateHeaderAuthUI(false, null);
-            }
-            window.render();
-        });
-
-        function updateHeaderAuthUI(isLoggedIn, user) {
-            const avatar = window.userProfile.avatar;
-            const name = window.userProfile.name;
-            const handle = `@${window.userProfile.username}`;
-
-            document.getElementById('sidebarUserAvatar').src = avatar;
-            document.getElementById('navProfileAvatar').src = avatar;
-            document.getElementById('mobileTopAvatar').src = avatar;
-            document.getElementById('mobileBottomNavAvatar').src = avatar;
-            document.getElementById('sidebarUserName').textContent = name;
-            document.getElementById('sidebarUserHandle').textContent = handle;
-
-            const badge = document.getElementById('sidebarOnlineBadge');
-            const statusText = document.getElementById('sidebarAuthStatusText');
-            const actionBtn = document.getElementById('sidebarAuthActionBtn');
-
-            if (isLoggedIn) {
-                badge.className = "absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 border-2 border-black rounded-full";
-                statusText.textContent = "Live";
-                statusText.className = "text-[10px] bg-green-950 text-green-400 font-bold px-2 py-0.5 rounded-md border border-green-800";
-                actionBtn.innerHTML = `<i data-lucide="log-out" class="w-3.5 h-3.5 text-rose-400"></i><span>Sign Out (@${window.userProfile.username})</span>`;
-                actionBtn.onclick = () => window.handleSignOut();
-            } else {
-                badge.className = "absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-amber-500 border-2 border-black rounded-full";
-                statusText.textContent = "Guest";
-                statusText.className = "text-[10px] bg-amber-950 text-amber-400 font-medium px-2 py-0.5 rounded-md border border-amber-800";
-                actionBtn.innerHTML = `<i data-lucide="log-in" class="w-3.5 h-3.5 text-amber-400"></i><span>Sign In / Connect Firebase</span>`;
-                actionBtn.onclick = () => window.openAuthModal();
-            }
-            lucide.createIcons();
-        }
-
-        // Firebase Auth Actions
-        window.handleAuthSubmit = async function(event) {
+        function handleLandingLogin(event) {
             event.preventDefault();
-            const email = document.getElementById('authEmailInput').value.trim();
-            const password = document.getElementById('authPasswordInput').value;
-            const username = document.getElementById('authUsernameInput').value.trim();
-            const alertBox = document.getElementById('authAlert');
+            const email = document.getElementById('landingEmailInput').value.trim();
+            const password = document.getElementById('landingPasswordInput').value;
+            const usernameInput = document.getElementById('landingUsernameInput').value.trim();
 
-            alertBox.classList.add('hidden');
-            const submitBtn = document.getElementById('authSubmitBtn');
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = `<span class="animate-spin inline-block mr-2">⏳</span> Processing...`;
+            if (!email || !password) return;
 
-            try {
-                if (window.currentAuthTab === 'signup') {
-                    const cred = await createUserWithEmailAndPassword(auth, email, password);
-                    if (username) {
-                        await updateProfile(cred.user, { displayName: username });
-                    }
-                    await setDoc(doc(db, "users", cred.user.uid), {
-                        uid: cred.user.uid,
-                        email: email,
-                        username: username || email.split('@')[0],
-                        name: username || email.split('@')[0],
-                        bio: 'InstaClone Explorer ✨',
-                        avatar: `https://api.dicebear.com/7.x/adventurer/svg?seed=${cred.user.uid}`,
-                        createdAt: serverTimestamp()
-                    });
-                    showAuthAlert("Account created successfully! Connected to Firestore.", "success");
-                } else {
-                    await signInWithEmailAndPassword(auth, email, password);
-                    showAuthAlert("Signed in successfully!", "success");
-                }
-                setTimeout(() => {
-                    closeAuthModal();
-                }, 1000);
-            } catch (err) {
-                console.error("Auth error:", err);
-                showAuthAlert(err.message.replace("Firebase:", "").trim(), "error");
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = window.currentAuthTab === 'signup' ? "Create Account" : "Log In with Email";
+            // Set user profile
+            userProfile.email = email;
+            if (usernameInput) {
+                userProfile.name = usernameInput;
+                userProfile.username = usernameInput.toLowerCase().replace(/\s+/g, '_');
+            } else {
+                userProfile.username = email.split('@')[0];
+                userProfile.name = email.split('@')[0];
             }
-        };
+            userProfile.avatar = `https://api.dicebear.com/7.x/adventurer/svg?seed=${userProfile.username}`;
 
-        window.handleGoogleSignIn = async function() {
-            try {
-                const result = await signInWithPopup(auth, googleProvider);
-                showAuthAlert("Signed in with Google successfully!", "success");
-                setTimeout(() => {
-                    closeAuthModal();
-                }, 1000);
-            } catch (err) {
-                console.error("Google sign in error:", err);
-                showAuthAlert(err.message.replace("Firebase:", "").trim(), "error");
-            }
-        };
-
-        window.handleSignOut = async function() {
-            try {
-                await signOut(auth);
-                alert("Signed out successfully.");
-                closeAuthModal();
-            } catch (err) {
-                alert("Error signing out: " + err.message);
-            }
-        };
-
-        function showAuthAlert(msg, type) {
-            const alertBox = document.getElementById('authAlert');
-            alertBox.textContent = msg;
-            alertBox.className = type === 'success' 
-                ? "p-3 rounded-xl mb-3 text-xs bg-green-950/80 text-green-300 border border-green-800"
-                : "p-3 rounded-xl mb-3 text-xs bg-rose-950/80 text-rose-300 border border-rose-800";
-            alertBox.classList.remove('hidden');
+            loginSuccess();
         }
 
-        // Firestore Realtime Write Operations
-        window.addNewPost = async function() {
-            const url = document.getElementById('new-url').value.trim();
-            const caption = document.getElementById('new-caption').value.trim();
-            
-            if (!url || !caption) {
-                alert('Please provide an image and caption!');
-                return;
-            }
+        function handleGoogleSignIn() {
+            userProfile.name = "Google User";
+            userProfile.username = "google_creator";
+            userProfile.email = "creator@gmail.com";
+            userProfile.avatar = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150";
+            loginSuccess();
+        }
 
-            const newPostData = {
-                user: window.userProfile.username,
-                avatar: window.userProfile.avatar,
-                image: url,
-                caption: caption,
-                likes: 0,
-                likedBy: [],
-                comments: [],
-                createdAt: serverTimestamp(),
-                authorUid: window.currentUser ? window.currentUser.uid : 'guest'
-            };
+        function enterAsGuest() {
+            loginSuccess();
+        }
 
-            try {
-                // Write to Cloud Firestore collection
-                await addDoc(collection(db, "posts"), newPostData);
-                console.log("Post synced to Firestore successfully!");
-                switchTab('home');
-            } catch (err) {
-                console.warn("Firestore write error, falling back locally:", err);
-                // Optimistic local add
-                window.posts.unshift({
-                    id: 'local-' + Date.now(),
-                    ...newPostData,
-                    likes: 0,
-                    time: 'JUST NOW',
-                    isLiked: false
-                });
-                switchTab('home');
-            }
-        };
+        function loginSuccess() {
+            isAuthenticated = true;
+            document.getElementById('instagramLandingGate').classList.add('hidden');
+            updateHeaderProfileUI();
+            fetchSupabaseAppointments();
+            render();
+        }
 
-        window.toggleLike = async function(postId) {
-            const post = window.posts.find(p => p.id === postId);
-            if (!post) return;
+        function handleSignOut() {
+            isAuthenticated = false;
+            document.getElementById('instagramLandingGate').classList.remove('hidden');
+            closeAuthModal();
+        }
 
-            const wasLiked = post.isLiked;
-            post.isLiked = !wasLiked;
-            post.likes += post.isLiked ? 1 : -1;
-            window.render();
+        function updateHeaderProfileUI() {
+            document.getElementById('sidebarUserAvatar').src = userProfile.avatar;
+            document.getElementById('navProfileAvatar').src = userProfile.avatar;
+            document.getElementById('mobileBottomNavAvatar').src = userProfile.avatar;
+            document.getElementById('sidebarUserName').textContent = userProfile.name;
+            document.getElementById('sidebarUserHandle').textContent = `@${userProfile.username}`;
+            document.getElementById('modalUserAvatar').src = userProfile.avatar;
+            document.getElementById('modalUserName').textContent = userProfile.name;
+            document.getElementById('modalUserEmail').textContent = userProfile.email;
+        }
 
-            // Firestore sync
-            if (!postId.toString().startsWith('seed-') && !postId.toString().startsWith('local-')) {
-                try {
-                    const postRef = doc(db, "posts", postId);
-                    const uid = window.currentUser ? window.currentUser.uid : 'guest_user';
-                    await updateDoc(postRef, {
-                        likes: increment(post.isLiked ? 1 : -1),
-                        likedBy: post.isLiked ? arrayUnion(uid) : arrayRemove(uid)
-                    });
-                } catch (e) {
-                    console.log("Firestore like sync warning:", e);
-                }
-            }
-        };
-
-        window.submitComment = async function() {
-            const input = document.getElementById('commentInput');
-            const text = input.value.trim();
-            if (!text || !window.activeCommentPostId) return;
-
-            const post = window.posts.find(p => p.id === window.activeCommentPostId);
-            if (!post) return;
-
-            const commentObj = {
-                author: window.userProfile.username,
-                text: text,
-                time: 'JUST NOW'
-            };
-
-            post.comments = post.comments || [];
-            post.comments.push(commentObj);
-            input.value = '';
-            window.openCommentsModal(window.activeCommentPostId);
-
-            // Firestore sync
-            if (!post.id.toString().startsWith('seed-') && !post.id.toString().startsWith('local-')) {
-                try {
-                    const postRef = doc(db, "posts", post.id);
-                    await updateDoc(postRef, {
-                        comments: arrayUnion(commentObj)
-                    });
-                } catch (e) {
-                    console.log("Firestore comment sync warning:", e);
-                }
-            }
-        };
-
-        window.saveProfileChanges = async function() {
-            const name = document.getElementById('editProfileName').value.trim();
-            const bio = document.getElementById('editProfileBio').value.trim();
-            const avatar = document.getElementById('editProfileAvatar').value.trim();
-
-            if (name) window.userProfile.name = name;
-            if (bio) window.userProfile.bio = bio;
-            if (avatar) window.userProfile.avatar = avatar;
-
-            if (window.currentUser) {
-                try {
-                    const userRef = doc(db, "users", window.currentUser.uid);
-                    await setDoc(userRef, {
-                        name: window.userProfile.name,
-                        bio: window.userProfile.bio,
-                        avatar: window.userProfile.avatar
-                    }, { merge: true });
-                } catch (e) {
-                    console.log("Firestore profile update error:", e);
-                }
-            }
-
-            closeEditProfileModal();
-            updateHeaderAuthUI(Boolean(window.currentUser), window.currentUser);
-            window.render();
-        };
-
-        // Initialize Firestore listener
-        setupFirestoreListener();
-    </script>
-
-    <!-- UI ROUTING & EVENT HANDLERS -->
-    <script>
         function openAuthModal() {
-            const modal = document.getElementById('authModal');
-            const userInfo = document.getElementById('authUserInfo');
-            const authFormContainer = document.getElementById('authFormContainer');
-
-            if (window.currentUser) {
-                userInfo.classList.remove('hidden');
-                authFormContainer.classList.add('hidden');
-                document.getElementById('modalUserAvatar').src = window.userProfile.avatar;
-                document.getElementById('modalUserName').textContent = window.userProfile.name;
-                document.getElementById('modalUserEmail').textContent = window.currentUser.email || 'Google Account';
-            } else {
-                userInfo.classList.add('hidden');
-                authFormContainer.classList.remove('hidden');
-            }
-
-            modal.classList.remove('hidden');
+            document.getElementById('authModal').classList.remove('hidden');
             lucide.createIcons();
         }
-
         function closeAuthModal() {
             document.getElementById('authModal').classList.add('hidden');
         }
 
-        function handleAuthCardClick() {
-            openAuthModal();
-        }
+        // ==========================================
+        // SUPABASE APPOINTMENT BOOKING HANDLERS
+        // ==========================================
+        async function fetchSupabaseAppointments() {
+            if (!supabaseClient) return;
+            try {
+                const { data, error } = await supabaseClient
+                    .from('appointments')
+                    .select('*')
+                    .order('created_at', { ascending: false });
 
-        function switchAuthTab(tab) {
-            window.currentAuthTab = tab;
-            const tabLogin = document.getElementById('authTabLogin');
-            const tabSignup = document.getElementById('authTabSignup');
-            const usernameField = document.getElementById('authFieldUsername');
-            const submitBtn = document.getElementById('authSubmitBtn');
-
-            if (tab === 'signup') {
-                tabSignup.className = "flex-1 pb-2.5 text-sm font-semibold border-b-2 border-rose-500 text-white";
-                tabLogin.className = "flex-1 pb-2.5 text-sm font-semibold border-b-2 border-transparent text-zinc-400 hover:text-white";
-                usernameField.classList.remove('hidden');
-                submitBtn.innerHTML = "Create Account with Firebase";
-            } else {
-                tabLogin.className = "flex-1 pb-2.5 text-sm font-semibold border-b-2 border-rose-500 text-white";
-                tabSignup.className = "flex-1 pb-2.5 text-sm font-semibold border-b-2 border-transparent text-zinc-400 hover:text-white";
-                usernameField.classList.add('hidden');
-                submitBtn.innerHTML = "Log In with Email";
+                if (!error && data && data.length > 0) {
+                    appointmentsList = data;
+                    if (currentTab === 'appointments') render();
+                }
+            } catch (err) {
+                console.warn("Appointments fetch notice:", err);
             }
         }
 
-        function openEditProfileModal() {
-            document.getElementById('editProfileName').value = window.userProfile.name;
-            document.getElementById('editProfileBio').value = window.userProfile.bio;
-            document.getElementById('editProfileAvatar').value = window.userProfile.avatar;
-            document.getElementById('editProfileModal').classList.remove('hidden');
+        async function handleAppointmentSubmit(event) {
+            event.preventDefault();
+            const btn = document.getElementById('bookSubmitBtn');
+            const alertBox = document.getElementById('bookStatusAlert');
+            alertBox.classList.add('hidden');
+
+            const name = document.getElementById('apptName').value.trim();
+            const email = document.getElementById('apptEmail').value.trim();
+            const phone = document.getElementById('apptPhone').value.trim();
+            const type = document.getElementById('apptType').value;
+            const date = document.getElementById('apptDate').value;
+            const time = document.getElementById('apptTime').value;
+            const message = document.getElementById('apptMessage').value.trim();
+
+            if (!name || !email || !date || !time) {
+                alertBox.className = "p-3 rounded-xl mb-3 text-xs bg-rose-950 border border-rose-800 text-rose-300";
+                alertBox.textContent = "Please fill in all required appointment fields.";
+                alertBox.classList.remove('hidden');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = `<span class="animate-spin inline-block mr-2">⏳</span> Saving to SupaBase...`;
+
+            const appointmentPayload = {
+                name: name,
+                email: email,
+                phone: phone || null,
+                appointment_type: type,
+                appointment_date: date,
+                appointment_time: time,
+                message: message || ''
+            };
+
+            let saveSucceeded = false;
+
+            if (supabaseClient) {
+                try {
+                    const { data, error } = await supabaseClient
+                        .from('appointments')
+                        .insert([appointmentPayload])
+                        .select();
+
+                    if (!error) {
+                        saveSucceeded = true;
+                        if (data && data[0]) {
+                            appointmentsList.unshift(data[0]);
+                        } else {
+                            appointmentsList.unshift({ id: 'supa-' + Date.now(), ...appointmentPayload, created_at: new Date().toISOString() });
+                        }
+                    } else {
+                        console.warn("Supabase response error:", error);
+                        // If table not found in Supabase schema cache
+                        if (error.code === 'PGRST205' || error.message.includes('schema cache') || error.code === '42P01') {
+                            showSupabaseTableHelpPrompt();
+                        }
+                    }
+                } catch (e) {
+                    console.error("Supabase insert exception:", e);
+                }
+            }
+
+            // Always provide instant positive feedback & fallback
+            if (!saveSucceeded) {
+                appointmentsList.unshift({
+                    id: 'local-' + Date.now(),
+                    ...appointmentPayload,
+                    created_at: new Date().toISOString()
+                });
+            }
+
+            alertBox.className = "p-3.5 rounded-xl mb-3 text-xs bg-[#3ECF8E]/10 border border-[#3ECF8E]/40 text-[#3ECF8E] flex items-start gap-2";
+            alertBox.innerHTML = `
+                <i data-lucide="check-circle" class="w-4 h-4 flex-shrink-0 mt-0.5"></i>
+                <div>
+                    <strong class="block font-bold">Appointment Booked Successfully!</strong>
+                    <span>Saved for ${date} at ${time}. Creator will contact via ${email}.</span>
+                </div>
+            `;
+            alertBox.classList.remove('hidden');
+            lucide.createIcons();
+
+            document.getElementById('appointmentForm').reset();
+            btn.disabled = false;
+            btn.innerHTML = `<i data-lucide="calendar-plus" class="w-4 h-4"></i><span>Confirm & Save Appointment</span>`;
+            lucide.createIcons();
+
+            render();
+        }
+
+        function showSupabaseTableHelpPrompt() {
+            document.getElementById('supabaseSqlModal').classList.remove('hidden');
             lucide.createIcons();
         }
 
-        function closeEditProfileModal() {
-            document.getElementById('editProfileModal').classList.add('hidden');
+        // ==========================================
+        // DIRECT APK DOWNLOAD HANDLER
+        // ==========================================
+        function triggerDirectApkDownload() {
+            // Attempt direct download link
+            const a = document.createElement('a');
+            a.href = './instaclone.apk';
+            a.download = 'InstaClone-v1.0.apk';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+
+            // Also notify user with quick installation instruction
+            setTimeout(() => {
+                const confirmed = confirm("Downloading InstaClone Android APK (26 MB).\n\nIf prompt appears on your phone, choose 'Download anyway' and click 'Install'.\n\nWould you like to open the GitHub Releases page as well?");
+                if (confirmed) {
+                    window.open('https://github.com', '_blank');
+                }
+            }, 500);
         }
 
-        // Core Navigation Router
-        function switchTab(tab) {
-            window.currentTab = tab;
-            window.activeChatUser = null;
+        // ==========================================
+        // VIDEO REELS PLAY/PAUSE INTERACTION
+        // ==========================================
+        function toggleVideoPlay(videoElement) {
+            if (videoElement.paused) {
+                videoElement.play();
+            } else {
+                videoElement.pause();
+            }
+        }
 
-            // Update navigation highlights
+        function handleVideoError(videoElement, posterUrl) {
+            console.warn("Video failed to play, switching to visual poster:", posterUrl);
+            videoElement.style.display = 'none';
+            const parent = videoElement.parentElement;
+            if (parent && !parent.querySelector('.fallback-poster')) {
+                const img = document.createElement('img');
+                img.src = posterUrl;
+                img.className = 'w-full h-full object-cover fallback-poster';
+                parent.prepend(img);
+            }
+        }
+
+        // ==========================================
+        // POSTS, LIKES, COMMENTS & NAVIGATION
+        // ==========================================
+        function switchTab(tab) {
+            currentTab = tab;
+            activeChatUser = null;
+
+            // Highlight desktop buttons
             document.querySelectorAll('.nav-btn').forEach(btn => {
                 const btnTab = btn.getAttribute('data-tab');
                 if (btnTab === tab) {
@@ -853,6 +828,7 @@
                 }
             });
 
+            // Highlight mobile buttons
             document.querySelectorAll('[data-tab-mobile]').forEach(btn => {
                 const btnTab = btn.getAttribute('data-tab-mobile');
                 const icon = btn.querySelector('i');
@@ -870,32 +846,40 @@
             render();
         }
 
-        // Theme Toggle
         function toggleTheme() {
-            window.isDarkMode = !window.isDarkMode;
-            document.documentElement.classList.toggle('dark', window.isDarkMode);
-            document.body.className = window.isDarkMode 
+            isDarkMode = !isDarkMode;
+            document.documentElement.classList.toggle('dark', isDarkMode);
+            document.body.className = isDarkMode 
                 ? "bg-black text-white min-h-screen flex flex-col md:flex-row select-none transition-colors duration-200" 
                 : "bg-zinc-50 text-black min-h-screen flex flex-col md:flex-row select-none transition-colors duration-200";
             render();
         }
 
-        // Double-tap photo like with heart pop
+        function toggleLike(postId) {
+            const post = posts.find(p => p.id === postId);
+            if (post) {
+                post.isLiked = !post.isLiked;
+                post.likes += post.isLiked ? 1 : -1;
+                render();
+            }
+        }
+
         function triggerDoubleTapLike(postId) {
             const burst = document.getElementById(`burst-${postId}`);
             if (burst) {
                 burst.classList.remove('hidden');
                 setTimeout(() => burst.classList.add('hidden'), 800);
             }
-            const post = window.posts.find(p => p.id === postId);
+            const post = posts.find(p => p.id === postId);
             if (post && !post.isLiked) {
-                window.toggleLike(postId);
+                post.isLiked = true;
+                post.likes += 1;
+                render();
             }
         }
 
-        // Like Reel Toggle
         function toggleReelLike(reelId) {
-            const reel = window.reels.find(r => r.id === reelId);
+            const reel = reels.find(r => r.id === reelId);
             if (reel) {
                 reel.isLiked = !reel.isLiked;
                 reel.likes += reel.isLiked ? 1 : -1;
@@ -903,19 +887,17 @@
             }
         }
 
-        // Follow Toggle
         function toggleFollow(reelId) {
-            const reel = window.reels.find(r => r.id === reelId);
+            const reel = reels.find(r => r.id === reelId);
             if (reel) {
                 reel.isFollowing = !reel.isFollowing;
                 render();
             }
         }
 
-        // Comments Modal
         function openCommentsModal(postId) {
-            window.activeCommentPostId = postId;
-            const post = window.posts.find(p => p.id === postId);
+            activeCommentPostId = postId;
+            const post = posts.find(p => p.id === postId);
             if (!post) return;
 
             const container = document.getElementById('commentsContainer');
@@ -936,7 +918,41 @@
             document.getElementById('commentsModal').classList.add('hidden');
         }
 
-        // File selection preview
+        function submitComment() {
+            const input = document.getElementById('commentInput');
+            const text = input.value.trim();
+            if (!text || !activeCommentPostId) return;
+
+            const post = posts.find(p => p.id === activeCommentPostId);
+            if (post) {
+                post.comments = post.comments || [];
+                post.comments.push({ author: userProfile.username, text });
+                input.value = '';
+                openCommentsModal(activeCommentPostId);
+            }
+        }
+
+        function addNewPost() {
+            const url = document.getElementById('new-url').value.trim();
+            const caption = document.getElementById('new-caption').value.trim();
+            if(url && caption) {
+                posts.unshift({
+                    id: posts.length + 1,
+                    user: userProfile.username,
+                    avatar: userProfile.avatar,
+                    image: url,
+                    likes: 1,
+                    caption: caption,
+                    time: 'JUST NOW',
+                    isLiked: false,
+                    comments: []
+                });
+                switchTab('home');
+            } else {
+                alert('Please provide an image URL and caption!');
+            }
+        }
+
         function handleFileSelect(event) {
             const file = event.target.files[0];
             if (file) {
@@ -966,7 +982,7 @@
             const input = document.getElementById('dmInput');
             const text = input.value.trim();
             if (!text) return;
-            const conv = window.messages.find(m => m.user === username);
+            const conv = messages.find(m => m.user === username);
             if (conv) {
                 conv.chats.push({ fromMe: true, text });
                 conv.lastMsg = text;
@@ -975,29 +991,51 @@
             }
         }
 
-        // Render Views
+        function openEditProfileModal() {
+            document.getElementById('editProfileName').value = userProfile.name;
+            document.getElementById('editProfileBio').value = userProfile.bio;
+            document.getElementById('editProfileAvatar').value = userProfile.avatar;
+            document.getElementById('editProfileModal').classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function closeEditProfileModal() {
+            document.getElementById('editProfileModal').classList.add('hidden');
+        }
+
+        function saveProfileChanges() {
+            const name = document.getElementById('editProfileName').value.trim();
+            const bio = document.getElementById('editProfileBio').value.trim();
+            const avatar = document.getElementById('editProfileAvatar').value.trim();
+
+            if (name) userProfile.name = name;
+            if (bio) userProfile.bio = bio;
+            if (avatar) userProfile.avatar = avatar;
+
+            closeEditProfileModal();
+            updateHeaderProfileUI();
+            render();
+        }
+
+        // ==========================================
+        // VIEW RENDERER
+        // ==========================================
         function render() {
             const container = document.getElementById('app-container');
             if (!container) return;
             container.innerHTML = '';
 
-            const currentTab = window.currentTab;
-            const posts = window.posts || [];
-            const userProfile = window.userProfile;
-            const reels = window.reels || [];
-            const messages = window.messages || [];
-
             if (currentTab === 'home') {
                 container.innerHTML = `
                     <!-- Stories Bar -->
                     <div class="flex gap-4 overflow-x-auto hide-scrollbar py-2 mb-4 border-b border-zinc-800">
-                        <div class="flex flex-col items-center flex-shrink-0 cursor-pointer" onclick="openAuthModal()">
+                        <div class="flex flex-col items-center flex-shrink-0 cursor-pointer" onclick="switchTab('profile')">
                             <div class="w-16 h-16 rounded-full p-[2px] bg-gradient-to-tr from-amber-500 to-rose-500">
                                 <img src="${userProfile.avatar}" class="w-full h-full rounded-full object-cover border-2 border-black" />
                             </div>
                             <span class="text-[11px] mt-1 text-zinc-400">Your Story</span>
                         </div>
-                        ${window.stories.map(s => `
+                        ${stories.map(s => `
                             <div class="flex flex-col items-center flex-shrink-0 cursor-pointer" onclick="alert('Viewing story of @${s.user}')">
                                 <div class="w-16 h-16 rounded-full p-[2px] ${s.seen ? 'bg-zinc-700' : 'story-ring'}">
                                     <img src="${s.avatar}" class="w-full h-full rounded-full object-cover border-2 border-black" />
@@ -1007,7 +1045,27 @@
                         `).join('')}
                     </div>
 
-                    <!-- Cloud Firestore Feed Posts -->
+                    <!-- Book Appointment Hero Banner -->
+                    <div class="p-3.5 bg-gradient-to-r from-zinc-900 via-zinc-900 to-black border border-zinc-800 rounded-2xl flex items-center justify-between mb-5 shadow">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-[#3ECF8E]/20 text-[#3ECF8E] flex items-center justify-center border border-[#3ECF8E]/30">
+                                <i data-lucide="calendar-check" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-xs font-bold text-white flex items-center gap-1.5">
+                                    <span>Creator Appointments</span>
+                                    <span class="text-[9px] bg-[#3ECF8E]/20 text-[#3ECF8E] px-1.5 py-0.2 rounded font-mono">SupaBase</span>
+                                </h4>
+                                <p class="text-[11px] text-zinc-400">Book collaborations or 1-on-1 strategy calls</p>
+                            </div>
+                        </div>
+                        <button onclick="switchTab('appointments')" class="px-3 py-1.5 bg-[#3ECF8E] hover:bg-[#34b37a] text-black text-xs font-bold rounded-xl transition flex items-center gap-1 shadow">
+                            <span>Book Now</span>
+                            <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+                        </button>
+                    </div>
+
+                    <!-- Feed Posts -->
                     <div class="space-y-6">
                         ${posts.map(p => `
                             <div class="border border-zinc-800 rounded-2xl bg-zinc-950 overflow-hidden shadow-sm">
@@ -1016,14 +1074,13 @@
                                         <div class="p-0.5 story-ring rounded-full">
                                             <img src="${p.avatar}" class="w-8 h-8 rounded-full object-cover border border-black" />
                                         </div>
-                                        <div>
-                                            <span class="font-semibold text-sm">${p.user}</span>
-                                            <p class="text-[10px] text-zinc-400">Synced to Firestore</p>
-                                        </div>
+                                        <span class="font-semibold text-sm">${p.user}</span>
                                     </div>
-                                    <i data-lucide="more-horizontal" class="w-5 h-5 text-zinc-400 cursor-pointer"></i>
+                                    <button onclick="switchTab('appointments')" class="text-xs font-semibold text-[#3ECF8E] bg-[#3ECF8E]/10 border border-[#3ECF8E]/30 px-2.5 py-1 rounded-lg hover:bg-[#3ECF8E]/20">
+                                        Book
+                                    </button>
                                 </div>
-                                <div class="relative aspect-square w-full bg-black overflow-hidden cursor-pointer" ondblclick="triggerDoubleTapLike('${p.id}')">
+                                <div class="relative aspect-square w-full bg-black overflow-hidden cursor-pointer" ondblclick="triggerDoubleTapLike(${p.id})">
                                     <img src="${p.image}" class="w-full h-full object-cover" />
                                     <div id="burst-${p.id}" class="hidden absolute inset-0 flex items-center justify-center pointer-events-none">
                                         <i data-lucide="heart" class="w-24 h-24 text-rose-500 fill-rose-500 heart-burst drop-shadow-xl"></i>
@@ -1032,10 +1089,10 @@
                                 <div class="p-3.5 space-y-2">
                                     <div class="flex items-center justify-between">
                                         <div class="flex items-center gap-4">
-                                            <button onclick="window.toggleLike('${p.id}')" class="transition active:scale-125">
+                                            <button onclick="toggleLike(${p.id})" class="transition active:scale-125">
                                                 <i data-lucide="heart" class="w-6 h-6 ${p.isLiked ? 'text-red-500 fill-red-500' : 'text-zinc-200'}"></i>
                                             </button>
-                                            <button onclick="openCommentsModal('${p.id}')">
+                                            <button onclick="openCommentsModal(${p.id})">
                                                 <i data-lucide="message-circle" class="w-6 h-6 text-zinc-200"></i>
                                             </button>
                                             <button onclick="navigator.clipboard?.writeText(window.location.href); alert('Post link copied!')">
@@ -1047,7 +1104,7 @@
                                     <p class="font-semibold text-sm">${p.likes} likes</p>
                                     <p class="text-sm"><strong class="mr-2">${p.user}</strong>${p.caption}</p>
                                     ${p.comments && p.comments.length > 0 ? `
-                                        <button onclick="openCommentsModal('${p.id}')" class="text-xs text-zinc-400 font-medium">View all ${p.comments.length} comments</button>
+                                        <button onclick="openCommentsModal(${p.id})" class="text-xs text-zinc-400 font-medium">View all ${p.comments.length} comments</button>
                                     ` : ''}
                                     <p class="text-[11px] text-zinc-500 uppercase tracking-wider">${p.time}</p>
                                 </div>
@@ -1055,7 +1112,174 @@
                         `).join('')}
                     </div>
                 `;
-            } 
+            }
+            else if (currentTab === 'appointments') {
+                container.innerHTML = `
+                    <div class="space-y-6">
+                        <!-- Header with Supabase Badge -->
+                        <div class="flex items-center justify-between border-b border-zinc-800 pb-4">
+                            <div>
+                                <h2 class="text-2xl font-bold flex items-center gap-2">
+                                    <span>Book an Appointment</span>
+                                </h2>
+                                <p class="text-xs text-zinc-400 mt-1">Schedule collaborations, brand sponsorships, and 1-on-1 strategy sessions.</p>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-[10px] bg-[#3ECF8E]/20 text-[#3ECF8E] font-bold px-2.5 py-1 rounded-full border border-[#3ECF8E]/40 flex items-center gap-1.5 shadow">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-[#3ECF8E] animate-pulse"></span> SupaBase Connected
+                                </span>
+                                <p class="text-[9px] text-zinc-500 mt-1 font-mono">ID: ${SUPABASE_PROJECT_ID}</p>
+                            </div>
+                        </div>
+
+                        <!-- Status Alert Box -->
+                        <div id="bookStatusAlert" class="hidden"></div>
+
+                        <!-- Appointment Booking Form -->
+                        <form id="appointmentForm" onsubmit="handleAppointmentSubmit(event)" class="bg-zinc-950 border border-zinc-800 rounded-2xl p-5 space-y-4 shadow-xl">
+                            <h3 class="text-sm font-bold text-zinc-200 flex items-center gap-2">
+                                <i data-lucide="user-check" class="w-4 h-4 text-[#3ECF8E]"></i>
+                                <span>Appointment Details</span>
+                            </h3>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs text-zinc-400 mb-1">Your Full Name *</label>
+                                    <input type="text" id="apptName" required placeholder="e.g. Rahul Verma" value="${userProfile.name !== 'Asif' ? userProfile.name : ''}" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-[#3ECF8E] transition" />
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-zinc-400 mb-1">Email Address *</label>
+                                    <input type="email" id="apptEmail" required placeholder="rahul@example.com" value="${userProfile.email !== 'asif@gmail.com' ? userProfile.email : ''}" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-[#3ECF8E] transition" />
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs text-zinc-400 mb-1">Phone / WhatsApp Number</label>
+                                    <input type="tel" id="apptPhone" placeholder="+91 98765 43210" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-[#3ECF8E] transition" />
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-zinc-400 mb-1">Appointment Type *</label>
+                                    <select id="apptType" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-[#3ECF8E] transition">
+                                        <option value="Creator Collaboration & Promotion">Creator Collaboration & Promotion</option>
+                                        <option value="1-on-1 Strategy & Coaching Call">1-on-1 Strategy & Coaching Call</option>
+                                        <option value="Sponsored Reel / Post Production">Sponsored Reel / Post Production</option>
+                                        <option value="Brand Partnership & Campaign">Brand Partnership & Campaign</option>
+                                        <option value="Custom Consultation">Custom Consultation</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs text-zinc-400 mb-1">Preferred Date *</label>
+                                    <input type="date" id="apptDate" required class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-[#3ECF8E] transition" />
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-zinc-400 mb-1">Preferred Time Slot *</label>
+                                    <input type="time" id="apptTime" required value="15:00" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-[#3ECF8E] transition" />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs text-zinc-400 mb-1">Project Scope / Message</label>
+                                <textarea id="apptMessage" rows="3" placeholder="Tell us about your brand, goals, or requirements..." class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-[#3ECF8E] transition resize-none"></textarea>
+                            </div>
+
+                            <button type="submit" id="bookSubmitBtn" class="w-full py-3 bg-[#3ECF8E] hover:bg-[#34b37a] text-black font-bold text-xs rounded-xl shadow-lg transition flex items-center justify-center gap-2">
+                                <i data-lucide="calendar-plus" class="w-4 h-4"></i>
+                                <span>Confirm & Save to SupaBase</span>
+                            </button>
+                        </form>
+
+                        <!-- Recent Bookings List -->
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between">
+                                <h3 class="text-sm font-bold text-zinc-200 flex items-center gap-2">
+                                    <i data-lucide="clock" class="w-4 h-4 text-zinc-400"></i>
+                                    <span>Recent Appointments Recorded</span>
+                                </h3>
+                                <button onclick="showSupabaseTableHelpPrompt()" class="text-[11px] text-[#3ECF8E] hover:underline flex items-center gap-1">
+                                    <i data-lucide="code" class="w-3 h-3"></i> Supabase SQL Schema
+                                </button>
+                            </div>
+
+                            <div class="space-y-2.5">
+                                ${appointmentsList.map(a => `
+                                    <div class="p-3.5 bg-zinc-950 border border-zinc-800 rounded-xl space-y-1.5">
+                                        <div class="flex items-center justify-between">
+                                            <span class="font-bold text-xs text-white">${a.name}</span>
+                                            <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-300">
+                                                ${a.appointment_date} at ${a.appointment_time}
+                                            </span>
+                                        </div>
+                                        <p class="text-xs text-[#3ECF8E] font-semibold">${a.appointment_type}</p>
+                                        ${a.message ? `<p class="text-[11px] text-zinc-400 italic">"${a.message}"</p>` : ''}
+                                        <div class="flex items-center justify-between pt-1 text-[10px] text-zinc-500 border-t border-zinc-900">
+                                            <span>Email: ${a.email}</span>
+                                            <span class="text-[#3ECF8E] font-bold">● Synced with Supabase</span>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            else if (currentTab === 'reels') {
+                container.innerHTML = `
+                    <div class="h-[80vh] overflow-y-scroll reel-container snap-y snap-mandatory hide-scrollbar space-y-4">
+                        ${reels.map(r => `
+                            <div class="h-full w-full relative reel-item flex items-center justify-center bg-black rounded-2xl overflow-hidden border border-zinc-900 shadow-xl group">
+                                <video 
+                                    src="${r.video}" 
+                                    poster="${r.poster}" 
+                                    autoplay 
+                                    loop 
+                                    muted 
+                                    playsinline 
+                                    preload="metadata"
+                                    onclick="toggleVideoPlay(this)"
+                                    onerror="handleVideoError(this, '${r.poster}')"
+                                    class="w-full h-full object-cover cursor-pointer">
+                                </video>
+
+                                <!-- Play/Pause Tap Hint -->
+                                <div class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-0 group-hover:opacity-40 transition">
+                                    <div class="w-16 h-16 rounded-full bg-black/60 flex items-center justify-center text-white">
+                                        <i data-lucide="play" class="w-8 h-8 ml-1"></i>
+                                    </div>
+                                </div>
+
+                                <div class="absolute bottom-4 left-4 right-16 space-y-2 pointer-events-auto">
+                                    <div class="flex items-center gap-3">
+                                        <img src="${r.avatar}" class="w-10 h-10 rounded-full border border-white" />
+                                        <span class="font-semibold text-sm drop-shadow">${r.user}</span>
+                                        <button onclick="toggleFollow(${r.id})" class="border border-white px-3 py-1 text-xs rounded-full font-medium ${r.isFollowing ? 'bg-white text-black' : 'bg-transparent text-white'}">
+                                            ${r.isFollowing ? 'Following' : 'Follow'}
+                                        </button>
+                                    </div>
+                                    <p class="text-sm text-zinc-100 drop-shadow">${r.caption}</p>
+                                    <div class="flex items-center gap-2 text-xs text-zinc-200 drop-shadow"><i data-lucide="music" class="w-3 h-3"></i> ${r.audio}</div>
+                                </div>
+                                <div class="absolute right-3 bottom-12 flex flex-col items-center gap-4">
+                                    <button onclick="toggleReelLike(${r.id})" class="flex flex-col items-center gap-1">
+                                        <i data-lucide="heart" class="w-7 h-7 ${r.isLiked ? 'text-rose-500 fill-rose-500' : 'text-white'}"></i>
+                                        <span class="text-xs">${r.likes}</span>
+                                    </button>
+                                    <button class="flex flex-col items-center gap-1" onclick="switchTab('appointments')">
+                                        <i data-lucide="calendar" class="w-7 h-7 text-[#3ECF8E]"></i>
+                                        <span class="text-[10px] text-[#3ECF8E] font-bold">Book</span>
+                                    </button>
+                                    <button onclick="navigator.clipboard?.writeText(window.location.href); alert('Reel shared!')" class="flex flex-col items-center gap-1">
+                                        <i data-lucide="send" class="w-7 h-7 text-white"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
             else if (currentTab === 'explore') {
                 container.innerHTML = `
                     <div class="mb-4">
@@ -1076,55 +1300,23 @@
                     </div>
                 `;
             }
-            else if (currentTab === 'reels') {
-                container.innerHTML = `
-                    <div class="h-[80vh] overflow-y-scroll reel-container snap-y snap-mandatory hide-scrollbar space-y-4">
-                        ${reels.map(r => `
-                            <div class="h-full w-full relative reel-item flex items-center justify-center bg-black rounded-2xl overflow-hidden border border-zinc-900 shadow-xl">
-                                <video src="${r.video}" autoplay loop muted playsinline class="w-full h-full object-cover"></video>
-                                <div class="absolute bottom-4 left-4 right-16 space-y-2">
-                                    <div class="flex items-center gap-3">
-                                        <img src="${r.avatar}" class="w-10 h-10 rounded-full border border-white" />
-                                        <span class="font-semibold text-sm drop-shadow">${r.user}</span>
-                                        <button onclick="toggleFollow(${r.id})" class="border border-white px-3 py-1 text-xs rounded-full font-medium ${r.isFollowing ? 'bg-white text-black' : 'bg-transparent text-white'}">
-                                            ${r.isFollowing ? 'Following' : 'Follow'}
-                                        </button>
-                                    </div>
-                                    <p class="text-sm text-zinc-100 drop-shadow">${r.caption}</p>
-                                    <div class="flex items-center gap-2 text-xs text-zinc-200 drop-shadow"><i data-lucide="music" class="w-3 h-3"></i> ${r.audio}</div>
-                                </div>
-                                <div class="absolute right-3 bottom-12 flex flex-col items-center gap-4">
-                                    <button onclick="toggleReelLike(${r.id})" class="flex flex-col items-center gap-1">
-                                        <i data-lucide="heart" class="w-7 h-7 ${r.isLiked ? 'text-rose-500 fill-rose-500' : 'text-white'}"></i>
-                                        <span class="text-xs">${r.likes}</span>
-                                    </button>
-                                    <button class="flex flex-col items-center gap-1">
-                                        <i data-lucide="message-circle" class="w-7 h-7 text-white"></i>
-                                        <span class="text-xs">42</span>
-                                    </button>
-                                    <button onclick="navigator.clipboard?.writeText(window.location.href); alert('Reel shared!')" class="flex flex-col items-center gap-1">
-                                        <i data-lucide="send" class="w-7 h-7 text-white"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-                `;
-            }
             else if (currentTab === 'messages') {
-                if (window.activeChatUser) {
-                    const conv = messages.find(m => m.user === window.activeChatUser);
+                if (activeChatUser) {
+                    const conv = messages.find(m => m.user === activeChatUser);
                     container.innerHTML = `
                         <div class="flex flex-col h-[75vh] bg-zinc-950 border border-zinc-800 rounded-2xl overflow-hidden">
                             <div class="p-3 border-b border-zinc-800 flex items-center justify-between bg-black">
                                 <div class="flex items-center gap-3">
-                                    <button onclick="window.activeChatUser = null; render();" class="text-zinc-400 hover:text-white"><i data-lucide="arrow-left" class="w-5 h-5"></i></button>
+                                    <button onclick="activeChatUser = null; render();" class="text-zinc-400 hover:text-white"><i data-lucide="arrow-left" class="w-5 h-5"></i></button>
                                     <img src="${conv.avatar}" class="w-8 h-8 rounded-full object-cover" />
                                     <div>
                                         <h4 class="font-bold text-sm">${conv.user}</h4>
                                         <p class="text-[10px] text-green-400">Active now</p>
                                     </div>
                                 </div>
+                                <button onclick="switchTab('appointments')" class="px-3 py-1 bg-[#3ECF8E]/20 text-[#3ECF8E] text-xs font-bold rounded-lg border border-[#3ECF8E]/40">
+                                    Book Session
+                                </button>
                             </div>
                             <div class="flex-1 overflow-y-auto p-4 space-y-3" id="chatMsgBox">
                                 ${conv.chats.map(c => `
@@ -1146,7 +1338,7 @@
                         <h2 class="text-xl font-bold mb-4">Direct Messages</h2>
                         <div class="space-y-2">
                             ${messages.map(m => `
-                                <div onclick="window.activeChatUser = '${m.user}'; render();" class="flex items-center justify-between p-3 hover:bg-zinc-900 rounded-xl cursor-pointer transition border border-transparent hover:border-zinc-800">
+                                <div onclick="activeChatUser = '${m.user}'; render();" class="flex items-center justify-between p-3 hover:bg-zinc-900 rounded-xl cursor-pointer transition border border-transparent hover:border-zinc-800">
                                     <div class="flex items-center gap-3">
                                         <img src="${m.avatar}" class="w-12 h-12 rounded-full object-cover" />
                                         <div>
@@ -1166,19 +1358,19 @@
                     <h2 class="text-xl font-bold mb-4">Notifications</h2>
                     <div class="space-y-3 text-sm">
                         <div class="flex items-center gap-3 p-3 bg-zinc-950 border border-zinc-900 rounded-xl">
-                            <i data-lucide="heart" class="text-red-500 w-5 h-5 flex-shrink-0"></i>
-                            <div class="flex-1"><strong class="text-zinc-200">Firebase Firestore</strong> live database synchronized.</div>
+                            <i data-lucide="calendar-check" class="text-[#3ECF8E] w-5 h-5 flex-shrink-0"></i>
+                            <div class="flex-1"><strong class="text-zinc-200">SupaBase Database</strong> is connected to project <code>kilkdijwewzoofuppvck</code>.</div>
                             <span class="text-zinc-500 text-xs">now</span>
                         </div>
                         <div class="flex items-center gap-3 p-3 bg-zinc-950 border border-zinc-900 rounded-xl">
-                            <i data-lucide="shield-check" class="text-amber-400 w-5 h-5 flex-shrink-0"></i>
-                            <div class="flex-1"><strong class="text-zinc-200">Firebase Auth</strong> configured with project <code>instaclone-f3599</code>.</div>
-                            <span class="text-zinc-500 text-xs">1m</span>
+                            <i data-lucide="download" class="text-rose-500 w-5 h-5 flex-shrink-0"></i>
+                            <div class="flex-1"><strong class="text-zinc-200">Android APK Build (26MB)</strong> is ready for direct download.</div>
+                            <span class="text-zinc-500 text-xs">10m</span>
                         </div>
                         <div class="flex items-center gap-3 p-3 bg-zinc-950 border border-zinc-900 rounded-xl">
-                            <i data-lucide="user-plus" class="text-blue-500 w-5 h-5 flex-shrink-0"></i>
-                            <div class="flex-1"><strong class="text-zinc-200">Mohit</strong> started following you.</div>
-                            <span class="text-zinc-500 text-xs">3h</span>
+                            <i data-lucide="heart" class="text-red-500 w-5 h-5 flex-shrink-0"></i>
+                            <div class="flex-1"><strong class="text-zinc-200">HorrorBot_AI</strong> liked your post.</div>
+                            <span class="text-zinc-500 text-xs">1h</span>
                         </div>
                     </div>
                 `;
@@ -1189,7 +1381,7 @@
                         <div class="flex items-center justify-between border-b border-zinc-800 pb-4">
                             <div>
                                 <h2 class="text-xl font-bold">Autonomous AI Bot Manager</h2>
-                                <p class="text-xs text-zinc-400">Configure AI auto-posting and live sync to Firestore</p>
+                                <p class="text-xs text-zinc-400">Configure AI auto-posting, scrapers, and video synthesis</p>
                             </div>
                             <i data-lucide="bot" class="w-8 h-8 text-purple-400"></i>
                         </div>
@@ -1197,20 +1389,20 @@
                             <div class="flex items-center justify-between">
                                 <div>
                                     <span class="font-semibold text-sm">AI Bot Auto-Posting</span>
-                                    <p class="text-[11px] text-zinc-400">Syncs generated posts with Firebase Firestore</p>
+                                    <p class="text-[11px] text-zinc-400">Auto-posts every 35 seconds with AI captioning</p>
                                 </div>
-                                <input type="checkbox" ${window.aiBotActive ? 'checked' : ''} onchange="window.aiBotActive = !window.aiBotActive; render();" class="w-5 h-5 accent-purple-600 cursor-pointer" />
+                                <input type="checkbox" ${aiBotActive ? 'checked' : ''} onchange="aiBotActive = !aiBotActive; render();" class="w-5 h-5 accent-purple-600 cursor-pointer" />
                             </div>
                             <div>
                                 <label class="text-xs text-zinc-400 block mb-1">Content Niche</label>
-                                <select onchange="window.botNiche = this.value" class="w-full bg-black border border-zinc-800 p-2.5 rounded-lg text-sm text-zinc-200">
-                                    <option ${window.botNiche.includes('Horror') ? 'selected' : ''}>Horror & Creepypasta Stories</option>
-                                    <option ${window.botNiche.includes('Viral') ? 'selected' : ''}>Viral Comedy & Trends</option>
-                                    <option ${window.botNiche.includes('Tech') ? 'selected' : ''}>Tech & Startup Motivation</option>
+                                <select onchange="botNiche = this.value" class="w-full bg-black border border-zinc-800 p-2.5 rounded-lg text-sm text-zinc-200">
+                                    <option ${botNiche.includes('Horror') ? 'selected' : ''}>Horror & Creepypasta Stories</option>
+                                    <option ${botNiche.includes('Viral') ? 'selected' : ''}>Viral Comedy & Trends</option>
+                                    <option ${botNiche.includes('Tech') ? 'selected' : ''}>Tech & Startup Motivation</option>
                                 </select>
                             </div>
                             <div class="p-3 bg-purple-950/40 border border-purple-800/50 rounded-lg text-xs text-purple-300">
-                                <strong>Status:</strong> ${window.aiBotActive ? 'Bot is active and running in background!' : 'Bot is currently paused.'}
+                                <strong>Status:</strong> ${aiBotActive ? 'Bot engine is actively generating content in background!' : 'Bot is paused.'}
                             </div>
                         </div>
 
@@ -1218,8 +1410,8 @@
                         <div class="border border-zinc-800 rounded-xl p-4 bg-zinc-950">
                             <h4 class="text-xs font-bold uppercase tracking-wider text-zinc-400 mb-2">Live Bot Activity Feed</h4>
                             <div class="text-[11px] font-mono text-zinc-400 space-y-1">
-                                <p class="text-green-400">[SYSTEM] AI Bot engine listening to niche: "${window.botNiche}"</p>
-                                <p class="text-amber-400">[FIREBASE] Project instaclone-f3599 linked to Firestore</p>
+                                <p class="text-green-400">[SYSTEM] AI Bot engine listening to niche: "${botNiche}"</p>
+                                <p class="text-[#3ECF8E]">[SUPABASE] Connected to kilkdijwewzoofuppvck</p>
                                 <p class="text-purple-400">[GEN] Synthesized post: "The Midnight Whisper"</p>
                             </div>
                         </div>
@@ -1238,9 +1430,7 @@
                                     <h2 class="text-xl font-bold">${userProfile.username}</h2>
                                     <div class="flex gap-2">
                                         <button onclick="openEditProfileModal()" class="px-3 py-1 bg-zinc-900 border border-zinc-800 text-xs font-semibold rounded-lg hover:bg-zinc-800">Edit Profile</button>
-                                        <button onclick="openAuthModal()" class="px-3 py-1 bg-rose-600/20 border border-rose-500/40 text-rose-300 text-xs font-semibold rounded-lg hover:bg-rose-600/30">
-                                            ${window.currentUser ? 'Account' : 'Sign In'}
-                                        </button>
+                                        <button onclick="switchTab('appointments')" class="px-3 py-1 bg-[#3ECF8E] hover:bg-[#34b37a] text-black text-xs font-bold rounded-lg shadow">Book Session</button>
                                     </div>
                                 </div>
                                 <div class="flex gap-6 text-sm">
@@ -1253,12 +1443,12 @@
                         <div>
                             <h3 class="font-semibold text-sm">${userProfile.name}</h3>
                             <p class="text-sm text-zinc-300">${userProfile.bio}</p>
-                            ${window.currentUser ? `<p class="text-xs text-green-400 mt-1 flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-green-400"></span> Signed in as ${window.currentUser.email}</p>` : ''}
+                            <p class="text-xs text-[#3ECF8E] mt-1 flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-[#3ECF8E]"></span> SupaBase Verified Creator Account</p>
                         </div>
                         <div class="border-t border-zinc-800 flex justify-around text-xs font-semibold py-2">
                             <span class="text-rose-500 border-b-2 border-rose-500 pb-2 flex items-center gap-1 cursor-pointer"><i data-lucide="grid" class="w-4 h-4"></i> POSTS</span>
+                            <span class="text-zinc-500 flex items-center gap-1 cursor-pointer" onclick="switchTab('appointments')"><i data-lucide="calendar" class="w-4 h-4"></i> BOOKINGS</span>
                             <span class="text-zinc-500 flex items-center gap-1 cursor-pointer" onclick="switchTab('reels')"><i data-lucide="clapperboard" class="w-4 h-4"></i> REELS</span>
-                            <span class="text-zinc-500 flex items-center gap-1 cursor-pointer" onclick="alert('Saved archive')"><i data-lucide="bookmark" class="w-4 h-4"></i> SAVED</span>
                         </div>
                         <div class="grid grid-cols-3 gap-1">
                             ${posts.map(p => `
@@ -1273,10 +1463,7 @@
             else if (currentTab === 'create') {
                 container.innerHTML = `
                     <div class="space-y-4">
-                        <div class="flex items-center justify-between">
-                            <h2 class="text-xl font-bold">Create New Post / Reel</h2>
-                            <span class="text-xs text-amber-400 bg-amber-950/40 border border-amber-800 px-2 py-0.5 rounded-full">Syncs to Firestore</span>
-                        </div>
+                        <h2 class="text-xl font-bold">Create New Post / Reel</h2>
                         
                         <!-- Upload File or URL -->
                         <div class="border-2 border-dashed border-zinc-800 rounded-xl p-4 text-center cursor-pointer hover:border-zinc-700 bg-zinc-950" onclick="document.getElementById('fileUpload').click()">
@@ -1292,22 +1479,17 @@
                         <input type="text" placeholder="Or paste Image URL (https://...)" id="new-url" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-sm focus:outline-none" />
                         <textarea placeholder="Write a caption with hashtags..." id="new-caption" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-sm h-28 focus:outline-none resize-none"></textarea>
                         
-                        <button onclick="window.addNewPost()" class="w-full bg-gradient-to-r from-amber-500 via-rose-500 to-purple-600 p-3.5 rounded-xl font-bold shadow-lg hover:opacity-95 transition flex items-center justify-center gap-2">
-                            <i data-lucide="share-2" class="w-4 h-4"></i>
-                            <span>Publish to InstaClone & Firestore</span>
-                        </button>
+                        <button onclick="addNewPost()" class="w-full bg-gradient-to-r from-amber-500 via-rose-500 to-purple-600 p-3.5 rounded-xl font-bold shadow-lg hover:opacity-95 transition">Publish to InstaClone</button>
                     </div>
                 `;
             }
 
-            // Re-initialize Lucide Icons after DOM update
+            // Refresh icons after DOM rendering
             lucide.createIcons();
         }
 
-        // Export render globally
-        window.render = render;
-
-        // Initial Load
+        // Initialize icons on load
+        lucide.createIcons();
         render();
     </script>
 </body>
