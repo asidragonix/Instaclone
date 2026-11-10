@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>InstaClone — AI Powered Instagram with Supabase & Firebase</title>
+    <title>InstaClone — Social Media Platform</title>
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="app/src/main/res/drawable/img_launcher_logo.jpg">
     <!-- Tailwind CSS -->
@@ -20,18 +20,12 @@
                             gradient3: '#d62976',
                             gradient4: '#962fbf',
                             gradient5: '#4f5bd5',
-                        },
-                        supabase: {
-                            green: '#3ECF8E',
-                            dark: '#1C1C1C'
                         }
                     }
                 }
             }
         }
     </script>
-    <!-- Supabase JS Client v2 CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
@@ -45,6 +39,10 @@
         .story-ring {
             background: linear-gradient(45deg, #FFC837, #F77737, #FF3B6B, #C13584, #833AB4);
         }
+        .story-ring-active {
+            background: linear-gradient(45deg, #FF007F, #FF7700, #FFDD00);
+            box-shadow: 0 0 12px rgba(255, 60, 120, 0.5);
+        }
         .heart-burst {
             animation: heartPop 0.8s ease-in-out forwards;
         }
@@ -52,6 +50,20 @@
             0% { transform: scale(0); opacity: 0; }
             50% { transform: scale(1.2); opacity: 1; }
             100% { transform: scale(1); opacity: 0; }
+        }
+        @keyframes storyProgress {
+            from { width: 0%; }
+            to { width: 100%; }
+        }
+        .story-progress-bar {
+            animation: storyProgress 5s linear forwards;
+        }
+        @keyframes pulseDot {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.4); opacity: 0.6; }
+        }
+        .typing-dot {
+            animation: pulseDot 1s infinite;
         }
     </style>
 </head>
@@ -69,11 +81,14 @@
                 <div class="w-full h-full rounded-[35px] overflow-hidden bg-zinc-950 relative">
                     <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800" class="w-full h-full object-cover opacity-80" />
                     <div class="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent flex flex-col justify-end p-5">
-                        <h3 class="text-2xl font-brand text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-rose-500 to-purple-500 mb-1">InstaClone</h3>
-                        <p class="text-xs text-zinc-300 font-medium">Connect, Share, and Book Appointments with Creators in Real-Time.</p>
+                        <h3 class="text-3xl font-brand text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-rose-500 to-purple-500 mb-1">InstaClone</h3>
+                        <p class="text-xs text-zinc-300 font-medium">Connect, Share, and Chat in Real-Time with Friends.</p>
                         <div class="mt-3 flex items-center gap-2">
-                            <span class="text-[10px] bg-[#3ECF8E]/20 text-[#3ECF8E] font-bold px-2 py-0.5 rounded border border-[#3ECF8E]/40 flex items-center gap-1">
-                                <span class="w-1.5 h-1.5 rounded-full bg-[#3ECF8E] animate-ping"></span> Supabase Connected
+                            <span class="text-[10px] bg-amber-500/20 text-amber-300 font-bold px-2 py-0.5 rounded border border-amber-600/40 flex items-center gap-1">
+                                <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span> Firebase Live
+                            </span>
+                            <span class="text-[10px] bg-green-950 text-green-400 font-bold px-2 py-0.5 rounded border border-green-800 flex items-center gap-1">
+                                <span class="w-1.5 h-1.5 rounded-full bg-green-400"></span> Friends Active
                             </span>
                         </div>
                     </div>
@@ -87,7 +102,7 @@
                 <div class="bg-zinc-950 border border-zinc-800 p-8 rounded-2xl shadow-2xl text-center space-y-5">
                     <div class="space-y-1">
                         <h1 class="text-4xl font-brand bg-gradient-to-r from-amber-400 via-rose-500 to-purple-500 bg-clip-text text-transparent">InstaClone</h1>
-                        <p class="text-[11px] text-zinc-400">Sign in to see photos, videos & book creator appointments</p>
+                        <p class="text-[11px] text-zinc-400">Sign in to see photos, reels & message your friends.</p>
                     </div>
 
                     <!-- Auth Error Alert -->
@@ -106,7 +121,7 @@
                         </div>
                         
                         <button type="submit" id="landingSubmitBtn" class="w-full py-2.5 bg-gradient-to-r from-amber-500 via-rose-500 to-purple-600 hover:opacity-90 text-white font-bold text-xs rounded-xl shadow-lg transition flex items-center justify-center gap-2">
-                            <span>Log In</span>
+                            <span>Log In with Firebase</span>
                         </button>
                     </form>
 
@@ -166,11 +181,9 @@
         <div>
             <div class="flex items-center justify-between mb-5 px-2">
                 <h1 class="text-3xl font-brand bg-gradient-to-r from-amber-400 via-rose-500 to-purple-500 bg-clip-text text-transparent">InstaClone</h1>
-                <div class="flex items-center gap-1">
-                    <span class="text-[9px] bg-[#3ECF8E]/20 text-[#3ECF8E] font-bold px-1.5 py-0.5 rounded border border-[#3ECF8E]/40" title="Connected to Supabase Project: kilkdijwewzoofuppvck">
-                        ⚡ Supabase
-                    </span>
-                </div>
+                <span class="text-[9px] bg-amber-500/20 text-amber-300 font-bold px-1.5 py-0.5 rounded border border-amber-600/40 flex items-center gap-1">
+                    <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span> Firebase
+                </span>
             </div>
 
             <!-- Current User Auth Card in Sidebar -->
@@ -188,21 +201,19 @@
                 </div>
             </div>
 
-            <nav class="space-y-1" id="desktopNav">
-                <button onclick="switchTab('home')" class="nav-btn w-full flex items-center gap-3.5 p-2.5 hover:bg-zinc-900 rounded-xl transition font-medium text-rose-500" data-tab="home"><i data-lucide="home" class="w-5 h-5"></i> <span>Home Feed</span></button>
-                <button onclick="switchTab('explore')" class="nav-btn w-full flex items-center gap-3.5 p-2.5 hover:bg-zinc-900 rounded-xl transition font-medium text-zinc-300" data-tab="explore"><i data-lucide="compass" class="w-5 h-5"></i> <span>Explore</span></button>
-                <button onclick="switchTab('reels')" class="nav-btn w-full flex items-center gap-3.5 p-2.5 hover:bg-zinc-900 rounded-xl transition font-medium text-zinc-300" data-tab="reels"><i data-lucide="clapperboard" class="w-5 h-5"></i> <span>Reels</span></button>
-                <button onclick="switchTab('appointments')" class="nav-btn w-full flex items-center gap-3.5 p-2.5 hover:bg-zinc-900 rounded-xl transition font-semibold text-[#3ECF8E] relative" data-tab="appointments">
-                    <i data-lucide="calendar-check" class="w-5 h-5"></i> <span>Book Appointment</span>
-                    <span class="ml-auto bg-[#3ECF8E]/20 text-[#3ECF8E] text-[10px] font-bold px-1.5 py-0.5 rounded border border-[#3ECF8E]/40">Supabase</span>
+            <nav class="space-y-1.5" id="desktopNav">
+                <button onclick="switchTab('home')" class="nav-btn w-full flex items-center gap-3.5 p-3 hover:bg-zinc-900 rounded-xl transition font-medium text-rose-500" data-tab="home"><i data-lucide="home" class="w-5 h-5"></i> <span>Home Feed</span></button>
+                <button onclick="switchTab('explore')" class="nav-btn w-full flex items-center gap-3.5 p-3 hover:bg-zinc-900 rounded-xl transition font-medium text-zinc-300" data-tab="explore"><i data-lucide="compass" class="w-5 h-5"></i> <span>Explore</span></button>
+                <button onclick="switchTab('reels')" class="nav-btn w-full flex items-center gap-3.5 p-3 hover:bg-zinc-900 rounded-xl transition font-medium text-zinc-300" data-tab="reels"><i data-lucide="clapperboard" class="w-5 h-5"></i> <span>Reels</span></button>
+                <button onclick="switchTab('messages')" class="nav-btn w-full flex items-center gap-3.5 p-3 hover:bg-zinc-900 rounded-xl transition font-bold text-blue-400 relative" data-tab="messages">
+                    <i data-lucide="message-circle" class="w-5 h-5"></i> <span>Direct Messages</span>
+                    <span id="desktopMsgBadge" class="ml-auto bg-gradient-to-r from-rose-500 to-purple-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">3</span>
                 </button>
-                <button onclick="switchTab('messages')" class="nav-btn w-full flex items-center gap-3.5 p-2.5 hover:bg-zinc-900 rounded-xl transition font-medium text-zinc-300 relative" data-tab="messages">
-                    <i data-lucide="send" class="w-5 h-5"></i> <span>Messages</span>
-                    <span class="ml-auto bg-rose-500 text-white text-[10px] font-bold px-1.5 py-0.2 rounded-full">2</span>
+                <button onclick="openUploadStudio('post')" class="nav-btn w-full flex items-center gap-3.5 p-3 hover:bg-zinc-900 rounded-xl transition font-bold text-amber-400" data-tab="create">
+                    <i data-lucide="plus-circle" class="w-5 h-5"></i> <span>Create / Upload</span>
                 </button>
-                <button onclick="switchTab('notifications')" class="nav-btn w-full flex items-center gap-3.5 p-2.5 hover:bg-zinc-900 rounded-xl transition font-medium text-zinc-300" data-tab="notifications"><i data-lucide="heart" class="w-5 h-5"></i> <span>Notifications</span></button>
-                <button onclick="switchTab('botdashboard')" class="nav-btn w-full flex items-center gap-3.5 p-2.5 hover:bg-zinc-900 rounded-xl transition font-medium text-purple-400" data-tab="botdashboard"><i data-lucide="bot" class="w-5 h-5"></i> <span>AI Bot Manager</span></button>
-                <button onclick="switchTab('profile')" class="nav-btn w-full flex items-center gap-3.5 p-2.5 hover:bg-zinc-900 rounded-xl transition font-medium text-zinc-300" data-tab="profile">
+                <button onclick="switchTab('notifications')" class="nav-btn w-full flex items-center gap-3.5 p-3 hover:bg-zinc-900 rounded-xl transition font-medium text-zinc-300" data-tab="notifications"><i data-lucide="heart" class="w-5 h-5"></i> <span>Notifications</span></button>
+                <button onclick="switchTab('profile')" class="nav-btn w-full flex items-center gap-3.5 p-3 hover:bg-zinc-900 rounded-xl transition font-medium text-zinc-300" data-tab="profile">
                     <div class="w-5 h-5 rounded-full overflow-hidden border border-zinc-700">
                         <img id="navProfileAvatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150" class="w-full h-full object-cover">
                     </div>
@@ -212,24 +223,36 @@
         </div>
 
         <div class="space-y-2.5 pt-3 border-t border-zinc-900">
+            <!-- Fast Upload Hub Shortcut -->
+            <div class="grid grid-cols-3 gap-1.5 text-center">
+                <button onclick="openUploadStudio('post')" class="p-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-[11px] font-bold text-zinc-200 border border-zinc-800 transition flex flex-col items-center gap-1">
+                    <i data-lucide="image" class="w-4 h-4 text-amber-400"></i>
+                    <span>Post</span>
+                </button>
+                <button onclick="openUploadStudio('reel')" class="p-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-[11px] font-bold text-zinc-200 border border-zinc-800 transition flex flex-col items-center gap-1">
+                    <i data-lucide="video" class="w-4 h-4 text-rose-400"></i>
+                    <span>Reel</span>
+                </button>
+                <button onclick="openUploadStudio('story')" class="p-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-[11px] font-bold text-zinc-200 border border-zinc-800 transition flex flex-col items-center gap-1">
+                    <i data-lucide="circle-dot" class="w-4 h-4 text-purple-400"></i>
+                    <span>Story</span>
+                </button>
+            </div>
+
             <!-- Download Android APK Button with instant trigger -->
             <button onclick="triggerDirectApkDownload()" class="w-full flex items-center justify-center gap-2 p-2.5 bg-gradient-to-r from-amber-500 via-rose-500 to-purple-600 hover:opacity-95 text-white rounded-xl font-bold text-xs shadow-lg transition">
                 <i data-lucide="download" class="w-4 h-4"></i>
                 <span>Download Android APK (26MB)</span>
             </button>
+            
             <div class="flex gap-2">
                 <button onclick="toggleTheme()" class="flex-1 flex items-center justify-center gap-1.5 p-2 bg-zinc-900 hover:bg-zinc-800 rounded-xl transition text-xs font-semibold text-zinc-300">
                     <i data-lucide="sun-moon" class="w-3.5 h-3.5"></i> Theme
                 </button>
-                <button onclick="switchTab('create')" class="flex-1 flex items-center justify-center gap-1.5 p-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl text-xs font-semibold">
-                    <i data-lucide="plus-circle" class="w-3.5 h-3.5 text-rose-400"></i> Create
+                <button onclick="openUploadStudio('post')" class="flex-1 flex items-center justify-center gap-1.5 p-2 bg-gradient-to-r from-rose-500 to-purple-600 hover:opacity-90 text-white rounded-xl text-xs font-semibold">
+                    <i data-lucide="plus" class="w-3.5 h-3.5"></i> Upload
                 </button>
             </div>
-            <!-- Logout / Sign in switcher -->
-            <button id="sidebarAuthActionBtn" onclick="openAuthModal()" class="w-full py-2 px-3 text-xs font-semibold rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-300 flex items-center justify-center gap-2 border border-zinc-800 transition">
-                <i data-lucide="log-in" class="w-3.5 h-3.5 text-amber-400"></i>
-                <span>Switch / Sign In</span>
-            </button>
         </div>
     </aside>
 
@@ -239,17 +262,19 @@
     <header class="md:hidden flex items-center justify-between px-4 py-3 border-b border-zinc-800 bg-black fixed top-0 left-0 right-0 z-40">
         <div class="flex items-center gap-2">
             <h1 class="text-2xl font-brand bg-gradient-to-r from-amber-400 via-rose-500 to-purple-500 bg-clip-text text-transparent">InstaClone</h1>
-            <span class="text-[9px] bg-[#3ECF8E]/20 text-[#3ECF8E] font-bold px-1.5 py-0.5 rounded border border-[#3ECF8E]/40">SupaBase</span>
+            <span class="text-[9px] bg-amber-500/20 text-amber-300 font-bold px-1.5 py-0.5 rounded border border-amber-600/40">Firebase</span>
         </div>
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-2.5">
+            <button onclick="openUploadStudio('post')" class="p-1 text-zinc-300 hover:text-white" title="Upload Post/Reel/Story">
+                <i data-lucide="plus-square" class="w-6 h-6 text-amber-400"></i>
+            </button>
             <button onclick="triggerDirectApkDownload()" class="px-2.5 py-1 bg-gradient-to-r from-rose-500 to-purple-600 text-white text-[11px] font-bold rounded-lg flex items-center gap-1 shadow">
                 <i data-lucide="download" class="w-3.5 h-3.5"></i>
                 <span>APK</span>
             </button>
-            <button onclick="switchTab('appointments')" class="p-1 text-[#3ECF8E]" title="Book Appointment"><i data-lucide="calendar" class="w-5 h-5"></i></button>
-            <button onclick="switchTab('botdashboard')" class="p-1"><i data-lucide="bot" class="text-purple-400 w-5 h-5"></i></button>
+            <button onclick="switchTab('notifications')" class="p-1"><i data-lucide="heart" class="w-5 h-5"></i></button>
             <button onclick="switchTab('messages')" class="p-1 relative">
-                <i data-lucide="send" class="w-5 h-5"></i>
+                <i data-lucide="message-circle" class="w-5 h-5 text-blue-400"></i>
                 <span class="absolute top-0 right-0 w-2 h-2 bg-rose-500 rounded-full"></span>
             </button>
         </div>
@@ -261,7 +286,8 @@
     <nav class="md:hidden flex items-center justify-around py-2.5 border-t border-zinc-800 bg-black fixed bottom-0 left-0 right-0 z-40">
         <button onclick="switchTab('home')" class="p-1" data-tab-mobile="home"><i data-lucide="home" class="w-6 h-6 text-rose-500"></i></button>
         <button onclick="switchTab('explore')" class="p-1" data-tab-mobile="explore"><i data-lucide="compass" class="w-6 h-6 text-zinc-400"></i></button>
-        <button onclick="switchTab('appointments')" class="p-1" data-tab-mobile="appointments"><i data-lucide="calendar-check" class="w-6 h-6 text-[#3ECF8E]"></i></button>
+        <button onclick="openUploadStudio('post')" class="p-1" data-tab-mobile="create"><i data-lucide="plus-circle" class="w-7 h-7 text-amber-400"></i></button>
+        <button onclick="switchTab('messages')" class="p-1" data-tab-mobile="messages"><i data-lucide="message-circle" class="w-6 h-6 text-zinc-400"></i></button>
         <button onclick="switchTab('reels')" class="p-1" data-tab-mobile="reels"><i data-lucide="clapperboard" class="w-6 h-6 text-zinc-400"></i></button>
         <button onclick="switchTab('profile')" class="p-1" data-tab-mobile="profile">
             <div class="w-6 h-6 rounded-full overflow-hidden border border-zinc-700">
@@ -280,16 +306,73 @@
     </main>
 
     <!-- ========================================== -->
-    <!-- 6. MODALS: AUTH, COMMENTS, EDIT PROFILE -->
+    <!-- 6. FULL-SCREEN STORY VIEWER MODAL -->
     <!-- ========================================== -->
+    <div id="storyViewerModal" class="hidden fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex items-center justify-center">
+        <div class="relative w-full max-w-sm h-[85vh] bg-zinc-950 rounded-2xl overflow-hidden shadow-2xl flex flex-col justify-between border border-zinc-800">
+            <!-- Top Progress Bars -->
+            <div class="absolute top-3 left-3 right-3 z-30 flex items-center gap-1.5">
+                <div class="h-1 flex-1 bg-white/30 rounded-full overflow-hidden">
+                    <div id="storyProgressFill" class="h-full bg-white story-progress-bar"></div>
+                </div>
+            </div>
 
-    <!-- Firebase / Supabase Switcher Modal -->
+            <!-- Top Header Details -->
+            <div class="absolute top-6 left-3 right-3 z-30 flex items-center justify-between text-white drop-shadow">
+                <div class="flex items-center gap-2.5">
+                    <img id="viewerStoryAvatar" src="" class="w-8 h-8 rounded-full border-2 border-white object-cover" />
+                    <div>
+                        <span id="viewerStoryUser" class="font-bold text-xs">username</span>
+                        <p class="text-[10px] text-zinc-300">Just now • Story</p>
+                    </div>
+                </div>
+                <button onclick="closeStoryViewer()" class="p-1 rounded-full bg-black/40 text-white hover:bg-black/60"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+
+            <!-- Media Container (Image or Video) -->
+            <div class="w-full h-full flex items-center justify-center bg-black relative" id="storyMediaBox">
+                <!-- Injected img or video -->
+            </div>
+
+            <!-- Bottom Story Reply -->
+            <div class="absolute bottom-3 left-3 right-3 z-30 flex items-center gap-2">
+                <input type="text" id="storyReplyInput" placeholder="Send a reply to friend..." class="flex-1 px-4 py-2.5 bg-black/60 backdrop-blur-sm border border-white/20 rounded-full text-xs text-white placeholder-zinc-400 focus:outline-none" onkeydown="if(event.key==='Enter') sendStoryReply()" />
+                <button onclick="sendStoryReply()" class="p-2.5 rounded-full bg-rose-500 text-white"><i data-lucide="send" class="w-4 h-4 fill-white"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- 7. NEW CHAT WITH FRIEND MODAL -->
+    <!-- ========================================== -->
+    <div id="newChatModal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-zinc-950 border border-zinc-800 rounded-2xl max-w-md w-full overflow-hidden shadow-2xl relative p-5 space-y-4">
+            <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
+                <h3 class="font-bold text-sm">New Message to a Friend</h3>
+                <button onclick="closeNewChatModal()" class="text-zinc-400 hover:text-white p-1 rounded-lg hover:bg-zinc-900"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+
+            <div class="relative">
+                <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-3.5 text-zinc-400"></i>
+                <input type="text" id="friendSearchInput" oninput="filterFriendsList(this.value)" placeholder="Search friends by name or handle..." class="w-full bg-zinc-900 border border-zinc-800 rounded-xl pl-10 pr-4 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500 transition" />
+            </div>
+
+            <div id="friendsSelectionList" class="space-y-2 max-h-60 overflow-y-auto hide-scrollbar">
+                <!-- Dynamic friend items injected here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- 8. MODALS: AUTH, COMMENTS, EDIT PROFILE -->
+    <!-- ========================================== -->
+    <!-- Account Details Modal -->
     <div id="authModal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-zinc-950 border border-zinc-800 rounded-2xl max-w-md w-full overflow-hidden shadow-2xl relative p-6 space-y-4">
             <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
                 <div class="flex items-center gap-2">
                     <h2 class="text-xl font-bold">Account Profile</h2>
-                    <span class="text-[10px] bg-[#3ECF8E]/20 text-[#3ECF8E] font-bold px-2 py-0.5 rounded border border-[#3ECF8E]/40">Active</span>
+                    <span class="text-[10px] bg-amber-500/20 text-amber-300 font-bold px-2 py-0.5 rounded border border-amber-600/40">Firebase Auth</span>
                 </div>
                 <button onclick="closeAuthModal()" class="text-zinc-400 hover:text-white p-1 rounded-lg hover:bg-zinc-900"><i data-lucide="x" class="w-5 h-5"></i></button>
             </div>
@@ -298,8 +381,8 @@
                 <img id="modalUserAvatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150" class="w-12 h-12 rounded-full object-cover border border-zinc-700" />
                 <div class="flex-1 min-w-0">
                     <h4 id="modalUserName" class="font-bold text-sm truncate">Asif</h4>
-                    <p id="modalUserEmail" class="text-xs text-zinc-400 truncate">asif@example.com</p>
-                    <p class="text-[10px] text-[#3ECF8E] mt-0.5">SupaBase Project: kilkdijwewzoofuppvck</p>
+                    <p id="modalUserEmail" class="text-xs text-zinc-400 truncate">asif@gmail.com</p>
+                    <p class="text-[10px] text-amber-400 mt-0.5">Firebase Project: instaclone-f3599</p>
                 </div>
             </div>
 
@@ -350,215 +433,379 @@
         </div>
     </div>
 
-    <!-- SUPABASE SQL SCHEMA HELPER MODAL -->
-    <div id="supabaseSqlModal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-zinc-950 border border-zinc-800 rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl">
-            <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
-                <div class="flex items-center gap-2">
-                    <span class="w-3 h-3 rounded-full bg-[#3ECF8E]"></span>
-                    <h3 class="font-bold text-sm text-[#3ECF8E]">SupaBase SQL Table Setup</h3>
-                </div>
-                <button onclick="document.getElementById('supabaseSqlModal').classList.add('hidden')" class="text-zinc-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
-            </div>
-            <p class="text-xs text-zinc-300">
-                Run this SQL in your Supabase SQL Editor (<code class="text-[#3ECF8E]">Project: kilkdijwewzoofuppvck</code>) to enable public appointment bookings:
-            </p>
-            <pre id="sqlSnippet" class="p-3 bg-black rounded-xl text-[11px] font-mono text-zinc-300 border border-zinc-800 overflow-x-auto select-all">CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+    <!-- ========================================== -->
+    <!-- 9. FIREBASE SDK V10 & APPLICATION LOGIC -->
+    <!-- ========================================== -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+        import { 
+            getAuth, 
+            onAuthStateChanged, 
+            signInWithEmailAndPassword, 
+            createUserWithEmailAndPassword, 
+            signInWithPopup, 
+            GoogleAuthProvider, 
+            signOut,
+            updateProfile 
+        } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+        import { 
+            getFirestore, 
+            collection, 
+            addDoc, 
+            getDocs, 
+            doc, 
+            setDoc, 
+            getDoc, 
+            updateDoc, 
+            onSnapshot, 
+            query, 
+            orderBy, 
+            serverTimestamp, 
+            arrayUnion, 
+            arrayRemove,
+            increment 
+        } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
-CREATE TABLE IF NOT EXISTS public.appointments (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name TEXT NOT NULL,
-    email TEXT NOT NULL,
-    phone TEXT,
-    appointment_type TEXT NOT NULL DEFAULT 'General Consultation',
-    appointment_date TEXT NOT NULL,
-    appointment_time TEXT NOT NULL,
-    message TEXT,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
-);
+        // User's provided Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyD5IqyKfJDbg1OvvE46GhXA2pdZys8FWFw",
+            authDomain: "instaclone-f3599.firebaseapp.com",
+            projectId: "instaclone-f3599",
+            storageBucket: "instaclone-f3599.firebasestorage.app",
+            messagingSenderId: "63224097091",
+            appId: "1:63224097091:web:05357a65d781964ac767f6",
+            measurementId: "G-N0KDK0GXV9"
+        };
 
-ALTER TABLE public.appointments ENABLE ROW LEVEL SECURITY;
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const googleProvider = new GoogleAuthProvider();
 
-DROP POLICY IF EXISTS "Enable all access for anon and authenticated" ON public.appointments;
+        window.firebaseApp = app;
+        window.firebaseAuth = auth;
+        window.firebaseDb = db;
+        window.firebaseGoogleProvider = googleProvider;
 
-CREATE POLICY "Enable all access for anon and authenticated"
-ON public.appointments
-FOR ALL
-TO anon, authenticated
-USING (true)
-WITH CHECK (true);
+        // Firebase Auth State Listener
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const username = user.displayName || user.email.split('@')[0];
+                const avatar = user.photoURL || `https://api.dicebear.com/7.x/adventurer/svg?seed=${user.uid}`;
+                window.userProfile.uid = user.uid;
+                window.userProfile.username = username;
+                window.userProfile.name = user.displayName || username;
+                window.userProfile.email = user.email;
+                window.userProfile.avatar = avatar;
 
-GRANT USAGE ON SCHEMA public TO anon, authenticated;
-GRANT ALL ON TABLE public.appointments TO anon, authenticated, service_role;</pre>
-            <div class="flex gap-2">
-                <button onclick="navigator.clipboard.writeText(document.getElementById('sqlSnippet').textContent); alert('SQL copied to clipboard! Paste in Supabase SQL editor.');" class="flex-1 py-2 bg-[#3ECF8E] hover:bg-[#34b37a] text-black font-bold text-xs rounded-xl transition flex items-center justify-center gap-1.5">
-                    <i data-lucide="copy" class="w-4 h-4"></i> Copy SQL Query
-                </button>
-                <button onclick="document.getElementById('supabaseSqlModal').classList.add('hidden')" class="px-4 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-xs font-semibold">Close</button>
-            </div>
-        </div>
-    </div>
+                try {
+                    const userRef = doc(db, "users", user.uid);
+                    await setDoc(userRef, {
+                        uid: user.uid,
+                        username: username,
+                        name: window.userProfile.name,
+                        email: user.email,
+                        avatar: avatar,
+                        bio: window.userProfile.bio,
+                        updatedAt: serverTimestamp()
+                    }, { merge: true });
+                } catch (e) {
+                    console.log("Firestore user profile sync notice:", e);
+                }
+
+                window.updateHeaderProfileUI();
+            }
+        });
+
+        // Setup Realtime Firestore Listeners
+        window.setupFirestoreRealtime = function() {
+            try {
+                // Realtime Posts Listener
+                const postsQuery = query(collection(db, "posts"), orderBy("createdAt", "desc"));
+                onSnapshot(postsQuery, (snapshot) => {
+                    if (!snapshot.empty) {
+                        const firestorePosts = [];
+                        snapshot.forEach((docSnap) => {
+                            const data = docSnap.data();
+                            firestorePosts.push({
+                                id: docSnap.id,
+                                user: data.user || 'Friend',
+                                avatar: data.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
+                                image: data.image || '',
+                                isVideo: Boolean(data.isVideo),
+                                likes: data.likes || 0,
+                                caption: data.caption || '',
+                                time: data.createdAt ? new Date(data.createdAt.seconds * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'JUST NOW',
+                                isLiked: false,
+                                comments: data.comments || []
+                            });
+                        });
+                        window.posts = firestorePosts;
+                        if (window.currentTab === 'home' || window.currentTab === 'profile') {
+                            window.render();
+                        }
+                    }
+                }, (err) => console.log("Firestore posts listener warning:", err));
+
+                // Realtime Stories Listener
+                const storiesQuery = query(collection(db, "stories"), orderBy("createdAt", "desc"));
+                onSnapshot(storiesQuery, (snapshot) => {
+                    if (!snapshot.empty) {
+                        const firestoreStories = [];
+                        snapshot.forEach((docSnap) => {
+                            const data = docSnap.data();
+                            firestoreStories.push({
+                                id: docSnap.id,
+                                user: data.user || 'Friend',
+                                avatar: data.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
+                                mediaUrl: data.mediaUrl || '',
+                                isVideo: Boolean(data.isVideo),
+                                caption: data.caption || '',
+                                seen: false
+                            });
+                        });
+                        window.stories = [...firestoreStories, ...window.defaultStories];
+                        if (window.currentTab === 'home') window.render();
+                    }
+                }, (err) => console.log("Firestore stories listener warning:", err));
+
+                // Realtime Reels Listener
+                const reelsQuery = query(collection(db, "reels"), orderBy("createdAt", "desc"));
+                onSnapshot(reelsQuery, (snapshot) => {
+                    if (!snapshot.empty) {
+                        const firestoreReels = [];
+                        snapshot.forEach((docSnap) => {
+                            const data = docSnap.data();
+                            firestoreReels.push({
+                                id: docSnap.id,
+                                user: data.user || 'Friend',
+                                avatar: data.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
+                                video: data.video || '',
+                                poster: data.poster || 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800',
+                                likes: data.likes || 1,
+                                caption: data.caption || '',
+                                audio: data.audio || 'Original Soundtrack',
+                                isFollowing: false,
+                                isLiked: false
+                            });
+                        });
+                        window.reels = [...firestoreReels, ...window.defaultReels];
+                        if (window.currentTab === 'reels') window.render();
+                    }
+                }, (err) => console.log("Firestore reels listener warning:", err));
+            } catch (e) {
+                console.warn("Firestore listeners initialization:", e);
+            }
+        };
+
+        // Initialize Firestore Sync
+        window.setupFirestoreRealtime();
+    </script>
 
     <!-- ========================================== -->
-    <!-- 7. APPLICATION CORE JAVASCRIPT & SUPABASE -->
+    <!-- 10. APPLICATION CORE JAVASCRIPT & MESSAGING -->
     <!-- ========================================== -->
     <script>
-        // Supabase Client Initialization with User's Project Credentials
-        const SUPABASE_PROJECT_ID = "kilkdijwewzoofuppvck";
-        const SUPABASE_URL = "https://kilkdijwewzoofuppvck.supabase.co";
-        const SUPABASE_ANON_KEY = "sb_publishable_QaKjWx8lwyRlWFi40Un-sA_Ykhoxuii";
-        
-        let supabaseClient = null;
-        try {
-            if (window.supabase) {
-                supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-                console.log("Supabase Client Connected Successfully to Project:", SUPABASE_PROJECT_ID);
-            }
-        } catch (e) {
-            console.warn("Supabase init notice:", e);
-        }
-
         // Global State
-        let currentTab = 'home';
-        let isDarkMode = true;
-        let aiBotActive = true;
-        let botNiche = 'Horror & Creepypasta Stories';
-        let activeCommentPostId = null;
-        let activeChatUser = null;
-        let isAuthenticated = false;
-        let isLandingSignUp = false;
+        window.currentTab = 'home';
+        window.uploadMode = 'post';
+        window.isDarkMode = true;
+        window.activeCommentPostId = null;
+        window.activeChatUser = null;
+        window.isAuthenticated = false;
+        window.isLandingSignUp = false;
+        window.isFriendTyping = false;
 
-        let userProfile = {
+        // Current uploaded file buffer
+        window.uploadedMediaBase64 = null;
+        window.uploadedMediaType = null;
+
+        window.userProfile = {
+            uid: null,
             username: 'asidragonix',
             name: 'Asif',
             email: 'asif@gmail.com',
-            bio: 'Digital Creator & Full-Stack Developer 🚀 | Open for Brand Collaborations & 1-on-1 Sessions',
+            bio: 'Digital Creator & Full-Stack Developer 🚀 | Sharing life, photography & moments with friends',
             avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
             postsCount: 14,
             followersCount: 1420,
             followingCount: 380
         };
 
-        // Live Appointments state (fetched from Supabase or cached)
-        let appointmentsList = [
+        // Real Friends Directory
+        window.friends = [
             {
-                id: 'demo-1',
-                name: 'Rohit Sharma',
-                email: 'rohit@creators.in',
-                phone: '+91 9876543210',
-                appointment_type: 'Creator Collaboration & Promotion',
-                appointment_date: '2026-11-15',
-                appointment_time: '16:00',
-                message: 'Looking to collaborate on a series of tech reels and product reviews.',
-                created_at: new Date().toISOString()
+                username: 'mohit_v',
+                name: 'Mohit Verma',
+                avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150',
+                status: 'Online',
+                isOnline: true,
+                bio: 'Coffee lover ☕ | Tech enthusiast & traveler'
+            },
+            {
+                username: 'priya_designs',
+                name: 'Priya Sharma',
+                avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150',
+                status: 'Online',
+                isOnline: true,
+                bio: 'UI/UX Designer & Photographer 📸'
+            },
+            {
+                username: 'aarav_travels',
+                name: 'Aarav Patel',
+                avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
+                status: 'Active 15m ago',
+                isOnline: false,
+                bio: 'Chasing mountains & sunsets 🏔️'
+            },
+            {
+                username: 'sara_vlogs',
+                name: 'Sara Ali',
+                avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150',
+                status: 'Active 1h ago',
+                isOnline: false,
+                bio: 'Lifestyle, fitness & daily creator reels ✨'
+            },
+            {
+                username: 'naitik_dev',
+                name: 'Naitik Singh',
+                avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150',
+                status: 'Active yesterday',
+                isOnline: false,
+                bio: 'Android & Jetpack Compose engineer 🤖'
             }
         ];
 
-        let stories = [
-            { id: 1, user: 'HorrorBot_AI', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150', seen: false },
-            { id: 2, user: 'ViralTrendz', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150', seen: false },
-            { id: 3, user: 'Mohit', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150', seen: true },
-            { id: 4, user: 'Naitik', avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150', seen: true }
+        // Active Messaging Conversations with Friends
+        window.messages = [
+            { 
+                id: 'c1',
+                user: 'Mohit Verma',
+                handle: 'mohit_v',
+                avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150', 
+                lastMsg: 'Bhai Reels aur Story upload section mast ho gaya!', 
+                time: '2m', 
+                unread: false,
+                isOnline: true,
+                chats: [
+                    { fromMe: false, text: 'Hey Asif! Kaisa hai bhai?', time: '10:30 AM' },
+                    { fromMe: true, text: 'Ekdum badhiya! New Instagram update test kar raha hoon.', time: '10:32 AM' },
+                    { fromMe: false, text: 'Bhai Reels aur Story upload section mast ho gaya!', time: '10:35 AM' }
+                ]
+            },
+            { 
+                id: 'c2',
+                user: 'Priya Sharma',
+                handle: 'priya_designs',
+                avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150', 
+                lastMsg: 'The color scheme and smooth animations look so clean! ✨', 
+                time: '15m', 
+                unread: true,
+                isOnline: true,
+                chats: [
+                    { fromMe: false, text: 'Loved your recent travel reel! Where was that shot?', time: 'Yesterday' },
+                    { fromMe: true, text: 'Thank you Priya! That was in Himachal last weekend 🏔️', time: 'Yesterday' },
+                    { fromMe: false, text: 'The color scheme and smooth animations look so clean! ✨', time: '15m ago' }
+                ]
+            },
+            { 
+                id: 'c3',
+                user: 'Aarav Patel',
+                handle: 'aarav_travels',
+                avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150', 
+                lastMsg: 'Lets plan a photo walk this Sunday!', 
+                time: '1h', 
+                unread: false,
+                isOnline: false,
+                chats: [
+                    { fromMe: false, text: 'Bro are you free this weekend?', time: '1h ago' },
+                    { fromMe: false, text: 'Lets plan a photo walk this Sunday!', time: '1h ago' }
+                ]
+            },
+            { 
+                id: 'c4',
+                user: 'Sara Ali',
+                handle: 'sara_vlogs',
+                avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150', 
+                lastMsg: 'Shared a reel with you', 
+                time: '3h', 
+                unread: false,
+                isOnline: false,
+                chats: [
+                    { fromMe: false, text: 'Check out this new camera lens comparison!', time: '3h ago' },
+                    { fromMe: false, text: 'Shared a reel with you', time: '3h ago' }
+                ]
+            }
         ];
 
-        let posts = [
+        window.defaultStories = [
+            { id: 's1', user: 'Priya Sharma', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150', mediaUrl: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800', isVideo: false, seen: false },
+            { id: 's2', user: 'Mohit Verma', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150', mediaUrl: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800', isVideo: false, seen: false },
+            { id: 's3', user: 'Aarav Patel', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150', mediaUrl: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=800', isVideo: false, seen: true },
+            { id: 's4', user: 'Sara Ali', avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150', mediaUrl: 'https://images.unsplash.com/photo-1490750967868-88aa4486c946?w=800', isVideo: false, seen: true }
+        ];
+
+        window.stories = [...window.defaultStories];
+
+        window.posts = [
             {
                 id: 1,
-                user: 'HorrorBot_AI',
-                avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
-                image: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=800',
-                likes: 342,
-                caption: 'The Midnight Whisper: Jab raat ke 3 baje kamre ki khidki apne aap khulne lage... 👻 #horrorstories #creepypasta #ai',
+                user: 'Priya Sharma',
+                avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150',
+                image: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800',
+                likes: 384,
+                caption: 'Golden hour in the valley 🌅 Nature never fails to amaze. #goldenhour #photography #nature',
                 time: '2 HOURS AGO',
                 isLiked: false,
                 comments: [
-                    { author: 'Mohit', text: 'Spooky vibe is incredible!' },
-                    { author: 'asidragonix', text: 'Lighting is cinematic.' }
+                    { author: 'Mohit', text: 'Breathtaking colors Priya!' },
+                    { author: 'asidragonix', text: 'Cinematic composition!' }
                 ]
             },
             {
                 id: 2,
-                user: 'ViralTrendz_AI',
-                avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150',
+                user: 'Aarav Patel',
+                avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
                 image: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800',
                 likes: 1250,
-                caption: 'InstaClone with Supabase appointment tables & Real-time Android APK! 🚀 #tech #ai #supabase',
+                caption: 'Excited to announce our new creator meetup with friends this weekend! 🚀 #creators #community #weekend',
                 time: '5 HOURS AGO',
                 isLiked: true,
                 comments: [
-                    { author: 'Naitik', text: 'Supabase integration works seamlessly!' }
+                    { author: 'naitik_dev', text: 'Count me in brother!' }
                 ]
             }
         ];
 
-        // FIXED VIDEO REELS: Reliable public CDNs with posters and tap controls
-        let reels = [
+        window.defaultReels = [
             {
                 id: 1,
-                user: 'nature_explorer',
-                avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
+                user: 'Sara Ali',
+                avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150',
                 video: 'https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-576p.mp4',
                 poster: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800',
                 likes: 1840,
-                caption: 'Surfing the endless blue waves 🌊 #nature #adventure #reels',
-                audio: 'Original Soundtrack - Ocean Beats',
+                caption: 'Chasing waves with friends 🌊 #ocean #surf #weekendvibes',
+                audio: 'Original Soundtrack • Ocean Chill',
                 isFollowing: false,
                 isLiked: false
             },
             {
                 id: 2,
-                user: 'ocean_diver',
-                avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150',
+                user: 'Mohit Verma',
+                avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150',
                 video: 'https://vjs.zencdn.net/v/oceans.mp4',
                 poster: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800',
                 likes: 3420,
-                caption: 'Deep sea creatures and crystal waters 🐬 #deepsea #ocean #viral',
-                audio: 'Underwater Symphony - Ambient',
+                caption: 'Crystal blue waters and marine life 🐬 #scubadiving #travel',
+                audio: 'Underwater Symphony • Lo-Fi Remix',
                 isFollowing: true,
                 isLiked: true
-            },
-            {
-                id: 3,
-                user: 'macro_visuals',
-                avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150',
-                video: 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4',
-                poster: 'https://images.unsplash.com/photo-1490750967868-88aa4486c946?w=800',
-                likes: 920,
-                caption: 'Nature blooming in super slow motion 🌸✨ #macro #flowers #calm',
-                audio: 'Spring Melody - Lo-Fi',
-                isFollowing: false,
-                isLiked: false
             }
         ];
 
-        let messages = [
-            { 
-                id: 'm1',
-                user: 'HorrorBot_AI', 
-                lastMsg: 'New horror micro-story posted!', 
-                time: '10m', 
-                avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150', 
-                unread: true,
-                chats: [
-                    { fromMe: false, text: 'Hey Asif! New story generated for midnight.' },
-                    { fromMe: true, text: 'Awesome! Did you configure the creepy ambient audio?' },
-                    { fromMe: false, text: 'New horror micro-story posted!' }
-                ]
-            },
-            { 
-                id: 'm2',
-                user: 'Mohit', 
-                lastMsg: 'Bhai appointment form SupaBase se connect ho gaya!', 
-                time: '2h', 
-                avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150', 
-                unread: false,
-                chats: [
-                    { fromMe: false, text: 'Bhai appointment form SupaBase se connect ho gaya!' },
-                    { fromMe: true, text: 'Haan bhai, project kilkdijwewzoofuppvck me data directly save ho raha hai!' }
-                ]
-            }
-        ];
+        window.reels = [...window.defaultReels];
 
         // ==========================================
         // AUTHENTICATION LOGIC (Instagram Landing Gate)
@@ -573,17 +820,17 @@ GRANT ALL ON TABLE public.appointments TO anon, authenticated, service_role;</pr
             if (isLandingSignUp) {
                 prompt.textContent = "Have an account? ";
                 btn.textContent = "Log in";
-                submitBtn.innerHTML = "<span>Sign Up with Email</span>";
+                submitBtn.innerHTML = "<span>Sign Up with Firebase</span>";
                 userField.classList.remove('hidden');
             } else {
                 prompt.textContent = "Don't have an account? ";
                 btn.textContent = "Sign up";
-                submitBtn.innerHTML = "<span>Log In</span>";
+                submitBtn.innerHTML = "<span>Log In with Firebase</span>";
                 userField.classList.add('hidden');
             }
         }
 
-        function handleLandingLogin(event) {
+        async function handleLandingLogin(event) {
             event.preventDefault();
             const email = document.getElementById('landingEmailInput').value.trim();
             const password = document.getElementById('landingPasswordInput').value;
@@ -591,7 +838,6 @@ GRANT ALL ON TABLE public.appointments TO anon, authenticated, service_role;</pr
 
             if (!email || !password) return;
 
-            // Set user profile
             userProfile.email = email;
             if (usernameInput) {
                 userProfile.name = usernameInput;
@@ -621,7 +867,6 @@ GRANT ALL ON TABLE public.appointments TO anon, authenticated, service_role;</pr
             isAuthenticated = true;
             document.getElementById('instagramLandingGate').classList.add('hidden');
             updateHeaderProfileUI();
-            fetchSupabaseAppointments();
             render();
         }
 
@@ -651,125 +896,410 @@ GRANT ALL ON TABLE public.appointments TO anon, authenticated, service_role;</pr
         }
 
         // ==========================================
-        // SUPABASE APPOINTMENT BOOKING HANDLERS
+        // FRIEND MESSAGING SYSTEM LOGIC
         // ==========================================
-        async function fetchSupabaseAppointments() {
-            if (!supabaseClient) return;
-            try {
-                const { data, error } = await supabaseClient
-                    .from('appointments')
-                    .select('*')
-                    .order('created_at', { ascending: false });
-
-                if (!error && data && data.length > 0) {
-                    appointmentsList = data;
-                    if (currentTab === 'appointments') render();
+        function openFriendChat(friendName) {
+            let conv = messages.find(m => m.user === friendName || m.handle === friendName);
+            if (!conv) {
+                const friendObj = friends.find(f => f.name === friendName || f.username === friendName);
+                if (friendObj) {
+                    conv = {
+                        id: 'c-' + Date.now(),
+                        user: friendObj.name,
+                        handle: friendObj.username,
+                        avatar: friendObj.avatar,
+                        lastMsg: 'Started conversation',
+                        time: 'Just now',
+                        unread: false,
+                        isOnline: friendObj.isOnline,
+                        chats: [
+                            { fromMe: false, text: `Hey ${userProfile.name}! Great to connect here ✨`, time: 'Just now' }
+                        ]
+                    };
+                    messages.unshift(conv);
                 }
-            } catch (err) {
-                console.warn("Appointments fetch notice:", err);
+            }
+            if (conv) {
+                activeChatUser = conv.user;
+                conv.unread = false;
+                switchTab('messages');
             }
         }
 
-        async function handleAppointmentSubmit(event) {
-            event.preventDefault();
-            const btn = document.getElementById('bookSubmitBtn');
-            const alertBox = document.getElementById('bookStatusAlert');
+        function openNewChatModal() {
+            const modal = document.getElementById('newChatModal');
+            const list = document.getElementById('friendsSelectionList');
+            if (list) {
+                list.innerHTML = friends.map(f => `
+                    <div onclick="openFriendChat('${f.name}'); closeNewChatModal();" class="flex items-center justify-between p-3 bg-zinc-900/60 hover:bg-zinc-800 rounded-xl cursor-pointer transition border border-zinc-800">
+                        <div class="flex items-center gap-3">
+                            <div class="relative">
+                                <img src="${f.avatar}" class="w-10 h-10 rounded-full object-cover border border-zinc-700" />
+                                ${f.isOnline ? `<span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-black rounded-full"></span>` : ''}
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-xs text-white">${f.name}</h4>
+                                <p class="text-[11px] text-zinc-400">@${f.username} • ${f.status}</p>
+                            </div>
+                        </div>
+                        <button class="px-3 py-1 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-bold transition flex items-center gap-1">
+                            <i data-lucide="message-circle" class="w-3.5 h-3.5"></i> Chat
+                        </button>
+                    </div>
+                `).join('');
+            }
+            modal.classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function closeNewChatModal() {
+            document.getElementById('newChatModal').classList.add('hidden');
+        }
+
+        function filterFriendsList(query) {
+            const list = document.getElementById('friendsSelectionList');
+            if (!list) return;
+            const q = query.toLowerCase();
+            const filtered = friends.filter(f => f.name.toLowerCase().includes(q) || f.username.toLowerCase().includes(q));
+            list.innerHTML = filtered.map(f => `
+                <div onclick="openFriendChat('${f.name}'); closeNewChatModal();" class="flex items-center justify-between p-3 bg-zinc-900/60 hover:bg-zinc-800 rounded-xl cursor-pointer transition border border-zinc-800">
+                    <div class="flex items-center gap-3">
+                        <div class="relative">
+                            <img src="${f.avatar}" class="w-10 h-10 rounded-full object-cover border border-zinc-700" />
+                            ${f.isOnline ? `<span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-black rounded-full"></span>` : ''}
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-xs text-white">${f.name}</h4>
+                            <p class="text-[11px] text-zinc-400">@${f.username}</p>
+                        </div>
+                    </div>
+                    <button class="px-3 py-1 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-bold transition">Chat</button>
+                </div>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        function sendFriendDM(friendUser) {
+            const input = document.getElementById('dmInput');
+            const text = input ? input.value.trim() : '';
+            if (!text) return;
+
+            const conv = messages.find(m => m.user === friendUser);
+            if (!conv) return;
+
+            const nowTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            conv.chats.push({ fromMe: true, text: text, time: nowTime });
+            conv.lastMsg = text;
+            conv.time = 'Just now';
+            input.value = '';
+            render();
+
+            // Auto-scroll chat box to bottom
+            setTimeout(() => {
+                const box = document.getElementById('chatMsgBox');
+                if (box) box.scrollTop = box.scrollHeight;
+            }, 50);
+
+            // Realistic Friend Typing & Reply simulation
+            isFriendTyping = true;
+            setTimeout(() => {
+                isFriendTyping = false;
+                const replies = [
+                    "That sounds awesome! Let's catch up soon 🙌",
+                    "Haha totally agree! 😂",
+                    "Loved your recent story post!",
+                    "Sent you some photos on WhatsApp too!",
+                    "Great to hear from you Asif! See you this weekend 🚀"
+                ];
+                const randomReply = replies[Math.floor(Math.random() * replies.length)];
+                conv.chats.push({
+                    fromMe: false,
+                    text: randomReply,
+                    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                });
+                conv.lastMsg = randomReply;
+                conv.time = 'Just now';
+                if (activeChatUser === friendUser) {
+                    render();
+                    setTimeout(() => {
+                        const box = document.getElementById('chatMsgBox');
+                        if (box) box.scrollTop = box.scrollHeight;
+                    }, 50);
+                }
+            }, 1200);
+        }
+
+        function sendQuickHeart(friendUser) {
+            const conv = messages.find(m => m.user === friendUser);
+            if (!conv) return;
+            const nowTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            conv.chats.push({ fromMe: true, text: '❤️', isHeart: true, time: nowTime });
+            conv.lastMsg = '❤️';
+            conv.time = 'Just now';
+            render();
+            setTimeout(() => {
+                const box = document.getElementById('chatMsgBox');
+                if (box) box.scrollTop = box.scrollHeight;
+            }, 50);
+        }
+
+        function sharePostWithFriend(postId) {
+            const post = posts.find(p => p.id === postId);
+            if (!post) return;
+            const targetFriend = friends[0].name;
+            let conv = messages.find(m => m.user === targetFriend);
+            if (!conv) {
+                openFriendChat(targetFriend);
+                conv = messages.find(m => m.user === targetFriend);
+            }
+            if (conv) {
+                conv.chats.push({
+                    fromMe: true,
+                    text: `Shared post by @${post.user}: "${post.caption.slice(0, 40)}..." 📸`,
+                    time: 'Just now'
+                });
+                conv.lastMsg = `Shared post by @${post.user}`;
+                conv.time = 'Just now';
+                activeChatUser = conv.user;
+                switchTab('messages');
+            }
+        }
+
+        function sendStoryReply() {
+            const input = document.getElementById('storyReplyInput');
+            const text = input ? input.value.trim() : '';
+            if (!text) return;
+            alert("Reply sent to friend's direct messages!");
+            input.value = '';
+            closeStoryViewer();
+        }
+
+        // ==========================================
+        // UPLOAD FILE & CREATOR STUDIO HANDLERS
+        // ==========================================
+        function openUploadStudio(mode) {
+            window.uploadMode = mode || 'post';
+            switchTab('create');
+        }
+
+        function switchUploadType(type) {
+            window.uploadMode = type;
+            window.uploadedMediaBase64 = null;
+            window.uploadedMediaType = null;
+            render();
+        }
+
+        function handleMediaFileSelection(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const isVideo = file.type.startsWith('video');
+            window.uploadedMediaType = isVideo ? 'video' : 'image';
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                window.uploadedMediaBase64 = e.target.result;
+                const previewContainer = document.getElementById('mediaPreviewBox');
+                const fileHint = document.getElementById('uploadFileHint');
+
+                if (previewContainer) {
+                    previewContainer.classList.remove('hidden');
+                    if (isVideo) {
+                        previewContainer.innerHTML = `
+                            <video src="${e.target.result}" autoplay loop muted playsinline class="w-full h-full object-cover rounded-xl"></video>
+                            <span class="absolute top-2 right-2 px-2 py-0.5 bg-black/70 text-white text-[10px] font-bold rounded-md flex items-center gap-1">
+                                <i data-lucide="video" class="w-3 h-3 text-rose-400"></i> Video Preview
+                            </span>
+                        `;
+                    } else {
+                        previewContainer.innerHTML = `
+                            <img src="${e.target.result}" class="w-full h-full object-cover rounded-xl" />
+                            <span class="absolute top-2 right-2 px-2 py-0.5 bg-black/70 text-white text-[10px] font-bold rounded-md flex items-center gap-1">
+                                <i data-lucide="image" class="w-3 h-3 text-amber-400"></i> Image Preview
+                            </span>
+                        `;
+                    }
+                    lucide.createIcons();
+                }
+
+                if (fileHint) {
+                    fileHint.textContent = `Selected: ${file.name} (${(file.size / (1024 * 1024)).toFixed(1)} MB)`;
+                    fileHint.className = "text-xs font-semibold text-green-400 mt-1";
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+
+        async function handleCreatorPublish() {
+            const btn = document.getElementById('publishSubmitBtn');
+            const alertBox = document.getElementById('publishStatusAlert');
             alertBox.classList.add('hidden');
 
-            const name = document.getElementById('apptName').value.trim();
-            const email = document.getElementById('apptEmail').value.trim();
-            const phone = document.getElementById('apptPhone').value.trim();
-            const type = document.getElementById('apptType').value;
-            const date = document.getElementById('apptDate').value;
-            const time = document.getElementById('apptTime').value;
-            const message = document.getElementById('apptMessage').value.trim();
+            const caption = document.getElementById('creatorCaption') ? document.getElementById('creatorCaption').value.trim() : '';
+            const manualUrl = document.getElementById('creatorManualUrl') ? document.getElementById('creatorManualUrl').value.trim() : '';
+            const audioName = document.getElementById('creatorAudioName') ? document.getElementById('creatorAudioName').value.trim() : 'Original Audio';
 
-            if (!name || !email || !date || !time) {
+            const mediaSource = window.uploadedMediaBase64 || manualUrl;
+
+            if (!mediaSource) {
                 alertBox.className = "p-3 rounded-xl mb-3 text-xs bg-rose-950 border border-rose-800 text-rose-300";
-                alertBox.textContent = "Please fill in all required appointment fields.";
+                alertBox.textContent = "Please select a file or paste an image/video URL!";
                 alertBox.classList.remove('hidden');
                 return;
             }
 
             btn.disabled = true;
-            btn.innerHTML = `<span class="animate-spin inline-block mr-2">⏳</span> Saving to SupaBase...`;
+            btn.innerHTML = `<span class="animate-spin inline-block mr-2">⏳</span> Publishing to Firebase...`;
 
-            const appointmentPayload = {
-                name: name,
-                email: email,
-                phone: phone || null,
-                appointment_type: type,
-                appointment_date: date,
-                appointment_time: time,
-                message: message || ''
-            };
+            const isVideo = window.uploadedMediaType === 'video' || mediaSource.endsWith('.mp4') || mediaSource.includes('video');
 
-            let saveSucceeded = false;
+            try {
+                if (window.uploadMode === 'post') {
+                    const newPost = {
+                        id: 'post-' + Date.now(),
+                        user: userProfile.username,
+                        avatar: userProfile.avatar,
+                        image: mediaSource,
+                        isVideo: isVideo,
+                        likes: 1,
+                        caption: caption || '✨ Shared via InstaClone',
+                        time: 'JUST NOW',
+                        isLiked: false,
+                        comments: [],
+                        createdAt: new Date().toISOString()
+                    };
 
-            if (supabaseClient) {
-                try {
-                    const { data, error } = await supabaseClient
-                        .from('appointments')
-                        .insert([appointmentPayload])
-                        .select();
-
-                    if (!error) {
-                        saveSucceeded = true;
-                        if (data && data[0]) {
-                            appointmentsList.unshift(data[0]);
-                        } else {
-                            appointmentsList.unshift({ id: 'supa-' + Date.now(), ...appointmentPayload, created_at: new Date().toISOString() });
-                        }
-                    } else {
-                        console.warn("Supabase response error:", error);
-                        // If table not found in Supabase schema cache
-                        if (error.code === 'PGRST205' || error.message.includes('schema cache') || error.code === '42P01') {
-                            showSupabaseTableHelpPrompt();
+                    if (window.firebaseDb) {
+                        try {
+                            const { collection, addDoc, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js");
+                            await addDoc(collection(window.firebaseDb, "posts"), {
+                                ...newPost,
+                                createdAt: serverTimestamp()
+                            });
+                        } catch (e) {
+                            console.log("Firestore post sync warning:", e);
                         }
                     }
-                } catch (e) {
-                    console.error("Supabase insert exception:", e);
+
+                    posts.unshift(newPost);
+                    switchTab('home');
+
+                } else if (window.uploadMode === 'reel') {
+                    const newReel = {
+                        id: 'reel-' + Date.now(),
+                        user: userProfile.username,
+                        avatar: userProfile.avatar,
+                        video: mediaSource,
+                        poster: userProfile.avatar,
+                        likes: 1,
+                        caption: caption || 'New reel! 🔥 #friends #lifestyle',
+                        audio: audioName || 'Original Audio',
+                        isFollowing: false,
+                        isLiked: false,
+                        createdAt: new Date().toISOString()
+                    };
+
+                    if (window.firebaseDb) {
+                        try {
+                            const { collection, addDoc, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js");
+                            await addDoc(collection(window.firebaseDb, "reels"), {
+                                ...newReel,
+                                createdAt: serverTimestamp()
+                            });
+                        } catch (e) {
+                            console.log("Firestore reel sync warning:", e);
+                        }
+                    }
+
+                    reels.unshift(newReel);
+                    switchTab('reels');
+
+                } else if (window.uploadMode === 'story') {
+                    const newStory = {
+                        id: 'story-' + Date.now(),
+                        user: userProfile.username,
+                        avatar: userProfile.avatar,
+                        mediaUrl: mediaSource,
+                        isVideo: isVideo,
+                        caption: caption || '',
+                        seen: false,
+                        createdAt: new Date().toISOString()
+                    };
+
+                    if (window.firebaseDb) {
+                        try {
+                            const { collection, addDoc, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js");
+                            await addDoc(collection(window.firebaseDb, "stories"), {
+                                ...newStory,
+                                createdAt: serverTimestamp()
+                            });
+                        } catch (e) {
+                            console.log("Firestore story sync warning:", e);
+                        }
+                    }
+
+                    stories.unshift(newStory);
+                    switchTab('home');
+                    setTimeout(() => openStoryViewer(newStory.id), 400);
                 }
+
+                window.uploadedMediaBase64 = null;
+                window.uploadedMediaType = null;
+            } catch (err) {
+                console.error("Publishing error:", err);
+                alert("Published locally! " + err.message);
+                switchTab('home');
             }
-
-            // Always provide instant positive feedback & fallback
-            if (!saveSucceeded) {
-                appointmentsList.unshift({
-                    id: 'local-' + Date.now(),
-                    ...appointmentPayload,
-                    created_at: new Date().toISOString()
-                });
-            }
-
-            alertBox.className = "p-3.5 rounded-xl mb-3 text-xs bg-[#3ECF8E]/10 border border-[#3ECF8E]/40 text-[#3ECF8E] flex items-start gap-2";
-            alertBox.innerHTML = `
-                <i data-lucide="check-circle" class="w-4 h-4 flex-shrink-0 mt-0.5"></i>
-                <div>
-                    <strong class="block font-bold">Appointment Booked Successfully!</strong>
-                    <span>Saved for ${date} at ${time}. Creator will contact via ${email}.</span>
-                </div>
-            `;
-            alertBox.classList.remove('hidden');
-            lucide.createIcons();
-
-            document.getElementById('appointmentForm').reset();
-            btn.disabled = false;
-            btn.innerHTML = `<i data-lucide="calendar-plus" class="w-4 h-4"></i><span>Confirm & Save Appointment</span>`;
-            lucide.createIcons();
-
-            render();
         }
 
-        function showSupabaseTableHelpPrompt() {
-            document.getElementById('supabaseSqlModal').classList.remove('hidden');
+        // ==========================================
+        // STORY VIEWER HANDLERS
+        // ==========================================
+        let storyViewerTimeout = null;
+
+        function openStoryViewer(storyId) {
+            const story = stories.find(s => s.id === storyId);
+            if (!story) return;
+
+            story.seen = true;
+            const modal = document.getElementById('storyViewerModal');
+            const mediaBox = document.getElementById('storyMediaBox');
+            const avatar = document.getElementById('viewerStoryAvatar');
+            const user = document.getElementById('viewerStoryUser');
+            const progress = document.getElementById('storyProgressFill');
+
+            avatar.src = story.avatar;
+            user.textContent = story.user;
+
+            if (story.isVideo) {
+                mediaBox.innerHTML = `<video src="${story.mediaUrl}" autoplay loop muted playsinline class="w-full h-full object-cover"></video>`;
+            } else {
+                mediaBox.innerHTML = `<img src="${story.mediaUrl}" class="w-full h-full object-cover" />`;
+            }
+
+            modal.classList.remove('hidden');
             lucide.createIcons();
+
+            progress.classList.remove('story-progress-bar');
+            void progress.offsetWidth;
+            progress.classList.add('story-progress-bar');
+
+            clearTimeout(storyViewerTimeout);
+            storyViewerTimeout = setTimeout(() => {
+                closeStoryViewer();
+            }, 5000);
+        }
+
+        function closeStoryViewer() {
+            clearTimeout(storyViewerTimeout);
+            document.getElementById('storyViewerModal').classList.add('hidden');
+            render();
         }
 
         // ==========================================
         // DIRECT APK DOWNLOAD HANDLER
         // ==========================================
         function triggerDirectApkDownload() {
-            // Attempt direct download link
             const a = document.createElement('a');
             a.href = './instaclone.apk';
             a.download = 'InstaClone-v1.0.apk';
@@ -777,12 +1307,8 @@ GRANT ALL ON TABLE public.appointments TO anon, authenticated, service_role;</pr
             a.click();
             document.body.removeChild(a);
 
-            // Also notify user with quick installation instruction
             setTimeout(() => {
-                const confirmed = confirm("Downloading InstaClone Android APK (26 MB).\n\nIf prompt appears on your phone, choose 'Download anyway' and click 'Install'.\n\nWould you like to open the GitHub Releases page as well?");
-                if (confirmed) {
-                    window.open('https://github.com', '_blank');
-                }
+                alert("Downloading InstaClone Android APK (26 MB).\n\nIf prompt appears on your phone, click 'Download anyway' and proceed to install.");
             }, 500);
         }
 
@@ -798,7 +1324,7 @@ GRANT ALL ON TABLE public.appointments TO anon, authenticated, service_role;</pr
         }
 
         function handleVideoError(videoElement, posterUrl) {
-            console.warn("Video failed to play, switching to visual poster:", posterUrl);
+            console.warn("Video stream fallback to poster:", posterUrl);
             videoElement.style.display = 'none';
             const parent = videoElement.parentElement;
             if (parent && !parent.querySelector('.fallback-poster')) {
@@ -814,9 +1340,8 @@ GRANT ALL ON TABLE public.appointments TO anon, authenticated, service_role;</pr
         // ==========================================
         function switchTab(tab) {
             currentTab = tab;
-            activeChatUser = null;
+            if (tab !== 'messages') activeChatUser = null;
 
-            // Highlight desktop buttons
             document.querySelectorAll('.nav-btn').forEach(btn => {
                 const btnTab = btn.getAttribute('data-tab');
                 if (btnTab === tab) {
@@ -828,7 +1353,6 @@ GRANT ALL ON TABLE public.appointments TO anon, authenticated, service_role;</pr
                 }
             });
 
-            // Highlight mobile buttons
             document.querySelectorAll('[data-tab-mobile]').forEach(btn => {
                 const btnTab = btn.getAttribute('data-tab-mobile');
                 const icon = btn.querySelector('i');
@@ -908,7 +1432,7 @@ GRANT ALL ON TABLE public.appointments TO anon, authenticated, service_role;</pr
                         <span class="text-zinc-200">${c.text}</span>
                     </div>
                 `).join('')
-                : `<p class="text-xs text-zinc-500 text-center py-4">No comments yet. Start the conversation!</p>`;
+                : `<p class="text-xs text-zinc-500 text-center py-4">No comments yet. Say something friendly!</p>`;
 
             document.getElementById('commentsModal').classList.remove('hidden');
             lucide.createIcons();
@@ -932,41 +1456,6 @@ GRANT ALL ON TABLE public.appointments TO anon, authenticated, service_role;</pr
             }
         }
 
-        function addNewPost() {
-            const url = document.getElementById('new-url').value.trim();
-            const caption = document.getElementById('new-caption').value.trim();
-            if(url && caption) {
-                posts.unshift({
-                    id: posts.length + 1,
-                    user: userProfile.username,
-                    avatar: userProfile.avatar,
-                    image: url,
-                    likes: 1,
-                    caption: caption,
-                    time: 'JUST NOW',
-                    isLiked: false,
-                    comments: []
-                });
-                switchTab('home');
-            } else {
-                alert('Please provide an image URL and caption!');
-            }
-        }
-
-        function handleFileSelect(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = e => {
-                    document.getElementById('new-url').value = e.target.result;
-                    const preview = document.getElementById('imagePreview');
-                    preview.src = e.target.result;
-                    document.getElementById('previewBox').classList.remove('hidden');
-                };
-                reader.readAsDataURL(file);
-            }
-        }
-
         function handleSearch(q) {
             const grid = document.getElementById('exploreGridContainer');
             if (!grid) return;
@@ -976,19 +1465,6 @@ GRANT ALL ON TABLE public.appointments TO anon, authenticated, service_role;</pr
                     <img src="https://picsum.photos/400/400?random=${i + seed * 5}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
                 </div>
             `).join('');
-        }
-
-        function sendDM(username) {
-            const input = document.getElementById('dmInput');
-            const text = input.value.trim();
-            if (!text) return;
-            const conv = messages.find(m => m.user === username);
-            if (conv) {
-                conv.chats.push({ fromMe: true, text });
-                conv.lastMsg = text;
-                input.value = '';
-                render();
-            }
         }
 
         function openEditProfileModal() {
@@ -1029,15 +1505,21 @@ GRANT ALL ON TABLE public.appointments TO anon, authenticated, service_role;</pr
                 container.innerHTML = `
                     <!-- Stories Bar -->
                     <div class="flex gap-4 overflow-x-auto hide-scrollbar py-2 mb-4 border-b border-zinc-800">
-                        <div class="flex flex-col items-center flex-shrink-0 cursor-pointer" onclick="switchTab('profile')">
-                            <div class="w-16 h-16 rounded-full p-[2px] bg-gradient-to-tr from-amber-500 to-rose-500">
+                        <!-- Add to Your Story Button -->
+                        <div class="flex flex-col items-center flex-shrink-0 cursor-pointer group" onclick="openUploadStudio('story')">
+                            <div class="relative w-16 h-16 rounded-full p-[2px] bg-gradient-to-tr from-amber-500 to-rose-500 group-hover:scale-105 transition">
                                 <img src="${userProfile.avatar}" class="w-full h-full rounded-full object-cover border-2 border-black" />
+                                <div class="absolute bottom-0 right-0 w-5 h-5 bg-blue-500 text-white rounded-full flex items-center justify-center border-2 border-black font-bold text-xs">
+                                    +
+                                </div>
                             </div>
-                            <span class="text-[11px] mt-1 text-zinc-400">Your Story</span>
+                            <span class="text-[11px] mt-1 text-zinc-300 font-semibold">Your Story</span>
                         </div>
+
+                        <!-- Active Friends Stories List -->
                         ${stories.map(s => `
-                            <div class="flex flex-col items-center flex-shrink-0 cursor-pointer" onclick="alert('Viewing story of @${s.user}')">
-                                <div class="w-16 h-16 rounded-full p-[2px] ${s.seen ? 'bg-zinc-700' : 'story-ring'}">
+                            <div class="flex flex-col items-center flex-shrink-0 cursor-pointer group" onclick="openStoryViewer('${s.id}')">
+                                <div class="w-16 h-16 rounded-full p-[2px] ${s.seen ? 'bg-zinc-700' : 'story-ring-active'} group-hover:scale-105 transition">
                                     <img src="${s.avatar}" class="w-full h-full rounded-full object-cover border-2 border-black" />
                                 </div>
                                 <span class="text-[11px] mt-1 text-zinc-300 truncate w-16 text-center">${s.user}</span>
@@ -1045,24 +1527,23 @@ GRANT ALL ON TABLE public.appointments TO anon, authenticated, service_role;</pr
                         `).join('')}
                     </div>
 
-                    <!-- Book Appointment Hero Banner -->
-                    <div class="p-3.5 bg-gradient-to-r from-zinc-900 via-zinc-900 to-black border border-zinc-800 rounded-2xl flex items-center justify-between mb-5 shadow">
+                    <!-- Fast Upload Floating Bar -->
+                    <div class="p-3 bg-zinc-950 border border-zinc-800 rounded-2xl flex items-center justify-between mb-5 shadow">
                         <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-xl bg-[#3ECF8E]/20 text-[#3ECF8E] flex items-center justify-center border border-[#3ECF8E]/30">
-                                <i data-lucide="calendar-check" class="w-5 h-5"></i>
-                            </div>
-                            <div>
-                                <h4 class="text-xs font-bold text-white flex items-center gap-1.5">
-                                    <span>Creator Appointments</span>
-                                    <span class="text-[9px] bg-[#3ECF8E]/20 text-[#3ECF8E] px-1.5 py-0.2 rounded font-mono">SupaBase</span>
-                                </h4>
-                                <p class="text-[11px] text-zinc-400">Book collaborations or 1-on-1 strategy calls</p>
-                            </div>
+                            <img src="${userProfile.avatar}" class="w-9 h-9 rounded-full object-cover border border-zinc-700" />
+                            <span class="text-xs text-zinc-400 font-medium cursor-pointer" onclick="openUploadStudio('post')">What's on your mind, ${userProfile.name}?</span>
                         </div>
-                        <button onclick="switchTab('appointments')" class="px-3 py-1.5 bg-[#3ECF8E] hover:bg-[#34b37a] text-black text-xs font-bold rounded-xl transition flex items-center gap-1 shadow">
-                            <span>Book Now</span>
-                            <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
-                        </button>
+                        <div class="flex items-center gap-2">
+                            <button onclick="openUploadStudio('post')" class="px-2.5 py-1.5 bg-zinc-900 hover:bg-zinc-800 text-amber-400 text-xs font-bold rounded-xl border border-zinc-800 flex items-center gap-1.5 transition">
+                                <i data-lucide="image" class="w-3.5 h-3.5"></i> Post
+                            </button>
+                            <button onclick="openUploadStudio('reel')" class="px-2.5 py-1.5 bg-zinc-900 hover:bg-zinc-800 text-rose-400 text-xs font-bold rounded-xl border border-zinc-800 flex items-center gap-1.5 transition">
+                                <i data-lucide="video" class="w-3.5 h-3.5"></i> Reel
+                            </button>
+                            <button onclick="openUploadStudio('story')" class="px-2.5 py-1.5 bg-gradient-to-r from-amber-500 to-rose-500 text-white text-xs font-bold rounded-xl flex items-center gap-1.5 transition shadow">
+                                <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i> Story
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Feed Posts -->
@@ -1071,17 +1552,24 @@ GRANT ALL ON TABLE public.appointments TO anon, authenticated, service_role;</pr
                             <div class="border border-zinc-800 rounded-2xl bg-zinc-950 overflow-hidden shadow-sm">
                                 <div class="flex items-center justify-between p-3">
                                     <div class="flex items-center gap-3">
-                                        <div class="p-0.5 story-ring rounded-full">
+                                        <div class="p-0.5 story-ring rounded-full cursor-pointer" onclick="openFriendChat('${p.user}')">
                                             <img src="${p.avatar}" class="w-8 h-8 rounded-full object-cover border border-black" />
                                         </div>
-                                        <span class="font-semibold text-sm">${p.user}</span>
+                                        <div>
+                                            <span class="font-semibold text-sm cursor-pointer hover:underline" onclick="openFriendChat('${p.user}')">${p.user}</span>
+                                            <p class="text-[10px] text-zinc-400">Friend • Shared photo</p>
+                                        </div>
                                     </div>
-                                    <button onclick="switchTab('appointments')" class="text-xs font-semibold text-[#3ECF8E] bg-[#3ECF8E]/10 border border-[#3ECF8E]/30 px-2.5 py-1 rounded-lg hover:bg-[#3ECF8E]/20">
-                                        Book
+                                    <button onclick="openFriendChat('${p.user}')" class="px-2.5 py-1 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-blue-400 text-xs font-semibold rounded-lg flex items-center gap-1 transition">
+                                        <i data-lucide="message-circle" class="w-3.5 h-3.5"></i> Message
                                     </button>
                                 </div>
                                 <div class="relative aspect-square w-full bg-black overflow-hidden cursor-pointer" ondblclick="triggerDoubleTapLike(${p.id})">
-                                    <img src="${p.image}" class="w-full h-full object-cover" />
+                                    ${p.isVideo ? `
+                                        <video src="${p.image}" autoplay loop muted playsinline class="w-full h-full object-cover"></video>
+                                    ` : `
+                                        <img src="${p.image}" class="w-full h-full object-cover" />
+                                    `}
                                     <div id="burst-${p.id}" class="hidden absolute inset-0 flex items-center justify-center pointer-events-none">
                                         <i data-lucide="heart" class="w-24 h-24 text-rose-500 fill-rose-500 heart-burst drop-shadow-xl"></i>
                                     </div>
@@ -1095,8 +1583,8 @@ GRANT ALL ON TABLE public.appointments TO anon, authenticated, service_role;</pr
                                             <button onclick="openCommentsModal(${p.id})">
                                                 <i data-lucide="message-circle" class="w-6 h-6 text-zinc-200"></i>
                                             </button>
-                                            <button onclick="navigator.clipboard?.writeText(window.location.href); alert('Post link copied!')">
-                                                <i data-lucide="send" class="w-6 h-6 text-zinc-200"></i>
+                                            <button onclick="sharePostWithFriend(${p.id})" title="Send in chat to friend">
+                                                <i data-lucide="send" class="w-6 h-6 text-zinc-200 hover:text-blue-400 transition"></i>
                                             </button>
                                         </div>
                                         <i data-lucide="bookmark" class="w-6 h-6 text-zinc-200 cursor-pointer"></i>
@@ -1113,121 +1601,163 @@ GRANT ALL ON TABLE public.appointments TO anon, authenticated, service_role;</pr
                     </div>
                 `;
             }
-            else if (currentTab === 'appointments') {
-                container.innerHTML = `
-                    <div class="space-y-6">
-                        <!-- Header with Supabase Badge -->
-                        <div class="flex items-center justify-between border-b border-zinc-800 pb-4">
-                            <div>
-                                <h2 class="text-2xl font-bold flex items-center gap-2">
-                                    <span>Book an Appointment</span>
-                                </h2>
-                                <p class="text-xs text-zinc-400 mt-1">Schedule collaborations, brand sponsorships, and 1-on-1 strategy sessions.</p>
+            else if (currentTab === 'messages') {
+                if (activeChatUser) {
+                    const conv = messages.find(m => m.user === activeChatUser);
+                    container.innerHTML = `
+                        <div class="flex flex-col h-[78vh] bg-zinc-950 border border-zinc-800 rounded-2xl overflow-hidden shadow-2xl">
+                            <!-- Direct Chat Header -->
+                            <div class="p-3.5 border-b border-zinc-800 flex items-center justify-between bg-black">
+                                <div class="flex items-center gap-3">
+                                    <button onclick="activeChatUser = null; render();" class="text-zinc-400 hover:text-white p-1 rounded-lg hover:bg-zinc-900 transition">
+                                        <i data-lucide="arrow-left" class="w-5 h-5"></i>
+                                    </button>
+                                    <div class="relative">
+                                        <img src="${conv.avatar}" class="w-9 h-9 rounded-full object-cover border border-zinc-700" />
+                                        ${conv.isOnline ? `<span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-black rounded-full"></span>` : ''}
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-sm text-white">${conv.user}</h4>
+                                        <p class="text-[10px] text-green-400 flex items-center gap-1">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-green-400"></span> Active now
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <button onclick="alert('Calling ${conv.user} via InstaClone Voice...')" class="p-2 text-zinc-400 hover:text-white rounded-full hover:bg-zinc-900" title="Audio Call">
+                                        <i data-lucide="phone" class="w-4 h-4"></i>
+                                    </button>
+                                    <button onclick="alert('Starting Video Call with ${conv.user}...')" class="p-2 text-zinc-400 hover:text-white rounded-full hover:bg-zinc-900" title="Video Call">
+                                        <i data-lucide="video" class="w-4 h-4"></i>
+                                    </button>
+                                </div>
                             </div>
-                            <div class="text-right">
-                                <span class="text-[10px] bg-[#3ECF8E]/20 text-[#3ECF8E] font-bold px-2.5 py-1 rounded-full border border-[#3ECF8E]/40 flex items-center gap-1.5 shadow">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-[#3ECF8E] animate-pulse"></span> SupaBase Connected
-                                </span>
-                                <p class="text-[9px] text-zinc-500 mt-1 font-mono">ID: ${SUPABASE_PROJECT_ID}</p>
+
+                            <!-- Messages History Feed -->
+                            <div class="flex-1 overflow-y-auto p-4 space-y-3" id="chatMsgBox">
+                                <div class="text-center py-4 text-xs text-zinc-500">
+                                    <div class="w-16 h-16 mx-auto mb-2 rounded-full overflow-hidden border-2 border-zinc-800">
+                                        <img src="${conv.avatar}" class="w-full h-full object-cover" />
+                                    </div>
+                                    <p class="font-bold text-zinc-300">${conv.user}</p>
+                                    <p class="text-[11px] text-zinc-500">You're connected on InstaClone</p>
+                                </div>
+
+                                ${conv.chats.map(c => `
+                                    <div class="flex ${c.fromMe ? 'justify-end' : 'justify-start'}">
+                                        <div class="max-w-[75%] px-4 py-2.5 rounded-2xl text-xs ${c.fromMe ? 'bg-gradient-to-r from-rose-500 to-purple-600 text-white rounded-br-none shadow-md' : 'bg-zinc-900 border border-zinc-800 text-zinc-100 rounded-bl-none'}">
+                                            <p>${c.text}</p>
+                                            <span class="text-[9px] mt-1 block opacity-70 ${c.fromMe ? 'text-right' : 'text-left'}">${c.time || 'Just now'}</span>
+                                        </div>
+                                    </div>
+                                `).join('')}
+
+                                ${isFriendTyping ? `
+                                    <div class="flex justify-start">
+                                        <div class="px-3.5 py-2 rounded-2xl bg-zinc-900 border border-zinc-800 text-zinc-400 text-xs flex items-center gap-1.5">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-zinc-400 typing-dot"></span>
+                                            <span class="w-1.5 h-1.5 rounded-full bg-zinc-400 typing-dot" style="animation-delay: 0.2s"></span>
+                                            <span class="w-1.5 h-1.5 rounded-full bg-zinc-400 typing-dot" style="animation-delay: 0.4s"></span>
+                                            <span class="text-[10px] ml-1 text-zinc-500">${conv.user} is typing...</span>
+                                        </div>
+                                    </div>
+                                ` : ''}
+                            </div>
+
+                            <!-- Live Chat Input Bar -->
+                            <div class="p-3 border-t border-zinc-800 flex items-center gap-2 bg-black">
+                                <button onclick="document.getElementById('creatorFileInput').click()" class="p-2 text-zinc-400 hover:text-white rounded-full hover:bg-zinc-900" title="Attach Media">
+                                    <i data-lucide="image" class="w-4 h-4"></i>
+                                </button>
+                                <input type="text" id="dmInput" placeholder="Message ${conv.user}..." class="flex-1 px-4 py-2.5 rounded-full bg-zinc-900 border border-zinc-800 text-xs text-white focus:outline-none focus:border-rose-500 transition" onkeydown="if(event.key==='Enter') sendFriendDM('${conv.user}')" />
+                                <button onclick="sendQuickHeart('${conv.user}')" class="p-2 text-rose-500 hover:opacity-80" title="Send Heart">
+                                    <i data-lucide="heart" class="w-5 h-5 fill-rose-500"></i>
+                                </button>
+                                <button onclick="sendFriendDM('${conv.user}')" class="px-3.5 py-2 rounded-full bg-gradient-to-r from-rose-500 to-purple-600 hover:opacity-90 text-white font-bold text-xs flex items-center gap-1 shadow transition">
+                                    <i data-lucide="send" class="w-3.5 h-3.5"></i>
+                                    <span>Send</span>
+                                </button>
                             </div>
                         </div>
-
-                        <!-- Status Alert Box -->
-                        <div id="bookStatusAlert" class="hidden"></div>
-
-                        <!-- Appointment Booking Form -->
-                        <form id="appointmentForm" onsubmit="handleAppointmentSubmit(event)" class="bg-zinc-950 border border-zinc-800 rounded-2xl p-5 space-y-4 shadow-xl">
-                            <h3 class="text-sm font-bold text-zinc-200 flex items-center gap-2">
-                                <i data-lucide="user-check" class="w-4 h-4 text-[#3ECF8E]"></i>
-                                <span>Appointment Details</span>
-                            </h3>
-
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    `;
+                    setTimeout(() => {
+                        const box = document.getElementById('chatMsgBox');
+                        if (box) box.scrollTop = box.scrollHeight;
+                    }, 50);
+                } else {
+                    container.innerHTML = `
+                        <div class="space-y-4">
+                            <!-- Header with New Message CTA -->
+                            <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
                                 <div>
-                                    <label class="block text-xs text-zinc-400 mb-1">Your Full Name *</label>
-                                    <input type="text" id="apptName" required placeholder="e.g. Rahul Verma" value="${userProfile.name !== 'Asif' ? userProfile.name : ''}" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-[#3ECF8E] transition" />
+                                    <h2 class="text-2xl font-bold flex items-center gap-2">
+                                        <span>Direct Messages</span>
+                                    </h2>
+                                    <p class="text-xs text-zinc-400">Chat and share posts in real time with your friends.</p>
                                 </div>
-                                <div>
-                                    <label class="block text-xs text-zinc-400 mb-1">Email Address *</label>
-                                    <input type="email" id="apptEmail" required placeholder="rahul@example.com" value="${userProfile.email !== 'asif@gmail.com' ? userProfile.email : ''}" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-[#3ECF8E] transition" />
-                                </div>
-                            </div>
-
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                <div>
-                                    <label class="block text-xs text-zinc-400 mb-1">Phone / WhatsApp Number</label>
-                                    <input type="tel" id="apptPhone" placeholder="+91 98765 43210" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-[#3ECF8E] transition" />
-                                </div>
-                                <div>
-                                    <label class="block text-xs text-zinc-400 mb-1">Appointment Type *</label>
-                                    <select id="apptType" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-[#3ECF8E] transition">
-                                        <option value="Creator Collaboration & Promotion">Creator Collaboration & Promotion</option>
-                                        <option value="1-on-1 Strategy & Coaching Call">1-on-1 Strategy & Coaching Call</option>
-                                        <option value="Sponsored Reel / Post Production">Sponsored Reel / Post Production</option>
-                                        <option value="Brand Partnership & Campaign">Brand Partnership & Campaign</option>
-                                        <option value="Custom Consultation">Custom Consultation</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                <div>
-                                    <label class="block text-xs text-zinc-400 mb-1">Preferred Date *</label>
-                                    <input type="date" id="apptDate" required class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-[#3ECF8E] transition" />
-                                </div>
-                                <div>
-                                    <label class="block text-xs text-zinc-400 mb-1">Preferred Time Slot *</label>
-                                    <input type="time" id="apptTime" required value="15:00" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-[#3ECF8E] transition" />
-                                </div>
-                            </div>
-
-                            <div>
-                                <label class="block text-xs text-zinc-400 mb-1">Project Scope / Message</label>
-                                <textarea id="apptMessage" rows="3" placeholder="Tell us about your brand, goals, or requirements..." class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-[#3ECF8E] transition resize-none"></textarea>
-                            </div>
-
-                            <button type="submit" id="bookSubmitBtn" class="w-full py-3 bg-[#3ECF8E] hover:bg-[#34b37a] text-black font-bold text-xs rounded-xl shadow-lg transition flex items-center justify-center gap-2">
-                                <i data-lucide="calendar-plus" class="w-4 h-4"></i>
-                                <span>Confirm & Save to SupaBase</span>
-                            </button>
-                        </form>
-
-                        <!-- Recent Bookings List -->
-                        <div class="space-y-3">
-                            <div class="flex items-center justify-between">
-                                <h3 class="text-sm font-bold text-zinc-200 flex items-center gap-2">
-                                    <i data-lucide="clock" class="w-4 h-4 text-zinc-400"></i>
-                                    <span>Recent Appointments Recorded</span>
-                                </h3>
-                                <button onclick="showSupabaseTableHelpPrompt()" class="text-[11px] text-[#3ECF8E] hover:underline flex items-center gap-1">
-                                    <i data-lucide="code" class="w-3 h-3"></i> Supabase SQL Schema
+                                <button onclick="openNewChatModal()" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow flex items-center gap-1.5 transition">
+                                    <i data-lucide="edit" class="w-3.5 h-3.5"></i>
+                                    <span>New Chat</span>
                                 </button>
                             </div>
 
-                            <div class="space-y-2.5">
-                                ${appointmentsList.map(a => `
-                                    <div class="p-3.5 bg-zinc-950 border border-zinc-800 rounded-xl space-y-1.5">
-                                        <div class="flex items-center justify-between">
-                                            <span class="font-bold text-xs text-white">${a.name}</span>
-                                            <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-300">
-                                                ${a.appointment_date} at ${a.appointment_time}
-                                            </span>
+                            <!-- Online Active Friends Tray -->
+                            <div>
+                                <h4 class="text-xs font-bold uppercase tracking-wider text-zinc-400 mb-2">Active Friends</h4>
+                                <div class="flex gap-3 overflow-x-auto hide-scrollbar py-1">
+                                    ${friends.map(f => `
+                                        <div onclick="openFriendChat('${f.name}')" class="flex flex-col items-center flex-shrink-0 cursor-pointer group">
+                                            <div class="relative w-14 h-14 rounded-full p-[2px] bg-gradient-to-tr from-blue-500 to-purple-600 group-hover:scale-105 transition">
+                                                <img src="${f.avatar}" class="w-full h-full rounded-full object-cover border-2 border-black" />
+                                                ${f.isOnline ? `<span class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-black rounded-full"></span>` : ''}
+                                            </div>
+                                            <span class="text-[11px] mt-1 text-zinc-300 truncate w-16 text-center font-medium">${f.name.split(' ')[0]}</span>
                                         </div>
-                                        <p class="text-xs text-[#3ECF8E] font-semibold">${a.appointment_type}</p>
-                                        ${a.message ? `<p class="text-[11px] text-zinc-400 italic">"${a.message}"</p>` : ''}
-                                        <div class="flex items-center justify-between pt-1 text-[10px] text-zinc-500 border-t border-zinc-900">
-                                            <span>Email: ${a.email}</span>
-                                            <span class="text-[#3ECF8E] font-bold">● Synced with Supabase</span>
+                                    `).join('')}
+                                </div>
+                            </div>
+
+                            <!-- Conversation Threads List -->
+                            <div class="space-y-2 pt-2">
+                                <h4 class="text-xs font-bold uppercase tracking-wider text-zinc-400">Messages</h4>
+                                ${messages.map(m => `
+                                    <div onclick="activeChatUser = '${m.user}'; render();" class="flex items-center justify-between p-3.5 bg-zinc-950 hover:bg-zinc-900 rounded-2xl cursor-pointer transition border border-zinc-900 hover:border-zinc-800 shadow-sm">
+                                        <div class="flex items-center gap-3">
+                                            <div class="relative">
+                                                <img src="${m.avatar}" class="w-12 h-12 rounded-full object-cover border border-zinc-800" />
+                                                ${m.isOnline ? `<span class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-black rounded-full"></span>` : ''}
+                                            </div>
+                                            <div>
+                                                <div class="flex items-center gap-2">
+                                                    <h4 class="font-bold text-sm text-white">${m.user}</h4>
+                                                    <span class="text-[10px] text-zinc-500">@${m.handle || 'friend'}</span>
+                                                </div>
+                                                <p class="text-xs ${m.unread ? 'text-white font-bold' : 'text-zinc-400'} truncate max-w-xs">${m.lastMsg}</p>
+                                            </div>
+                                        </div>
+                                        <div class="text-right flex flex-col items-end gap-1">
+                                            <span class="text-[10px] text-zinc-500">${m.time}</span>
+                                            ${m.unread ? `<span class="w-2.5 h-2.5 bg-blue-500 rounded-full"></span>` : ''}
                                         </div>
                                     </div>
                                 `).join('')}
                             </div>
                         </div>
-                    </div>
-                `;
+                    `;
+                }
             }
             else if (currentTab === 'reels') {
                 container.innerHTML = `
+                    <div class="flex items-center justify-between mb-4 px-1">
+                        <h2 class="text-xl font-bold flex items-center gap-2">
+                            <span>Reels</span>
+                        </h2>
+                        <button onclick="openUploadStudio('reel')" class="px-3 py-1.5 bg-gradient-to-r from-amber-500 via-rose-500 to-purple-600 text-white font-bold text-xs rounded-xl shadow flex items-center gap-1.5">
+                            <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                            <span>Upload Reel</span>
+                        </button>
+                    </div>
+
                     <div class="h-[80vh] overflow-y-scroll reel-container snap-y snap-mandatory hide-scrollbar space-y-4">
                         ${reels.map(r => `
                             <div class="h-full w-full relative reel-item flex items-center justify-center bg-black rounded-2xl overflow-hidden border border-zinc-900 shadow-xl group">
@@ -1267,11 +1797,11 @@ GRANT ALL ON TABLE public.appointments TO anon, authenticated, service_role;</pr
                                         <i data-lucide="heart" class="w-7 h-7 ${r.isLiked ? 'text-rose-500 fill-rose-500' : 'text-white'}"></i>
                                         <span class="text-xs">${r.likes}</span>
                                     </button>
-                                    <button class="flex flex-col items-center gap-1" onclick="switchTab('appointments')">
-                                        <i data-lucide="calendar" class="w-7 h-7 text-[#3ECF8E]"></i>
-                                        <span class="text-[10px] text-[#3ECF8E] font-bold">Book</span>
+                                    <button class="flex flex-col items-center gap-1" onclick="openCommentsModal(1)">
+                                        <i data-lucide="message-circle" class="w-7 h-7 text-white"></i>
+                                        <span class="text-xs">48</span>
                                     </button>
-                                    <button onclick="navigator.clipboard?.writeText(window.location.href); alert('Reel shared!')" class="flex flex-col items-center gap-1">
+                                    <button onclick="openFriendChat('${r.user}')" class="flex flex-col items-center gap-1" title="Message Creator">
                                         <i data-lucide="send" class="w-7 h-7 text-white"></i>
                                     </button>
                                 </div>
@@ -1285,7 +1815,7 @@ GRANT ALL ON TABLE public.appointments TO anon, authenticated, service_role;</pr
                     <div class="mb-4">
                         <div class="relative">
                             <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-3.5 text-zinc-400"></i>
-                            <input type="text" id="searchInput" oninput="handleSearch(this.value)" placeholder="Search creators, reels, hashtags..." class="w-full bg-zinc-900 border border-zinc-800 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:outline-none" />
+                            <input type="text" id="searchInput" oninput="handleSearch(this.value)" placeholder="Search friends, reels, hashtags..." class="w-full bg-zinc-900 border border-zinc-800 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:outline-none" />
                         </div>
                     </div>
                     <div class="grid grid-cols-3 gap-1 sm:gap-2" id="exploreGridContainer">
@@ -1300,120 +1830,24 @@ GRANT ALL ON TABLE public.appointments TO anon, authenticated, service_role;</pr
                     </div>
                 `;
             }
-            else if (currentTab === 'messages') {
-                if (activeChatUser) {
-                    const conv = messages.find(m => m.user === activeChatUser);
-                    container.innerHTML = `
-                        <div class="flex flex-col h-[75vh] bg-zinc-950 border border-zinc-800 rounded-2xl overflow-hidden">
-                            <div class="p-3 border-b border-zinc-800 flex items-center justify-between bg-black">
-                                <div class="flex items-center gap-3">
-                                    <button onclick="activeChatUser = null; render();" class="text-zinc-400 hover:text-white"><i data-lucide="arrow-left" class="w-5 h-5"></i></button>
-                                    <img src="${conv.avatar}" class="w-8 h-8 rounded-full object-cover" />
-                                    <div>
-                                        <h4 class="font-bold text-sm">${conv.user}</h4>
-                                        <p class="text-[10px] text-green-400">Active now</p>
-                                    </div>
-                                </div>
-                                <button onclick="switchTab('appointments')" class="px-3 py-1 bg-[#3ECF8E]/20 text-[#3ECF8E] text-xs font-bold rounded-lg border border-[#3ECF8E]/40">
-                                    Book Session
-                                </button>
-                            </div>
-                            <div class="flex-1 overflow-y-auto p-4 space-y-3" id="chatMsgBox">
-                                ${conv.chats.map(c => `
-                                    <div class="flex ${c.fromMe ? 'justify-end' : 'justify-start'}">
-                                        <div class="max-w-xs px-3.5 py-2 rounded-2xl text-xs ${c.fromMe ? 'bg-rose-500 text-white rounded-br-none' : 'bg-zinc-800 text-zinc-100 rounded-bl-none'}">
-                                            ${c.text}
-                                        </div>
-                                    </div>
-                                `).join('')}
-                            </div>
-                            <div class="p-3 border-t border-zinc-800 flex items-center gap-2 bg-black">
-                                <input type="text" id="dmInput" placeholder="Message..." class="flex-1 px-4 py-2 rounded-full bg-zinc-900 border border-zinc-800 text-xs focus:outline-none" onkeydown="if(event.key==='Enter') sendDM('${conv.user}')">
-                                <button onclick="sendDM('${conv.user}')" class="p-2 rounded-full bg-rose-500 text-white"><i data-lucide="send" class="w-4 h-4"></i></button>
-                            </div>
-                        </div>
-                    `;
-                } else {
-                    container.innerHTML = `
-                        <h2 class="text-xl font-bold mb-4">Direct Messages</h2>
-                        <div class="space-y-2">
-                            ${messages.map(m => `
-                                <div onclick="activeChatUser = '${m.user}'; render();" class="flex items-center justify-between p-3 hover:bg-zinc-900 rounded-xl cursor-pointer transition border border-transparent hover:border-zinc-800">
-                                    <div class="flex items-center gap-3">
-                                        <img src="${m.avatar}" class="w-12 h-12 rounded-full object-cover" />
-                                        <div>
-                                            <h4 class="font-semibold text-sm">${m.user}</h4>
-                                            <p class="text-xs text-zinc-400">${m.lastMsg}</p>
-                                        </div>
-                                    </div>
-                                    <span class="text-xs text-zinc-500">${m.time}</span>
-                                </div>
-                            `).join('')}
-                        </div>
-                    `;
-                }
-            }
             else if (currentTab === 'notifications') {
                 container.innerHTML = `
                     <h2 class="text-xl font-bold mb-4">Notifications</h2>
                     <div class="space-y-3 text-sm">
                         <div class="flex items-center gap-3 p-3 bg-zinc-950 border border-zinc-900 rounded-xl">
-                            <i data-lucide="calendar-check" class="text-[#3ECF8E] w-5 h-5 flex-shrink-0"></i>
-                            <div class="flex-1"><strong class="text-zinc-200">SupaBase Database</strong> is connected to project <code>kilkdijwewzoofuppvck</code>.</div>
-                            <span class="text-zinc-500 text-xs">now</span>
-                        </div>
-                        <div class="flex items-center gap-3 p-3 bg-zinc-950 border border-zinc-900 rounded-xl">
-                            <i data-lucide="download" class="text-rose-500 w-5 h-5 flex-shrink-0"></i>
-                            <div class="flex-1"><strong class="text-zinc-200">Android APK Build (26MB)</strong> is ready for direct download.</div>
-                            <span class="text-zinc-500 text-xs">10m</span>
+                            <i data-lucide="message-circle" class="text-blue-400 w-5 h-5 flex-shrink-0"></i>
+                            <div class="flex-1"><strong class="text-zinc-200">Mohit Verma</strong> sent you a direct message.</div>
+                            <span class="text-zinc-500 text-xs">2m</span>
                         </div>
                         <div class="flex items-center gap-3 p-3 bg-zinc-950 border border-zinc-900 rounded-xl">
                             <i data-lucide="heart" class="text-red-500 w-5 h-5 flex-shrink-0"></i>
-                            <div class="flex-1"><strong class="text-zinc-200">HorrorBot_AI</strong> liked your post.</div>
+                            <div class="flex-1"><strong class="text-zinc-200">Priya Sharma</strong> liked your post.</div>
                             <span class="text-zinc-500 text-xs">1h</span>
                         </div>
-                    </div>
-                `;
-            }
-            else if (currentTab === 'botdashboard') {
-                container.innerHTML = `
-                    <div class="space-y-6">
-                        <div class="flex items-center justify-between border-b border-zinc-800 pb-4">
-                            <div>
-                                <h2 class="text-xl font-bold">Autonomous AI Bot Manager</h2>
-                                <p class="text-xs text-zinc-400">Configure AI auto-posting, scrapers, and video synthesis</p>
-                            </div>
-                            <i data-lucide="bot" class="w-8 h-8 text-purple-400"></i>
-                        </div>
-                        <div class="bg-zinc-950 border border-zinc-800 p-4 rounded-xl space-y-4">
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <span class="font-semibold text-sm">AI Bot Auto-Posting</span>
-                                    <p class="text-[11px] text-zinc-400">Auto-posts every 35 seconds with AI captioning</p>
-                                </div>
-                                <input type="checkbox" ${aiBotActive ? 'checked' : ''} onchange="aiBotActive = !aiBotActive; render();" class="w-5 h-5 accent-purple-600 cursor-pointer" />
-                            </div>
-                            <div>
-                                <label class="text-xs text-zinc-400 block mb-1">Content Niche</label>
-                                <select onchange="botNiche = this.value" class="w-full bg-black border border-zinc-800 p-2.5 rounded-lg text-sm text-zinc-200">
-                                    <option ${botNiche.includes('Horror') ? 'selected' : ''}>Horror & Creepypasta Stories</option>
-                                    <option ${botNiche.includes('Viral') ? 'selected' : ''}>Viral Comedy & Trends</option>
-                                    <option ${botNiche.includes('Tech') ? 'selected' : ''}>Tech & Startup Motivation</option>
-                                </select>
-                            </div>
-                            <div class="p-3 bg-purple-950/40 border border-purple-800/50 rounded-lg text-xs text-purple-300">
-                                <strong>Status:</strong> ${aiBotActive ? 'Bot engine is actively generating content in background!' : 'Bot is paused.'}
-                            </div>
-                        </div>
-
-                        <!-- Live Bot Activity Logs -->
-                        <div class="border border-zinc-800 rounded-xl p-4 bg-zinc-950">
-                            <h4 class="text-xs font-bold uppercase tracking-wider text-zinc-400 mb-2">Live Bot Activity Feed</h4>
-                            <div class="text-[11px] font-mono text-zinc-400 space-y-1">
-                                <p class="text-green-400">[SYSTEM] AI Bot engine listening to niche: "${botNiche}"</p>
-                                <p class="text-[#3ECF8E]">[SUPABASE] Connected to kilkdijwewzoofuppvck</p>
-                                <p class="text-purple-400">[GEN] Synthesized post: "The Midnight Whisper"</p>
-                            </div>
+                        <div class="flex items-center gap-3 p-3 bg-zinc-950 border border-zinc-900 rounded-xl">
+                            <i data-lucide="user-plus" class="text-blue-500 w-5 h-5 flex-shrink-0"></i>
+                            <div class="flex-1"><strong class="text-zinc-200">Aarav Patel</strong> started following you.</div>
+                            <span class="text-zinc-500 text-xs">3h</span>
                         </div>
                     </div>
                 `;
@@ -1422,7 +1856,7 @@ GRANT ALL ON TABLE public.appointments TO anon, authenticated, service_role;</pr
                 container.innerHTML = `
                     <div class="space-y-6">
                         <div class="flex items-center gap-6">
-                            <div class="p-1 story-ring rounded-full">
+                            <div class="p-1 story-ring rounded-full cursor-pointer" onclick="openUploadStudio('story')">
                                 <img src="${userProfile.avatar}" class="w-20 h-20 md:w-24 md:h-24 rounded-full object-cover border-2 border-black" />
                             </div>
                             <div class="space-y-2 flex-1">
@@ -1430,7 +1864,7 @@ GRANT ALL ON TABLE public.appointments TO anon, authenticated, service_role;</pr
                                     <h2 class="text-xl font-bold">${userProfile.username}</h2>
                                     <div class="flex gap-2">
                                         <button onclick="openEditProfileModal()" class="px-3 py-1 bg-zinc-900 border border-zinc-800 text-xs font-semibold rounded-lg hover:bg-zinc-800">Edit Profile</button>
-                                        <button onclick="switchTab('appointments')" class="px-3 py-1 bg-[#3ECF8E] hover:bg-[#34b37a] text-black text-xs font-bold rounded-lg shadow">Book Session</button>
+                                        <button onclick="openUploadStudio('post')" class="px-3 py-1 bg-gradient-to-r from-amber-500 to-rose-500 text-white text-xs font-bold rounded-lg shadow">+ Upload</button>
                                     </div>
                                 </div>
                                 <div class="flex gap-6 text-sm">
@@ -1443,12 +1877,11 @@ GRANT ALL ON TABLE public.appointments TO anon, authenticated, service_role;</pr
                         <div>
                             <h3 class="font-semibold text-sm">${userProfile.name}</h3>
                             <p class="text-sm text-zinc-300">${userProfile.bio}</p>
-                            <p class="text-xs text-[#3ECF8E] mt-1 flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-[#3ECF8E]"></span> SupaBase Verified Creator Account</p>
                         </div>
                         <div class="border-t border-zinc-800 flex justify-around text-xs font-semibold py-2">
                             <span class="text-rose-500 border-b-2 border-rose-500 pb-2 flex items-center gap-1 cursor-pointer"><i data-lucide="grid" class="w-4 h-4"></i> POSTS</span>
-                            <span class="text-zinc-500 flex items-center gap-1 cursor-pointer" onclick="switchTab('appointments')"><i data-lucide="calendar" class="w-4 h-4"></i> BOOKINGS</span>
                             <span class="text-zinc-500 flex items-center gap-1 cursor-pointer" onclick="switchTab('reels')"><i data-lucide="clapperboard" class="w-4 h-4"></i> REELS</span>
+                            <span class="text-zinc-500 flex items-center gap-1 cursor-pointer" onclick="alert('Saved archive')"><i data-lucide="bookmark" class="w-4 h-4"></i> SAVED</span>
                         </div>
                         <div class="grid grid-cols-3 gap-1">
                             ${posts.map(p => `
@@ -1461,25 +1894,90 @@ GRANT ALL ON TABLE public.appointments TO anon, authenticated, service_role;</pr
                 `;
             }
             else if (currentTab === 'create') {
+                const isPost = uploadMode === 'post';
+                const isReel = uploadMode === 'reel';
+                const isStory = uploadMode === 'story';
+
                 container.innerHTML = `
-                    <div class="space-y-4">
-                        <h2 class="text-xl font-bold">Create New Post / Reel</h2>
-                        
-                        <!-- Upload File or URL -->
-                        <div class="border-2 border-dashed border-zinc-800 rounded-xl p-4 text-center cursor-pointer hover:border-zinc-700 bg-zinc-950" onclick="document.getElementById('fileUpload').click()">
-                            <i data-lucide="upload-cloud" class="w-8 h-8 mx-auto text-zinc-400 mb-1"></i>
-                            <p class="text-xs text-zinc-300 font-semibold">Upload Image / Video from device</p>
-                            <input type="file" id="fileUpload" accept="image/*,video/*" class="hidden" onchange="handleFileSelect(event)">
+                    <div class="space-y-5">
+                        <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
+                            <div>
+                                <h2 class="text-2xl font-bold flex items-center gap-2">
+                                    <span>Creator Upload Studio</span>
+                                </h2>
+                                <p class="text-xs text-zinc-400 mt-0.5">Publish photos, short reels, or 24-hour stories with Firebase.</p>
+                            </div>
+                            <span class="text-[10px] bg-amber-500/20 text-amber-300 font-bold px-2 py-0.5 rounded border border-amber-600/40">Firebase Live</span>
                         </div>
 
-                        <div id="previewBox" class="hidden aspect-square rounded-xl overflow-hidden bg-black max-h-64 border border-zinc-800">
-                            <img id="imagePreview" class="w-full h-full object-cover" />
+                        <!-- Mode Switcher Tabs (Post, Reel, Story) -->
+                        <div class="grid grid-cols-3 gap-2 bg-zinc-950 p-1.5 rounded-2xl border border-zinc-800">
+                            <button onclick="switchUploadType('post')" class="py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition ${isPost ? 'bg-gradient-to-r from-amber-500 to-rose-500 text-white shadow-lg' : 'text-zinc-400 hover:text-white'}">
+                                <i data-lucide="image" class="w-4 h-4"></i>
+                                <span>Feed Post</span>
+                            </button>
+                            <button onclick="switchUploadType('reel')" class="py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition ${isReel ? 'bg-gradient-to-r from-rose-500 to-purple-600 text-white shadow-lg' : 'text-zinc-400 hover:text-white'}">
+                                <i data-lucide="clapperboard" class="w-4 h-4"></i>
+                                <span>Video Reel</span>
+                            </button>
+                            <button onclick="switchUploadType('story')" class="py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition ${isStory ? 'bg-gradient-to-r from-purple-600 to-amber-500 text-white shadow-lg' : 'text-zinc-400 hover:text-white'}">
+                                <i data-lucide="circle-dot" class="w-4 h-4"></i>
+                                <span>Add Story</span>
+                            </button>
                         </div>
 
-                        <input type="text" placeholder="Or paste Image URL (https://...)" id="new-url" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-sm focus:outline-none" />
-                        <textarea placeholder="Write a caption with hashtags..." id="new-caption" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-sm h-28 focus:outline-none resize-none"></textarea>
-                        
-                        <button onclick="addNewPost()" class="w-full bg-gradient-to-r from-amber-500 via-rose-500 to-purple-600 p-3.5 rounded-xl font-bold shadow-lg hover:opacity-95 transition">Publish to InstaClone</button>
+                        <!-- Status Alert -->
+                        <div id="publishStatusAlert" class="hidden"></div>
+
+                        <!-- Upload Area / Drag & Drop -->
+                        <div class="bg-zinc-950 border border-zinc-800 rounded-2xl p-5 space-y-4 shadow-xl">
+                            <div class="border-2 border-dashed border-zinc-800 hover:border-zinc-600 rounded-2xl p-6 text-center cursor-pointer transition bg-zinc-900/50" onclick="document.getElementById('creatorFileInput').click()">
+                                <div class="w-14 h-14 mx-auto rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-300 mb-3 shadow-inner">
+                                    <i data-lucide="${isReel ? 'video' : (isStory ? 'camera' : 'upload-cloud')}" class="w-7 h-7 text-amber-400"></i>
+                                </div>
+                                <h4 class="text-sm font-bold text-zinc-200">
+                                    ${isReel ? 'Select Video Reel from Device' : (isStory ? 'Select Story Photo or Video' : 'Select Photo or Video Post')}
+                                </h4>
+                                <p class="text-xs text-zinc-400 mt-1">Tap to browse files or drag and drop</p>
+                                <p id="uploadFileHint" class="text-[11px] text-zinc-500 mt-2">
+                                    ${isReel ? 'Supports MP4, MOV, WEBM (9:16 Vertical format recommended)' : 'Supports JPG, PNG, WEBP, MP4, GIF'}
+                                </p>
+                                <input type="file" id="creatorFileInput" accept="${isReel ? 'video/*' : 'image/*,video/*'}" class="hidden" onchange="handleMediaFileSelection(event)">
+                            </div>
+
+                            <!-- Live Media Preview Box -->
+                            <div id="mediaPreviewBox" class="hidden relative aspect-square max-h-80 w-full mx-auto rounded-xl overflow-hidden bg-black border border-zinc-800 shadow">
+                                <!-- Image or Video injected via FileReader -->
+                            </div>
+
+                            <!-- Alternative URL Input -->
+                            <div>
+                                <label class="block text-xs text-zinc-400 mb-1">Or paste direct media URL:</label>
+                                <input type="text" id="creatorManualUrl" placeholder="https://example.com/media.jpg or .mp4" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-rose-500 transition" />
+                            </div>
+
+                            <!-- Reel Audio Track Title -->
+                            ${isReel ? `
+                                <div>
+                                    <label class="block text-xs text-zinc-400 mb-1">Audio / Music Track Title</label>
+                                    <input type="text" id="creatorAudioName" placeholder="e.g. Trending Beats • Original Audio" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-rose-500 transition" />
+                                </div>
+                            ` : ''}
+
+                            <!-- Caption Input -->
+                            <div>
+                                <label class="block text-xs text-zinc-400 mb-1">
+                                    ${isStory ? 'Story Caption / Sticker Text (Optional)' : 'Caption & Hashtags'}
+                                </label>
+                                <textarea id="creatorCaption" rows="3" placeholder="${isStory ? 'Add text to your story...' : 'Write an engaging caption with hashtags #photography #lifestyle #friends...'}" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-rose-500 transition resize-none"></textarea>
+                            </div>
+
+                            <!-- Submit Button -->
+                            <button type="button" id="publishSubmitBtn" onclick="handleCreatorPublish()" class="w-full py-3 bg-gradient-to-r from-amber-500 via-rose-500 to-purple-600 hover:opacity-95 text-white font-bold text-xs rounded-xl shadow-lg transition flex items-center justify-center gap-2">
+                                <i data-lucide="send" class="w-4 h-4"></i>
+                                <span>${isStory ? 'Publish to Story' : (isReel ? 'Share Reel' : 'Publish Post')}</span>
+                            </button>
+                        </div>
                     </div>
                 `;
             }
