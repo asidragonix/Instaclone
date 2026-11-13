@@ -27,11 +27,38 @@ jobs:
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
+        with:
+          packages: ''
 
-      - name: Accept Android SDK Licenses & Install API 36.1
+      - name: Accept Android SDK Licenses & Install API 36 / 36.1
         run: |
+          SDK_DIR="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
+          mkdir -p "$SDK_DIR/licenses"
+          printf "\n24333f8a63b6825ea9c5514f83c2829b004d1fee\n8933bad161af4178b1185d1a37fbf41ea5269c55\nd56f5187479451eabf01fb78af6dfcb131a6481e" > "$SDK_DIR/licenses/android-sdk-license"
+          printf "\n84831b9409646a918e30573bab4c9c91346d8abd" > "$SDK_DIR/licenses/android-sdk-preview-license"
+          printf "\n33b6a2b64607f11b759f320ef9dff4ae5c47d97a\nd975f751698a77b662f1254ddbeed3901e976f5a" > "$SDK_DIR/licenses/google-gdk-license"
+
           yes | sdkmanager --licenses > /dev/null 2>&1 || true
-          sdkmanager "platform-tools" "platforms;android-36.1" "build-tools;36.0.0"
+          yes | sdkmanager --install "cmdline-tools;latest" > /dev/null 2>&1 || true
+
+          SDKMANAGER_BIN="$SDK_DIR/cmdline-tools/latest/bin/sdkmanager"
+          if [ ! -x "$SDKMANAGER_BIN" ]; then
+            SDKMANAGER_BIN="$(command -v sdkmanager)"
+          fi
+
+          yes | "$SDKMANAGER_BIN" --licenses > /dev/null 2>&1 || true
+          yes | "$SDKMANAGER_BIN" --install "platform-tools" "build-tools;36.0.0" "platforms;android-36" "platforms;android-36.1" || \
+            yes | "$SDKMANAGER_BIN" --install "platform-tools" "build-tools;36.0.0" "platforms;android-36"
+
+      - name: Configure Runner Swap Space
+        run: |
+          if [ "$(swapon --show | wc -l)" -eq 0 ]; then
+            sudo fallocate -l 4G /swapfile || sudo dd if=/dev/zero of=/swapfile bs=1M count=4096 status=none
+            sudo chmod 600 /swapfile
+            sudo mkswap /swapfile
+            sudo swapon /swapfile
+          fi
+          free -h
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
@@ -58,7 +85,7 @@ jobs:
           chmod +x gradlew
 
       - name: Build Debug APK via Gradle
-        run: ./gradlew :app:assembleDebug --no-daemon --stacktrace --max-workers=2 -Dorg.gradle.jvmargs="-Xmx3g -XX:MaxMetaspaceSize=1g -Dfile.encoding=UTF-8"
+        run: ./gradlew :app:assembleDebug --no-daemon --stacktrace --max-workers=2 -Dorg.gradle.parallel=false -Dorg.gradle.configuration-cache=false -Dorg.gradle.jvmargs="-Xmx2048m -XX:MaxMetaspaceSize=768m -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8"
 
       - name: Verify APK Generated
         run: |
