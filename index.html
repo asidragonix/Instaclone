@@ -1859,30 +1859,18 @@
             return { url: './instaclone.apk', sawHtmlOnly };
         }
 
-        async function triggerDirectApkDownload() {
+        function triggerDirectApkDownload() {
             const modal = document.getElementById('apkInstallModal');
             const statusBox = document.getElementById('apkModalStatusBox');
             const directLink = document.getElementById('apkDirectDownloadLink');
-
-            const { url: targetUrl, sawHtmlOnly } = await resolveValidApkUrl();
+            const targetUrl = './instaclone.apk';
 
             if (directLink) {
                 directLink.href = targetUrl;
                 directLink.download = 'InstaClone-v1.1.apk';
             }
 
-            if (sawHtmlOnly) {
-                if (statusBox) {
-                    statusBox.className = 'p-3 rounded-xl bg-amber-950/60 border border-amber-700/50 text-xs text-amber-200';
-                    statusBox.innerHTML = 'This web host returned an HTML page instead of the <code>.apk</code> binary. Download <strong>app-debug.apk</strong> from your project outputs or GitHub Releases instead.';
-                }
-                if (modal) {
-                    modal.classList.remove('hidden');
-                    lucide.createIcons();
-                }
-                return;
-            }
-
+            // Trigger download synchronously on user tap so mobile browsers don't block the gesture
             const a = document.createElement('a');
             a.href = targetUrl;
             a.download = 'InstaClone-v1.1.apk';
@@ -1893,12 +1881,21 @@
 
             if (statusBox) {
                 statusBox.className = 'p-3 rounded-xl bg-green-950/50 border border-green-700/50 text-xs text-green-300';
-                statusBox.innerHTML = 'Download started (<strong>InstaClone-v1.1.apk</strong>, v2/v3 signed). Tap the downloaded file to install.';
+                statusBox.innerHTML = 'Download started (<strong>InstaClone-v1.1.apk</strong>, v2 signed). Tap the downloaded file to install.';
             }
             if (modal) {
                 modal.classList.remove('hidden');
                 lucide.createIcons();
             }
+
+            // Asynchronously verify host didn't serve an HTML 404 fallback page
+            resolveValidApkUrl().then(({ url, sawHtmlOnly }) => {
+                if (directLink && url) directLink.href = url;
+                if (sawHtmlOnly && statusBox) {
+                    statusBox.className = 'p-3 rounded-xl bg-amber-950/60 border border-amber-700/50 text-xs text-amber-200';
+                    statusBox.innerHTML = 'This web host returned an HTML page instead of the <code>.apk</code> binary. Download <strong>app-debug.apk</strong> from your project outputs or GitHub Releases instead.';
+                }
+            });
         }
 
         // ==========================================
