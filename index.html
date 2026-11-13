@@ -34,8 +34,24 @@
         .font-brand { font-family: 'Grand Hotel', cursive; }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        .reel-container { scroll-snap-type: y mandatory; }
-        .reel-item { scroll-snap-align: start; }
+        .reel-container { scroll-snap-type: y mandatory; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; }
+        .reel-item { scroll-snap-align: start; scroll-snap-stop: always; }
+        @keyframes audioMarquee {
+            0% { transform: translateX(0%); }
+            100% { transform: translateX(-50%); }
+        }
+        .audio-marquee-wrap {
+            overflow: hidden;
+            white-space: nowrap;
+            mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);
+            -webkit-mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);
+        }
+        .audio-marquee-track {
+            display: inline-flex;
+            gap: 2.5rem;
+            min-width: 200%;
+            animation: audioMarquee 10s linear infinite;
+        }
         .story-ring {
             background: linear-gradient(45deg, #FFC837, #F77737, #FF3B6B, #C13584, #833AB4);
         }
@@ -206,15 +222,15 @@
                 <button onclick="switchTab('explore')" class="nav-btn w-full flex items-center gap-3.5 p-3 hover:bg-zinc-900 rounded-xl transition font-medium text-zinc-300" data-tab="explore"><i data-lucide="compass" class="w-5 h-5"></i> <span>Explore</span></button>
                 <button onclick="switchTab('reels')" class="nav-btn w-full flex items-center gap-3.5 p-3 hover:bg-zinc-900 rounded-xl transition font-medium text-zinc-300" data-tab="reels">
                     <i data-lucide="clapperboard" class="w-5 h-5"></i> <span>Watch Reels</span>
-                    <span id="desktopReelsCountBadge" class="ml-auto bg-rose-500/20 text-rose-400 border border-rose-500/30 text-[10px] font-bold px-2 py-0.5 rounded-full">2</span>
+                    <span id="desktopReelsCountBadge" class="ml-auto bg-rose-500/20 text-rose-400 border border-rose-500/30 text-[10px] font-bold px-2 py-0.5 rounded-full">102</span>
                 </button>
                 <button onclick="openReelEditor()" class="nav-btn w-full flex items-center gap-3.5 p-3 hover:bg-zinc-900 rounded-xl transition font-medium text-zinc-300" data-tab="reeledit">
                     <i data-lucide="scissors" class="w-5 h-5 text-amber-400"></i> <span>Reels Editor</span>
                     <span class="ml-auto text-[9px] bg-amber-500/15 text-amber-300 border border-amber-500/30 font-bold px-1.5 py-0.5 rounded">Studio</span>
                 </button>
                 <button onclick="switchTab('reelsbot')" class="nav-btn w-full flex items-center gap-3.5 p-3 hover:bg-zinc-900 rounded-xl transition font-medium text-zinc-300" data-tab="reelsbot">
-                    <i data-lucide="bot" class="w-5 h-5 text-purple-400"></i> <span>AI Reels Bot</span>
-                    <span id="desktopAiBotDot" class="ml-auto w-2 h-2 rounded-full bg-green-400 animate-pulse" title="Reels Bot Active"></span>
+                    <i data-lucide="bot" class="w-5 h-5 text-purple-400"></i> <span>100 AI Bots</span>
+                    <span id="desktopAiBotDot" class="ml-auto text-[10px] bg-purple-500/20 text-purple-300 border border-purple-500/30 font-bold px-1.5 py-0.5 rounded-full">24h</span>
                 </button>
                 <button onclick="switchTab('messages')" class="nav-btn w-full flex items-center gap-3.5 p-3 hover:bg-zinc-900 rounded-xl transition font-bold text-blue-400 relative" data-tab="messages">
                     <i data-lucide="message-circle" class="w-5 h-5"></i> <span>Direct Messages</span>
@@ -276,9 +292,9 @@
             <span class="text-[9px] bg-amber-500/20 text-amber-300 font-bold px-1.5 py-0.5 rounded border border-amber-600/40">Firebase</span>
         </div>
         <div class="flex items-center gap-2.5">
-            <button onclick="switchTab('reelsbot')" class="p-1.5 rounded-lg bg-purple-950/70 border border-purple-700/50 text-purple-300 hover:text-white flex items-center gap-1 text-[11px] font-bold" title="AI Reels Bot">
+            <button onclick="switchTab('reelsbot')" class="p-1.5 rounded-lg bg-purple-950/70 border border-purple-700/50 text-purple-300 hover:text-white flex items-center gap-1 text-[11px] font-bold" title="100 AI Bots">
                 <i data-lucide="bot" class="w-4 h-4"></i>
-                <span>Bot</span>
+                <span>100 Bots</span>
             </button>
             <button onclick="openUploadStudio('post')" class="p-1 text-zinc-300 hover:text-white" title="Upload Post/Reel/Story">
                 <i data-lucide="plus-square" class="w-6 h-6 text-amber-400"></i>
@@ -602,15 +618,21 @@
                                 caption: data.caption || '',
                                 audio: data.audio || 'Original Soundtrack',
                                 isAiBot: Boolean(data.isAiBot),
+                                botId: data.botId || null,
                                 niche: data.niche || '',
                                 editConfig: data.editConfig || null,
                                 comments: data.comments || [],
+                                createdAt: data.createdAt?.seconds ? data.createdAt.seconds * 1000 : Date.now(),
                                 isFollowing: false,
                                 isLiked: false
                             });
                         });
-                        const localUnsynced = (window.localAiReels || []).filter(lr => !firestoreReels.some(fr => fr.caption === lr.caption && fr.video === lr.video));
-                        window.reels = [...localUnsynced, ...firestoreReels, ...window.defaultReels];
+                        window.firestoreUserReels = firestoreReels;
+                        if (window.rebuildCombinedReels) {
+                            window.rebuildCombinedReels();
+                        } else {
+                            window.reels = [...firestoreReels, ...window.defaultReels];
+                        }
                         if (window.updateReelsBadge) window.updateReelsBadge();
                         if (window.currentTab === 'reels' || window.currentTab === 'reelsbot') window.render();
                     }
@@ -639,20 +661,21 @@
         window.isLandingSignUp = false;
         window.isFriendTyping = false;
 
-        // AI Reels Bot & Reels Watch Area State (Reels-Only Bot)
+        // 100 AI Bots (1-Video-Per-Day & 24-Hour Auto-Replace) + Watch Area State
+        window.ONE_DAY_MS = 24 * 60 * 60 * 1000;
+        window.LS_AI_BOTS_KEY = 'instaclone_100_ai_bots_v1';
+        window.LS_AI_BOT_REELS_KEY = 'instaclone_100_bot_reels_v1';
+        window.LS_AI_BOT_LOGS_KEY = 'instaclone_100_bot_logs_v1';
+
+        window.aiBots = [];
+        window.aiBotReels = [];
+        window.firestoreUserReels = [];
+        window.userUploadedReels = [];
         window.aiReelsBotActive = true;
-        window.aiBotReelNiche = 'All Trending Reels';
-        window.aiBotIntervalSec = 25;
-        window.aiBotReelsCount = 1;
+        window.aiBotSearchQuery = '';
         window.aiBotTimerId = null;
-        window.aiBotIsUploading = false;
-        window.localAiReels = [];
-        window.aiBotLogs = [
-            {
-                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
-                text: 'AI Reels Bot initialized (Reels-only mode — photo feed posts disabled).'
-            }
-        ];
+        window.aiBotLogs = [];
+        window.aiBotLastBanner = '';
         window.reelsFilter = 'all';
         window.isReelsMuted = true;
         window.activeReelIndex = 0;
@@ -843,209 +866,418 @@
 
         window.defaultReels = [
             {
-                id: 'reel-ai-seed-1',
-                user: 'ReelGenius_AI',
-                avatar: 'https://api.dicebear.com/7.x/bottts-neutral/svg?seed=ReelGeniusAI',
-                video: 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4',
-                poster: 'https://images.unsplash.com/photo-1490750967868-88aa4486c946?w=800',
-                likes: 920,
-                caption: 'Morning petals opening in ultra-crisp slow motion 🌸 #AIReels #Botanical #ReelsOnly',
-                audio: 'Ambient Bloom • AI Studio Mix',
-                isAiBot: true,
-                niche: 'Botanical Slow-Motion',
-                comments: [
-                    { author: 'Priya Sharma', text: 'So relaxing to watch on loop!' }
-                ],
-                isFollowing: true,
-                isLiked: false
-            },
-            {
-                id: 1,
-                user: 'Sara Ali',
+                id: 'friend-reel-1',
+                user: 'sara_vlogs',
+                displayName: 'Sara Ali',
                 avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150',
                 video: 'https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-576p.mp4',
                 poster: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800',
                 likes: 1840,
                 caption: 'Chasing waves with friends 🌊 #ocean #surf #weekendvibes',
-                audio: 'Original Soundtrack • Ocean Chill',
+                audio: 'Original Soundtrack • Ocean Chill Remix',
                 isAiBot: false,
+                createdAt: Date.now() - 2 * 3600 * 1000,
                 comments: [
-                    { author: 'Mohit Verma', text: 'Epic wave shot!' }
+                    { author: 'mohit_v', text: 'Epic wave shot!' }
                 ],
                 isFollowing: false,
                 isLiked: false
             },
             {
-                id: 2,
-                user: 'Mohit Verma',
+                id: 'friend-reel-2',
+                user: 'mohit_v',
+                displayName: 'Mohit Verma',
                 avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150',
                 video: 'https://vjs.zencdn.net/v/oceans.mp4',
                 poster: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800',
                 likes: 3420,
                 caption: 'Crystal blue waters and marine life 🐬 #scubadiving #travel',
-                audio: 'Underwater Symphony • Lo-Fi Remix',
+                audio: 'Underwater Symphony • Lo-Fi Club Mix',
                 isAiBot: false,
+                createdAt: Date.now() - 5 * 3600 * 1000,
                 comments: [
-                    { author: 'Aarav Patel', text: 'Need to go diving here next month!' }
+                    { author: 'aarav_travels', text: 'Need to go diving here next month!' }
                 ],
                 isFollowing: true,
                 isLiked: true
             }
         ];
 
-        window.reels = [...window.defaultReels];
-
         // ==========================================
-        // AI REELS BOT WORKER (STRICTLY REELS ONLY)
+        // 100 AI BOTS: 1 VIDEO PER DAY & 24H AUTO-REPLACE SYSTEM
         // ==========================================
-        const AI_REEL_TEMPLATES = [
+        const AI_REEL_MEDIA_CATALOG = [
             {
-                niche: 'Nature & Adventure',
+                niche: 'Surf & Coastlines',
                 video: 'https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-576p.mp4',
                 poster: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800',
-                caption: 'Catching golden barrel waves at sunrise 🌊🏄‍♂️ #SurfReels #OceanAdventure #AIReels',
-                audio: 'Coastal Horizon • AI Beat Lab'
+                captions: [
+                    'Dawn patrol barrel ride at sunrise 🌊🏄‍♂️ #SurfReels #OceanVibes #DailyReel',
+                    'Chasing glassy morning swells along the coast 🌅 #SurfLife #24hReel #Travel',
+                    'When the tide hits just right at golden hour ✨🌊 #AdventureReels #Coastal'
+                ],
+                audios: [
+                    'Coastal Horizon • Sunset Beats Mix',
+                    'Pacific Swell • Chillwave Radio',
+                    'Golden Tide • Original Bot Audio'
+                ]
             },
             {
-                niche: 'Deep Ocean & Wildlife',
+                niche: 'Deep Ocean & Marine',
                 video: 'https://vjs.zencdn.net/v/oceans.mp4',
                 poster: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800',
-                caption: 'Beneath the turquoise tide: sea turtles & coral reefs 🐢💙 #DeepOcean #WildlifeReels #AIReels',
-                audio: 'Deep Blue Drift • AI Synth'
+                captions: [
+                    'Gliding beside sea turtles over turquoise coral reefs 🐢💙 #DeepOcean #MarineLife',
+                    'Zero-gravity calm 30 feet below the surface 🌊🐠 #UnderwaterReels #Nature24h',
+                    'Ocean currents & sunlit reef wonders ✨🐬 #ScubaReels #BluePlanet'
+                ],
+                audios: [
+                    'Deep Blue Drift • Ambient Synth',
+                    'Coral Echoes • Lo-Fi Underwater',
+                    'Oceanic Pulse • Cinema Soundscape'
+                ]
             },
             {
-                niche: 'Botanical Slow-Motion',
+                niche: 'Botanical Slow-Mo',
                 video: 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4',
                 poster: 'https://images.unsplash.com/photo-1490750967868-88aa4486c946?w=800',
-                caption: 'Macro spring bloom unfolding frame by frame 🌼✨ #MacroReels #NatureSlowMo #AIReels',
-                audio: 'Sunlit Garden • AI Lo-Fi'
+                captions: [
+                    'Spring petals unfurling in macro slow-motion 🌸✨ #BotanicalReels #MacroNature',
+                    'Morning dew & golden sunlight in full bloom 🌼🌿 #SlowMoReels #Aesthetic',
+                    'Tiny garden universe waking up today 🌺☀️ #NatureDaily #CleanVisuals'
+                ],
+                audios: [
+                    'Sunlit Garden • Acoustic Lo-Fi',
+                    'Ambient Bloom • Chill Studio Mix',
+                    'Morning Dew • Soft Piano Loops'
+                ]
             }
         ];
+
+        const BOT_FIRST_NAMES = [
+            'Aria', 'Kael', 'Nova', 'Zane', 'Maya', 'Liam', 'Chloe', 'Rohan', 'Elena', 'Devon',
+            'Sienna', 'Lucas', 'Kiara', 'Arjun', 'Mila', 'Theo', 'Nadia', 'Caleb', 'Zara', 'Ethan',
+            'Ananya', 'Julian', 'Leila', 'Marco', 'Ruby', 'Kabir', 'Iris', 'Noah', 'Freya', 'Vikram',
+            'Talia', 'Owen', 'Clara', 'Reyansh', 'Sora', 'Dante', 'Yuki', 'Mateo', 'Amara', 'Felix',
+            'Nina', 'Ishaan', 'Vera', 'Kieran', 'Hazel', 'Aiden', 'Lina', 'Soren', 'Kaya', 'Rafael'
+        ];
+        const BOT_LAST_TAGS = [
+            'frames', 'motion', 'cinematics', 'waves', 'botanica', 'visuals', 'reels', 'studio', 'drift', 'lens',
+            'vibes', 'horizon', 'bloom', 'tide', 'glow', 'captures', 'daily', 'aesthetics', 'chronicle', 'flux'
+        ];
+        const BOT_BIOS = [
+            'Daily 24h vertical video drops 🎬 | AI Reel Creator',
+            '1 curated reel every single day ✨ | Auto-refreshed 24h',
+            'Ocean, adventure & macro cinema 🌊📸',
+            'Capturing fleeting 24-hour moments in 9:16 🎥',
+            'Slow-motion visuals & ambient soundtracks 🎵'
+        ];
+
+        function formatFollowerCount(num) {
+            if (num >= 1000) return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
+            return String(num);
+        }
+
+        function formatExpiresInBadge(createdAtMs) {
+            const elapsed = Math.max(0, Date.now() - (createdAtMs || Date.now()));
+            const remainingMs = Math.max(0, window.ONE_DAY_MS - elapsed);
+            const totalMinutes = Math.ceil(remainingMs / 60000);
+            const hours = Math.floor(totalMinutes / 60);
+            const mins = totalMinutes % 60;
+            if (hours >= 1) return `Expires in ${hours}h`;
+            if (mins > 0) return `Expires in ${mins}m`;
+            return 'Replacing soon';
+        }
+
+        function create100BotAccounts() {
+            const bots = [];
+            for (let i = 0; i < 100; i++) {
+                const first = BOT_FIRST_NAMES[i % BOT_FIRST_NAMES.length];
+                const last = BOT_LAST_TAGS[(i * 7 + Math.floor(i / BOT_FIRST_NAMES.length)) % BOT_LAST_TAGS.length];
+                const suffix = i >= 50 ? `_${(i % 50) + 1}` : '';
+                const username = `${first.toLowerCase()}.${last}${suffix}`;
+                const catalogItem = AI_REEL_MEDIA_CATALOG[i % AI_REEL_MEDIA_CATALOG.length];
+                bots.push({
+                    id: `bot-${String(i + 1).padStart(3, '0')}`,
+                    username,
+                    name: `${first} AI`,
+                    avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(username)}`,
+                    bio: BOT_BIOS[i % BOT_BIOS.length],
+                    niche: catalogItem.niche,
+                    followersCount: 1400 + ((i * 873) % 85000),
+                    isFollowing: i < 5
+                });
+            }
+            return bots;
+        }
+
+        function buildFreshReelForBot(bot, previousVideoUrl = null, customCreatedAt = null, cycleNum = 1) {
+            const nicheCatalog = AI_REEL_MEDIA_CATALOG.find(c => c.niche === bot.niche) || AI_REEL_MEDIA_CATALOG[0];
+            // Prefer switching media item on replacement so user visually sees the fresh replacement!
+            let candidatePool = AI_REEL_MEDIA_CATALOG;
+            if (previousVideoUrl) {
+                const alternatives = AI_REEL_MEDIA_CATALOG.filter(c => c.video !== previousVideoUrl);
+                if (alternatives.length > 0) candidatePool = alternatives;
+            } else {
+                candidatePool = [nicheCatalog];
+            }
+            const chosen = previousVideoUrl
+                ? candidatePool[Math.floor(Math.random() * candidatePool.length)]
+                : nicheCatalog;
+
+            const caption = chosen.captions[Math.floor(Math.random() * chosen.captions.length)];
+            const audio = chosen.audios[Math.floor(Math.random() * chosen.audios.length)];
+            const nowTs = customCreatedAt !== null ? customCreatedAt : Date.now();
+
+            return {
+                id: `botreel-${bot.id}-${nowTs}-${Math.floor(Math.random() * 1000)}`,
+                botId: bot.id,
+                user: bot.username,
+                displayName: bot.name,
+                avatar: bot.avatar,
+                video: chosen.video,
+                poster: chosen.poster,
+                likes: Math.floor(Math.random() * 1800) + 120,
+                caption: `${caption} #${bot.username.replace(/[^a-z0-9]/gi, '')}`,
+                audio,
+                niche: chosen.niche,
+                isAiBot: true,
+                cycleNumber: cycleNum,
+                comments: [
+                    { author: 'priya_designs', text: 'Clean daily drop! 🔥' }
+                ],
+                isFollowing: Boolean(bot.isFollowing),
+                isLiked: false,
+                createdAt: nowTs
+            };
+        }
+
+        function enforceStrictOneReelPerBot(bots, reelsList) {
+            const byBotId = new Map();
+            reelsList.forEach(r => {
+                if (!r || !r.botId) return;
+                const existing = byBotId.get(r.botId);
+                if (!existing || (r.createdAt || 0) > (existing.createdAt || 0)) {
+                    byBotId.set(r.botId, r);
+                }
+            });
+            return bots.map(bot => byBotId.get(bot.id)).filter(Boolean);
+        }
+
+        function saveBotEcosystemToStorage() {
+            try {
+                localStorage.setItem(window.LS_AI_BOTS_KEY, JSON.stringify(window.aiBots));
+                localStorage.setItem(window.LS_AI_BOT_REELS_KEY, JSON.stringify(window.aiBotReels));
+                localStorage.setItem(window.LS_AI_BOT_LOGS_KEY, JSON.stringify(window.aiBotLogs.slice(0, 25)));
+            } catch (e) {
+                console.warn('localStorage save notice:', e);
+            }
+        }
+
+        window.rebuildCombinedReels = function() {
+            // Merge user/Firestore reels + 100 active bot reels (strictly 1 per bot) + friend default reels
+            const sortedBotReels = [...window.aiBotReels].sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+            const merged = [
+                ...window.userUploadedReels,
+                ...window.firestoreUserReels,
+                ...sortedBotReels,
+                ...window.defaultReels
+            ];
+            // Deduplicate by id
+            const seen = new Set();
+            window.reels = merged.filter(r => {
+                const key = String(r.id);
+                if (seen.has(key)) return false;
+                seen.add(key);
+                return true;
+            });
+            if (window.updateReelsBadge) window.updateReelsBadge();
+        };
 
         window.updateReelsBadge = function() {
             const badge = document.getElementById('desktopReelsCountBadge');
             if (badge) badge.textContent = window.reels.length;
             const dot = document.getElementById('desktopAiBotDot');
             if (dot) {
-                dot.className = window.aiReelsBotActive
-                    ? 'ml-auto w-2 h-2 rounded-full bg-green-400 animate-pulse'
-                    : 'ml-auto w-2 h-2 rounded-full bg-zinc-600';
+                dot.textContent = `${window.aiBots.length || 100}`;
             }
         };
 
-        async function generateAndUploadAiReel(isManual = false) {
-            if (window.aiBotIsUploading) return;
-            window.aiBotIsUploading = true;
-
-            try {
-                const matchingTemplates = window.aiBotReelNiche === 'All Trending Reels'
-                    ? AI_REEL_TEMPLATES
-                    : AI_REEL_TEMPLATES.filter(t => t.niche === window.aiBotReelNiche);
-                const pool = matchingTemplates.length > 0 ? matchingTemplates : AI_REEL_TEMPLATES;
-                const pick = pool[Math.floor(Math.random() * pool.length)];
-
-                const newAiReel = {
-                    id: 'aireel-' + Date.now() + '-' + Math.floor(Math.random() * 1000),
-                    user: 'ReelGenius_AI',
-                    avatar: 'https://api.dicebear.com/7.x/bottts-neutral/svg?seed=ReelGeniusAI',
-                    video: pick.video,
-                    poster: pick.poster,
-                    likes: Math.floor(Math.random() * 600) + 120,
-                    caption: pick.caption,
-                    audio: pick.audio,
-                    isAiBot: true,
-                    niche: pick.niche,
-                    comments: [],
-                    isFollowing: true,
-                    isLiked: false,
-                    createdAt: new Date().toISOString()
-                };
-
-                // Strictly append ONLY to Reels (never to window.posts)
-                window.localAiReels.unshift(newAiReel);
-                window.reels.unshift(newAiReel);
-                window.aiBotReelsCount += 1;
-
-                const timeNow = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-                window.aiBotLogs.unshift({
-                    time: timeNow,
-                    text: `${isManual ? '[Manual]' : '[Auto]'} Uploaded Reel (${pick.niche}) → Reels Watch Area.`
-                });
-                if (window.aiBotLogs.length > 15) window.aiBotLogs.pop();
-
-                if (window.firebaseDb) {
-                    try {
-                        const { collection, addDoc, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js");
-                        await addDoc(collection(window.firebaseDb, "reels"), {
-                            user: newAiReel.user,
-                            avatar: newAiReel.avatar,
-                            video: newAiReel.video,
-                            poster: newAiReel.poster,
-                            likes: newAiReel.likes,
-                            caption: newAiReel.caption,
-                            audio: newAiReel.audio,
-                            isAiBot: true,
-                            niche: newAiReel.niche,
-                            comments: [],
-                            createdAt: serverTimestamp()
-                        });
-                    } catch (e) {
-                        console.log("AI Reel Firestore sync notice:", e);
-                    }
-                }
-
-                window.updateReelsBadge();
-                if (window.currentTab === 'reelsbot' || window.currentTab === 'reels') {
-                    render();
-                }
-            } finally {
-                window.aiBotIsUploading = false;
-            }
+        function appendBotLog(text) {
+            const timeNow = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            window.aiBotLogs.unshift({ time: timeNow, text });
+            if (window.aiBotLogs.length > 25) window.aiBotLogs.length = 25;
         }
 
-        function startAiReelsBotTimer() {
-            if (window.aiBotTimerId) {
-                clearInterval(window.aiBotTimerId);
-                window.aiBotTimerId = null;
+        function run24HourBotLifecycleCheck(forceSimulateNextDay = false) {
+            if (!window.aiBots || window.aiBots.length !== 100) return 0;
+
+            const now = Date.now();
+            const activeMap = new Map();
+            window.aiBotReels.forEach(r => {
+                if (r && r.botId) activeMap.set(r.botId, r);
+            });
+
+            let replacedCount = 0;
+            const nextBotReels = [];
+
+            window.aiBots.forEach((bot, idx) => {
+                const currentReel = activeMap.get(bot.id);
+                const ageMs = currentReel ? (now - (currentReel.createdAt || 0)) : window.ONE_DAY_MS + 1;
+                const isExpired = forceSimulateNextDay || !currentReel || ageMs >= window.ONE_DAY_MS;
+
+                if (isExpired) {
+                    const prevUrl = currentReel ? currentReel.video : null;
+                    const nextCycle = currentReel ? ((currentReel.cycleNumber || 1) + 1) : 1;
+                    // On initial bootstrap (when !currentReel), stagger timestamps across 0-22h so Expires-in badges vary naturally
+                    const assignedCreatedAt = (!currentReel && !forceSimulateNextDay)
+                        ? (now - ((idx * 13 * 60 * 1000) % (22 * 3600 * 1000)))
+                        : now;
+                    const replacementReel = buildFreshReelForBot(bot, prevUrl, assignedCreatedAt, nextCycle);
+                    nextBotReels.push(replacementReel);
+                    if (currentReel) replacedCount += 1;
+                } else {
+                    // Sync latest bot metadata
+                    currentReel.isFollowing = Boolean(bot.isFollowing);
+                    nextBotReels.push(currentReel);
+                }
+            });
+
+            window.aiBotReels = enforceStrictOneReelPerBot(window.aiBots, nextBotReels);
+
+            if (forceSimulateNextDay) {
+                const msg = `[24h Cycle Simulated] Deleted ${replacedCount} expired reels → Uploaded ${window.aiBotReels.length} fresh daily reels (1 per bot).`;
+                appendBotLog(msg);
+                window.aiBotLastBanner = msg;
+            } else if (replacedCount > 0) {
+                const msg = `[Auto 24h Check] Deleted ${replacedCount} expired reel(s) → Uploaded ${replacedCount} fresh replacement reel(s).`;
+                appendBotLog(msg);
+                window.aiBotLastBanner = msg;
             }
-            if (window.aiReelsBotActive) {
-                window.aiBotTimerId = setInterval(() => {
-                    if (window.aiReelsBotActive) {
-                        generateAndUploadAiReel(false);
-                    }
-                }, window.aiBotIntervalSec * 1000);
+
+            saveBotEcosystemToStorage();
+            window.rebuildCombinedReels();
+
+            if (window.currentTab === 'reelsbot' || window.currentTab === 'reels') {
+                render();
             }
-            window.updateReelsBadge();
+            return replacedCount;
+        }
+
+        function simulateNextDay24h() {
+            // Backdate every active bot reel by > 24 hours, then immediately run the 24h auto-delete & replace check
+            const expiredTimestamp = Date.now() - (window.ONE_DAY_MS + 60000);
+            window.aiBotReels = window.aiBotReels.map(r => ({ ...r, createdAt: expiredTimestamp }));
+            run24HourBotLifecycleCheck(true);
+        }
+
+        function replaceSingleBotReelNow(botId) {
+            const bot = window.aiBots.find(b => b.id === botId);
+            if (!bot) return;
+            const currentReel = window.aiBotReels.find(r => r.botId === botId);
+            const fresh = buildFreshReelForBot(bot, currentReel ? currentReel.video : null, Date.now(), (currentReel?.cycleNumber || 1) + 1);
+            window.aiBotReels = [fresh, ...window.aiBotReels.filter(r => r.botId !== botId)];
+            appendBotLog(`[Single Bot 24h Replace] @${bot.username}: old reel deleted → new reel uploaded.`);
+            window.aiBotLastBanner = `Replaced @${bot.username}'s active reel (still strictly 1/1 video).`;
+            saveBotEcosystemToStorage();
+            window.rebuildCombinedReels();
+            render();
+        }
+
+        function initializeBotEcosystem() {
+            try {
+                const savedBots = JSON.parse(localStorage.getItem(window.LS_AI_BOTS_KEY) || 'null');
+                const savedReels = JSON.parse(localStorage.getItem(window.LS_AI_BOT_REELS_KEY) || 'null');
+                const savedLogs = JSON.parse(localStorage.getItem(window.LS_AI_BOT_LOGS_KEY) || 'null');
+
+                window.aiBots = (Array.isArray(savedBots) && savedBots.length === 100) ? savedBots : create100BotAccounts();
+                window.aiBotReels = Array.isArray(savedReels) ? enforceStrictOneReelPerBot(window.aiBots, savedReels) : [];
+                window.aiBotLogs = Array.isArray(savedLogs) && savedLogs.length > 0 ? savedLogs : [];
+            } catch (e) {
+                window.aiBots = create100BotAccounts();
+                window.aiBotReels = [];
+                window.aiBotLogs = [];
+            }
+
+            const firstBoot = window.aiBotReels.length === 0;
+            run24HourBotLifecycleCheck(false);
+            if (firstBoot) {
+                appendBotLog(`Initialized 100 AI Bots (1 active video/day per bot, 24h auto-replace active).`);
+                saveBotEcosystemToStorage();
+            } else {
+                appendBotLog(`Loaded 100 AI Bots from localStorage (${window.aiBotReels.length} active reels verified).`);
+                saveBotEcosystemToStorage();
+            }
+
+            if (window.aiBotTimerId) clearInterval(window.aiBotTimerId);
+            window.aiBotTimerId = setInterval(() => {
+                if (window.aiReelsBotActive) {
+                    run24HourBotLifecycleCheck(false);
+                }
+            }, 30000);
         }
 
         function toggleAiReelsBot() {
             window.aiReelsBotActive = !window.aiReelsBotActive;
-            const timeNow = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-            window.aiBotLogs.unshift({
-                time: timeNow,
-                text: window.aiReelsBotActive
-                    ? `AI Reels Bot RESUMED (every ${window.aiBotIntervalSec}s, Reels-only).`
-                    : 'AI Reels Bot PAUSED.'
-            });
-            startAiReelsBotTimer();
+            appendBotLog(window.aiReelsBotActive ? '24-Hour Auto-Replace Watchdog RESUMED.' : '24-Hour Auto-Replace Watchdog PAUSED.');
+            saveBotEcosystemToStorage();
             render();
         }
 
-        function updateAiBotSettings() {
-            const nicheSel = document.getElementById('aiBotNicheSelect');
-            const freqSel = document.getElementById('aiBotIntervalSelect');
-            if (nicheSel) window.aiBotReelNiche = nicheSel.value;
-            if (freqSel) window.aiBotIntervalSec = parseInt(freqSel.value, 10) || 25;
-            const timeNow = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-            window.aiBotLogs.unshift({
-                time: timeNow,
-                text: `Settings updated: Niche="${window.aiBotReelNiche}", Interval=${window.aiBotIntervalSec}s.`
-            });
-            startAiReelsBotTimer();
-            render();
+        function updateBotDirectorySearch(q) {
+            window.aiBotSearchQuery = q;
+            const grid = document.getElementById('aiBotsDirectoryGrid');
+            if (!grid) return;
+            grid.innerHTML = renderBotDirectoryCardsHtml();
+            lucide.createIcons();
         }
 
-        startAiReelsBotTimer();
+        function renderBotDirectoryCardsHtml() {
+            const q = (window.aiBotSearchQuery || '').trim().toLowerCase();
+            const reelByBot = new Map();
+            window.aiBotReels.forEach(r => reelByBot.set(r.botId, r));
+
+            const filtered = window.aiBots.filter(b =>
+                !q || b.username.toLowerCase().includes(q) || b.niche.toLowerCase().includes(q) || b.bio.toLowerCase().includes(q)
+            );
+
+            if (filtered.length === 0) {
+                return `<div class="col-span-full text-center py-8 text-xs text-zinc-500">No AI bots matched "${q}".</div>`;
+            }
+
+            return filtered.map(bot => {
+                const reel = reelByBot.get(bot.id);
+                const expiresText = reel ? formatExpiresInBadge(reel.createdAt) : 'Pending';
+                return `
+                    <div class="bg-zinc-950 border border-zinc-800 rounded-2xl overflow-hidden flex flex-col justify-between shadow group">
+                        <div class="relative aspect-[9/12] bg-zinc-900 cursor-pointer overflow-hidden" onclick="${reel ? `openReelInWatchArea('${reel.id}')` : ''}">
+                            <img src="${reel ? reel.poster : ''}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/25 to-transparent p-2.5 flex flex-col justify-between">
+                                <div class="flex items-center justify-between gap-1">
+                                    <span class="text-[9px] font-bold px-2 py-0.5 rounded-full bg-purple-600/90 text-white">1/1 Reel</span>
+                                    <span class="text-[9px] font-bold px-2 py-0.5 rounded-full bg-black/75 border border-amber-400/40 text-amber-300">${expiresText}</span>
+                                </div>
+                                <div class="space-y-1">
+                                    <div class="flex items-center gap-1.5">
+                                        <img src="${bot.avatar}" class="w-6 h-6 rounded-full border border-purple-400 bg-zinc-800" />
+                                        <span class="text-[11px] font-bold text-white truncate">@${bot.username}</span>
+                                    </div>
+                                    <p class="text-[10px] text-zinc-300 line-clamp-2">${reel ? reel.caption : bot.bio}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-2.5 bg-black/60 border-t border-zinc-900 flex items-center justify-between gap-1.5 text-[10px]">
+                            <span class="text-zinc-400 truncate">${formatFollowerCount(bot.followersCount)} followers</span>
+                            <button onclick="replaceSingleBotReelNow('${bot.id}')" class="px-2 py-1 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-amber-300 font-bold whitespace-nowrap" title="Expire & replace this bot's 1 daily video">
+                                ↻ 24h Replace
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        initializeBotEcosystem();
 
         // ==========================================
         // AUTHENTICATION LOGIC (Instagram Landing Gate)
@@ -1461,7 +1693,7 @@
                         comments: [],
                         isFollowing: false,
                         isLiked: false,
-                        createdAt: new Date().toISOString()
+                        createdAt: Date.now()
                     };
 
                     if (window.firebaseDb) {
@@ -1476,8 +1708,8 @@
                         }
                     }
 
-                    reels.unshift(newReel);
-                    if (window.updateReelsBadge) window.updateReelsBadge();
+                    window.userUploadedReels.unshift(newReel);
+                    window.rebuildCombinedReels();
                     switchTab('reels');
 
                 } else if (window.uploadMode === 'story') {
@@ -1600,7 +1832,12 @@
             document.querySelectorAll('.reel-item video').forEach(v => {
                 v.muted = window.isReelsMuted;
             });
-            render();
+            document.querySelectorAll('[data-mute-icon]').forEach(btn => {
+                btn.innerHTML = `<i data-lucide="${window.isReelsMuted ? 'volume-x' : 'volume-2'}" class="w-4 h-4 ${window.isReelsMuted ? 'text-zinc-300' : 'text-amber-400'}"></i>`;
+            });
+            const hint = document.getElementById('reelsHeaderMuteText');
+            if (hint) hint.textContent = window.isReelsMuted ? 'Muted' : 'Sound On';
+            lucide.createIcons();
         }
 
         function setReelsFilter(filter) {
@@ -1640,7 +1877,8 @@
                     const video = entry.target.querySelector('video');
                     const pauseBadge = entry.target.querySelector('.reel-pause-indicator');
                     if (!video) return;
-                    if (entry.isIntersecting && entry.intersectionRatio >= 0.6) {
+                    if (entry.isIntersecting && entry.intersectionRatio >= 0.65) {
+                        video.preload = 'auto';
                         video.muted = window.isReelsMuted;
                         video.play().catch(() => {});
                         if (pauseBadge) pauseBadge.classList.add('hidden');
@@ -1648,7 +1886,7 @@
                         video.pause();
                     }
                 });
-            }, { root, threshold: [0.6] });
+            }, { root, threshold: [0.65] });
 
             items.forEach(item => reelsObserver.observe(item));
         }
@@ -1828,6 +2066,28 @@
             }
         }
 
+        function updateEditorTextOverlayLive() {
+            const holder = document.getElementById('editorLiveOverlayContainer');
+            if (!holder) return;
+            const st = window.reelEditorState;
+            if (!st.overlayText) {
+                holder.innerHTML = '';
+                return;
+            }
+            const overlay = getOverlayClasses(st);
+            holder.className = `absolute inset-x-0 ${overlay.posClass} flex justify-center pointer-events-none px-3 z-10`;
+            const textColor = st.overlayStyle === 'boxed' ? '#000000' : st.overlayColor;
+            holder.innerHTML = `<div class="${overlay.boxClass}" style="color: ${textColor};"></div>`;
+            holder.firstElementChild.textContent = st.overlayText;
+        }
+
+        function updateEditorCaptionAudioLive() {
+            const capEl = document.getElementById('editorPreviewCaption');
+            if (capEl) capEl.textContent = window.reelEditorState.caption;
+            const audEl = document.getElementById('editorPreviewAudio');
+            if (audEl) audEl.textContent = window.reelEditorState.audio;
+        }
+
         function attachReelEditorPlayback() {
             const vid = document.getElementById('reelEditorPreviewVideo');
             if (!vid) return;
@@ -1894,6 +2154,23 @@
                     target.caption = st.caption;
                     target.audio = st.audio;
                     target.editConfig = editConfig;
+
+                    const idStr = String(target.id);
+                    const isLocalSeed = idStr === '1' || idStr === '2' || idStr.startsWith('reel-') || idStr.startsWith('aireel-') || idStr.startsWith('edited-reel-');
+                    if (window.firebaseDb && !isLocalSeed) {
+                        try {
+                            const { doc, updateDoc } = await import("https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js");
+                            await updateDoc(doc(window.firebaseDb, "reels", idStr), {
+                                caption: target.caption,
+                                audio: target.audio,
+                                poster: target.poster,
+                                editConfig
+                            });
+                        } catch (e) {
+                            console.log("Edited Reel Firestore update notice:", e);
+                        }
+                    }
+
                     openReelInWatchArea(target.id);
                     return;
                 }
@@ -1928,8 +2205,8 @@
                 }
             }
 
-            reels.unshift(newEditedReel);
-            if (window.updateReelsBadge) window.updateReelsBadge();
+            window.userUploadedReels.unshift(newEditedReel);
+            window.rebuildCombinedReels();
             openReelInWatchArea(newEditedReel.id);
         }
 
@@ -1965,7 +2242,7 @@
 
             document.querySelectorAll('[data-tab-mobile]').forEach(btn => {
                 const btnTab = btn.getAttribute('data-tab-mobile');
-                const icon = btn.querySelector('i');
+                const icon = btn.querySelector('i, svg');
                 if (icon) {
                     if (btnTab === tab) {
                         icon.classList.add('text-rose-500');
@@ -2012,6 +2289,23 @@
             }
         }
 
+        function syncReelCardUI(reel) {
+            const countEl = document.getElementById(`reel-likes-count-${reel.id}`);
+            if (countEl) countEl.textContent = reel.likes;
+            const heartIconWrap = document.getElementById(`reel-like-icon-${reel.id}`);
+            if (heartIconWrap) {
+                heartIconWrap.innerHTML = `<i data-lucide="heart" class="w-6 h-6 ${reel.isLiked ? 'text-rose-500 fill-rose-500' : 'text-white'}"></i>`;
+            }
+            const followBtn = document.getElementById(`reel-follow-btn-${reel.id}`);
+            if (followBtn) {
+                followBtn.textContent = reel.isFollowing ? 'Following' : 'Follow';
+                followBtn.className = `border border-white/75 px-3 py-0.5 text-xs rounded-full font-semibold transition ${reel.isFollowing ? 'bg-white text-black' : 'bg-black/35 text-white hover:bg-white/20'}`;
+            }
+            const commentsCountEl = document.getElementById(`reel-comments-count-${reel.id}`);
+            if (commentsCountEl) commentsCountEl.textContent = reel.comments ? reel.comments.length : 0;
+            lucide.createIcons();
+        }
+
         function triggerReelDoubleTapLike(reelId) {
             const burst = document.getElementById(`reel-burst-${reelId}`);
             if (burst) {
@@ -2022,7 +2316,8 @@
             if (reel && !reel.isLiked) {
                 reel.isLiked = true;
                 reel.likes += 1;
-                render();
+                if (reel.botId) saveBotEcosystemToStorage();
+                syncReelCardUI(reel);
             }
         }
 
@@ -2031,7 +2326,8 @@
             if (reel) {
                 reel.isLiked = !reel.isLiked;
                 reel.likes += reel.isLiked ? 1 : -1;
-                render();
+                if (reel.botId) saveBotEcosystemToStorage();
+                syncReelCardUI(reel);
             }
         }
 
@@ -2039,8 +2335,25 @@
             const reel = reels.find(r => String(r.id) === String(reelId));
             if (reel) {
                 reel.isFollowing = !reel.isFollowing;
-                render();
+                if (reel.botId) {
+                    const bot = window.aiBots.find(b => b.id === reel.botId);
+                    if (bot) {
+                        bot.isFollowing = reel.isFollowing;
+                        bot.followersCount += reel.isFollowing ? 1 : -1;
+                    }
+                    saveBotEcosystemToStorage();
+                }
+                syncReelCardUI(reel);
             }
+        }
+
+        function escapeHtml(str) {
+            return String(str ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
         }
 
         function openCommentsModal(postId) {
@@ -2053,8 +2366,8 @@
             container.innerHTML = post.comments && post.comments.length > 0 
                 ? post.comments.map(c => `
                     <div class="flex items-start gap-2.5 text-xs">
-                        <span class="font-bold text-zinc-300">@${c.author}</span>
-                        <span class="text-zinc-200">${c.text}</span>
+                        <span class="font-bold text-zinc-300">@${escapeHtml(c.author)}</span>
+                        <span class="text-zinc-200">${escapeHtml(c.text)}</span>
                     </div>
                 `).join('')
                 : `<p class="text-xs text-zinc-500 text-center py-4">No comments yet. Say something friendly!</p>`;
@@ -2073,8 +2386,8 @@
             container.innerHTML = reel.comments && reel.comments.length > 0
                 ? reel.comments.map(c => `
                     <div class="flex items-start gap-2.5 text-xs">
-                        <span class="font-bold text-rose-400">@${c.author}</span>
-                        <span class="text-zinc-200">${c.text}</span>
+                        <span class="font-bold text-rose-400">@${escapeHtml(c.author)}</span>
+                        <span class="text-zinc-200">${escapeHtml(c.text)}</span>
                     </div>
                 `).join('')
                 : `<p class="text-xs text-zinc-500 text-center py-4">No comments on this reel yet. Drop the first comment!</p>`;
@@ -2098,8 +2411,9 @@
                     reel.comments = reel.comments || [];
                     reel.comments.push({ author: userProfile.username, text });
                     input.value = '';
+                    if (reel.botId) saveBotEcosystemToStorage();
                     openReelCommentsModal(activeCommentPostId);
-                    if (currentTab === 'reels') render();
+                    syncReelCardUI(reel);
                 }
             } else {
                 const post = posts.find(p => String(p.id) === String(activeCommentPostId));
@@ -2409,44 +2723,52 @@
 
                 container.innerHTML = `
                     <!-- Reels Watch Area Header & Filter Controls -->
-                    <div class="space-y-3 mb-3 px-1">
-                        <div class="flex items-center justify-between gap-2">
+                    <div class="space-y-2.5 mb-2.5 px-1">
+                        <div class="flex flex-wrap items-center justify-between gap-2">
                             <div class="flex items-center gap-2">
                                 <h2 class="text-xl font-bold flex items-center gap-2">
                                     <i data-lucide="clapperboard" class="w-5 h-5 text-rose-500"></i>
-                                    <span>Watch Reels</span>
+                                    <span>Reels</span>
                                 </h2>
-                                <span class="text-[11px] bg-zinc-900 border border-zinc-800 text-zinc-300 px-2 py-0.5 rounded-full font-semibold">${filteredReels.length} videos</span>
+                                <span class="text-[11px] bg-zinc-900 border border-zinc-800 text-zinc-300 px-2 py-0.5 rounded-full font-semibold">${filteredReels.length}</span>
                             </div>
-                            <div class="flex items-center gap-1.5">
-                                <button onclick="toggleReelsMute()" class="p-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-xl text-zinc-200 transition" title="${window.isReelsMuted ? 'Unmute Sound' : 'Mute Sound'}">
-                                    <i data-lucide="${window.isReelsMuted ? 'volume-x' : 'volume-2'}" class="w-4 h-4 ${window.isReelsMuted ? 'text-zinc-400' : 'text-amber-400'}"></i>
+                            <div class="flex items-center gap-1.5 flex-wrap">
+                                <button onclick="toggleReelsMute()" class="px-2.5 py-1.5 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-xl text-zinc-200 transition flex items-center gap-1.5 text-xs font-semibold" title="${window.isReelsMuted ? 'Tap to Unmute' : 'Mute Sound'}">
+                                    <span data-mute-icon><i data-lucide="${window.isReelsMuted ? 'volume-x' : 'volume-2'}" class="w-4 h-4 ${window.isReelsMuted ? 'text-zinc-300' : 'text-amber-400'}"></i></span>
+                                    <span id="reelsHeaderMuteText" class="hidden sm:inline">${window.isReelsMuted ? 'Muted' : 'Sound On'}</span>
                                 </button>
-                                <button onclick="openReelEditor()" class="px-2.5 py-1.5 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 font-bold text-xs rounded-xl flex items-center gap-1 transition">
+                                <button onclick="simulateNextDay24h()" class="px-2.5 py-1.5 bg-purple-600 dark:bg-purple-600/25 hover:bg-purple-500 dark:hover:bg-purple-600/40 border border-purple-500/40 text-white dark:text-purple-300 font-bold text-xs rounded-xl flex items-center gap-1 transition" title="Simulate 24 hours passing & replace all 100 bot reels">
+                                    <i data-lucide="fast-forward" class="w-3.5 h-3.5"></i>
+                                    <span class="hidden sm:inline">Simulate 24h</span>
+                                </button>
+                                <button onclick="openReelEditor()" class="px-2.5 py-1.5 bg-amber-500 dark:bg-amber-500/20 hover:bg-amber-400 dark:hover:bg-amber-500/30 border border-amber-500/40 text-black dark:text-amber-300 font-bold text-xs rounded-xl flex items-center gap-1 transition">
                                     <i data-lucide="scissors" class="w-3.5 h-3.5"></i>
-                                    <span>Edit Reel</span>
+                                    <span>Edit</span>
                                 </button>
-                                <button onclick="switchTab('reelsbot')" class="px-2.5 py-1.5 bg-purple-950/70 hover:bg-purple-900/70 border border-purple-700/50 text-purple-200 font-bold text-xs rounded-xl flex items-center gap-1 transition">
-                                    <i data-lucide="bot" class="w-3.5 h-3.5 text-purple-400"></i>
-                                    <span>AI Bot</span>
-                                </button>
-                                <button onclick="openUploadStudio('reel')" class="px-3 py-1.5 bg-gradient-to-r from-amber-500 via-rose-500 to-purple-600 text-white font-bold text-xs rounded-xl shadow flex items-center gap-1.5">
+                                <button onclick="openUploadStudio('reel')" class="px-3 py-1.5 bg-gradient-to-r from-amber-500 via-rose-500 to-purple-600 text-white font-bold text-xs rounded-xl shadow flex items-center gap-1">
                                     <i data-lucide="plus-circle" class="w-4 h-4"></i>
-                                    <span>Upload</span>
+                                    <span>Create</span>
                                 </button>
                             </div>
                         </div>
 
+                        ${window.aiBotLastBanner ? `
+                            <div class="px-3 py-2 rounded-xl bg-purple-950/85 border border-purple-700/50 text-[11px] text-purple-200 flex items-center justify-between gap-2">
+                                <span class="flex items-center gap-1.5"><i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-400 flex-shrink-0"></i> ${window.aiBotLastBanner}</span>
+                                <button onclick="window.aiBotLastBanner=''; render();" class="text-purple-300 hover:text-white"><i data-lucide="x" class="w-3.5 h-3.5"></i></button>
+                            </div>
+                        ` : ''}
+
                         <!-- Filter Pills -->
                         <div class="flex items-center gap-2 overflow-x-auto hide-scrollbar">
-                            <button onclick="setReelsFilter('all')" class="px-3.5 py-1.5 rounded-full text-xs font-bold transition whitespace-nowrap ${window.reelsFilter === 'all' ? 'bg-white text-black' : 'bg-zinc-900 text-zinc-400 border border-zinc-800 hover:text-white'}">
+                            <button onclick="setReelsFilter('all')" class="px-3.5 py-1.5 rounded-full text-xs font-bold transition whitespace-nowrap ${window.reelsFilter === 'all' ? 'bg-zinc-900 dark:bg-white text-white dark:text-black' : 'bg-zinc-200 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-400 border border-zinc-300 dark:border-zinc-800 hover:text-black dark:hover:text-white'}">
                                 All Reels (${reels.length})
                             </button>
-                            <button onclick="setReelsFilter('aibot')" class="px-3.5 py-1.5 rounded-full text-xs font-bold transition whitespace-nowrap flex items-center gap-1.5 ${window.reelsFilter === 'aibot' ? 'bg-gradient-to-r from-purple-600 to-rose-500 text-white' : 'bg-zinc-900 text-zinc-400 border border-zinc-800 hover:text-white'}">
+                            <button onclick="setReelsFilter('aibot')" class="px-3.5 py-1.5 rounded-full text-xs font-bold transition whitespace-nowrap flex items-center gap-1.5 ${window.reelsFilter === 'aibot' ? 'bg-gradient-to-r from-purple-600 to-rose-500 text-white' : 'bg-zinc-200 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-400 border border-zinc-300 dark:border-zinc-800 hover:text-black dark:hover:text-white'}">
                                 <i data-lucide="bot" class="w-3.5 h-3.5"></i>
-                                AI Bot Reels (${reels.filter(r => r.isAiBot).length})
+                                100 AI Bots (${reels.filter(r => r.isAiBot).length})
                             </button>
-                            <button onclick="setReelsFilter('friends')" class="px-3.5 py-1.5 rounded-full text-xs font-bold transition whitespace-nowrap ${window.reelsFilter === 'friends' ? 'bg-blue-600 text-white' : 'bg-zinc-900 text-zinc-400 border border-zinc-800 hover:text-white'}">
+                            <button onclick="setReelsFilter('friends')" class="px-3.5 py-1.5 rounded-full text-xs font-bold transition whitespace-nowrap ${window.reelsFilter === 'friends' ? 'bg-blue-600 text-white' : 'bg-zinc-200 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-400 border border-zinc-300 dark:border-zinc-800 hover:text-black dark:hover:text-white'}">
                                 Friends (${reels.filter(r => !r.isAiBot).length})
                             </button>
                         </div>
@@ -2456,20 +2778,21 @@
                         <div class="h-[72vh] bg-zinc-950 border border-zinc-800 rounded-2xl flex flex-col items-center justify-center p-6 text-center space-y-3">
                             <i data-lucide="clapperboard" class="w-12 h-12 text-zinc-600"></i>
                             <h3 class="font-bold text-base">No reels in this filter yet</h3>
-                            <p class="text-xs text-zinc-400 max-w-xs">Generate a fresh reel with the AI Reels Bot or upload your own video reel.</p>
+                            <p class="text-xs text-zinc-400 max-w-xs">Run the 24h cycle for your 100 AI Bots or upload your own video reel.</p>
                             <div class="flex gap-2 pt-2">
-                                <button onclick="generateAndUploadAiReel(true); setReelsFilter('all');" class="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold rounded-xl">Generate AI Reel</button>
+                                <button onclick="simulateNextDay24h(); setReelsFilter('all');" class="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold rounded-xl">Simulate Next Day (24h)</button>
                                 <button onclick="openUploadStudio('reel')" class="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-white text-xs font-bold rounded-xl">Upload Reel</button>
                             </div>
                         </div>
                     ` : `
-                        <!-- Vertical Snap-Scrolling Reels Player -->
-                        <div id="reelsWatchContainer" class="h-[76vh] overflow-y-scroll reel-container snap-y snap-mandatory hide-scrollbar space-y-4">
+                        <!-- Full-Screen Vertical Snap-Scrolling Reels Player -->
+                        <div id="reelsWatchContainer" class="h-[calc(100vh-11.5rem)] md:h-[calc(100vh-7.5rem)] overflow-y-scroll reel-container snap-y snap-mandatory hide-scrollbar space-y-4">
                             ${filteredReels.map((r, idx) => {
                                 const ec = r.editConfig;
                                 const filterStyle = ec && ec.filterCss ? `filter: ${ec.filterCss};` : '';
                                 const fitClass = ec && ec.objectFit === 'contain' ? 'object-contain' : 'object-cover';
                                 const overlay = getOverlayClasses(ec);
+                                const expiresLabel = r.isAiBot ? formatExpiresInBadge(r.createdAt) : '';
                                 return `
                                 <div data-reel-id="${r.id}" class="h-full w-full relative reel-item flex items-center justify-center bg-black rounded-2xl overflow-hidden border border-zinc-800 shadow-2xl group">
                                     <video 
@@ -2479,7 +2802,7 @@
                                         loop 
                                         ${window.isReelsMuted ? 'muted' : ''}
                                         playsinline 
-                                        preload="metadata"
+                                        preload="${idx <= 1 ? 'metadata' : 'none'}"
                                         style="${filterStyle}"
                                         onloadedmetadata="${ec && ec.speed ? `this.playbackRate=${ec.speed};` : ''}"
                                         ontimeupdate="${ec ? `if(this.currentTime < ${ec.trimStart || 0} || this.currentTime >= ${ec.trimEnd || 9999}){this.currentTime=${ec.trimStart || 0};}` : ''}"
@@ -2497,13 +2820,17 @@
                                         </div>
                                     ` : ''}
 
-                                    <!-- Top Gradient & Source Badge -->
-                                    <div class="absolute top-0 left-0 right-0 p-3.5 bg-gradient-to-b from-black/70 via-black/20 to-transparent flex items-center justify-between pointer-events-none">
-                                        <div class="flex items-center gap-1.5">
+                                    <!-- Top Gradient, Bot Badge & 24h Expiry Countdown -->
+                                    <div class="absolute top-0 left-0 right-0 p-3.5 bg-gradient-to-b from-black/75 via-black/25 to-transparent flex items-center justify-between pointer-events-none">
+                                        <div class="flex items-center gap-1.5 flex-wrap">
                                             ${r.isAiBot ? `
                                                 <span class="px-2.5 py-1 rounded-full bg-gradient-to-r from-purple-600/90 to-rose-500/90 backdrop-blur-sm text-white text-[10px] font-bold flex items-center gap-1 shadow">
                                                     <i data-lucide="bot" class="w-3 h-3"></i>
-                                                    <span>AI Bot Reel • ${r.niche || 'Trending'}</span>
+                                                    <span>AI Bot • 1/Day</span>
+                                                </span>
+                                                <span class="px-2.5 py-1 rounded-full bg-black/70 backdrop-blur-sm border border-amber-400/40 text-amber-300 text-[10px] font-bold flex items-center gap-1 shadow">
+                                                    <i data-lucide="clock" class="w-3 h-3"></i>
+                                                    <span>${expiresLabel}</span>
                                                 </span>
                                             ` : `
                                                 <span class="px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-sm border border-white/15 text-zinc-200 text-[10px] font-semibold">
@@ -2516,15 +2843,15 @@
                                                 </span>
                                             ` : ''}
                                         </div>
-                                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-black/50 text-zinc-200 border border-white/10">
+                                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-black/55 text-zinc-200 border border-white/10">
                                             ${idx + 1} / ${filteredReels.length}
                                         </span>
                                     </div>
 
-                                    <!-- Top-Right Up/Down & Mute Controls -->
+                                    <!-- Top-Right Tap-to-Unmute & Up/Down Swipe Controls -->
                                     <div class="absolute top-12 right-3 flex flex-col gap-1.5 z-20">
-                                        <button onclick="toggleReelsMute()" class="w-9 h-9 rounded-full bg-black/60 hover:bg-black/80 backdrop-blur-sm border border-white/15 flex items-center justify-center text-white transition" title="Mute / Unmute">
-                                            <i data-lucide="${window.isReelsMuted ? 'volume-x' : 'volume-2'}" class="w-4 h-4"></i>
+                                        <button onclick="toggleReelsMute()" data-mute-icon class="w-9 h-9 rounded-full bg-black/60 hover:bg-black/80 backdrop-blur-sm border border-white/15 flex items-center justify-center text-white transition" title="Tap to Mute / Unmute">
+                                            <i data-lucide="${window.isReelsMuted ? 'volume-x' : 'volume-2'}" class="w-4 h-4 ${window.isReelsMuted ? 'text-zinc-300' : 'text-amber-400'}"></i>
                                         </button>
                                         ${idx > 0 ? `
                                             <button onclick="scrollToReelIndex(${idx - 1})" class="w-9 h-9 rounded-full bg-black/60 hover:bg-black/80 backdrop-blur-sm border border-white/15 flex items-center justify-center text-white transition" title="Previous Reel">
@@ -2550,47 +2877,52 @@
                                         <i data-lucide="heart" class="w-24 h-24 text-rose-500 fill-rose-500 heart-burst drop-shadow-xl"></i>
                                     </div>
 
-                                    <!-- Bottom Creator Overlay -->
-                                    <div class="absolute bottom-0 left-0 right-0 pt-16 pb-4 px-4 pr-16 bg-gradient-to-t from-black/90 via-black/45 to-transparent space-y-2 pointer-events-auto">
+                                    <!-- Bottom Creator Overlay + Scrolling Audio Marquee -->
+                                    <div class="absolute bottom-0 left-0 right-0 pt-16 pb-4 px-4 pr-16 bg-gradient-to-t from-black/95 via-black/50 to-transparent space-y-2 pointer-events-auto">
                                         <div class="flex items-center gap-2.5">
                                             <img src="${r.avatar}" class="w-10 h-10 rounded-full border-2 ${r.isAiBot ? 'border-purple-400' : 'border-white'} object-cover bg-zinc-900" />
-                                            <span class="font-bold text-sm drop-shadow">${r.user}</span>
-                                            <button onclick="toggleFollow('${r.id}')" class="border border-white/70 px-3 py-0.5 text-xs rounded-full font-semibold transition ${r.isFollowing ? 'bg-white text-black' : 'bg-black/30 text-white hover:bg-white/20'}">
+                                            <span class="font-bold text-sm text-white drop-shadow">@${r.user}</span>
+                                            <button id="reel-follow-btn-${r.id}" onclick="toggleFollow('${r.id}')" class="border border-white/75 px-3 py-0.5 text-xs rounded-full font-semibold transition ${r.isFollowing ? 'bg-white text-black' : 'bg-black/35 text-white hover:bg-white/20'}">
                                                 ${r.isFollowing ? 'Following' : 'Follow'}
                                             </button>
                                         </div>
-                                        <p class="text-xs sm:text-sm text-zinc-100 drop-shadow leading-snug">${r.caption}</p>
-                                        <div class="flex items-center gap-2 text-xs text-zinc-200 drop-shadow">
-                                            <i data-lucide="music" class="w-3.5 h-3.5 text-amber-400 animate-spin" style="animation-duration: 5s;"></i>
-                                            <span class="truncate">${r.audio}</span>
+                                        <p class="text-xs sm:text-sm text-zinc-100 drop-shadow leading-snug line-clamp-2">${r.caption}</p>
+                                        <div class="flex items-center gap-2 text-xs text-zinc-200 drop-shadow max-w-xs sm:max-w-sm">
+                                            <i data-lucide="disc-3" class="w-4 h-4 text-amber-400 flex-shrink-0 animate-spin" style="animation-duration: 4s;"></i>
+                                            <div class="audio-marquee-wrap flex-1">
+                                                <div class="audio-marquee-track">
+                                                    <span>🎵 ${r.audio}</span>
+                                                    <span>🎵 ${r.audio}</span>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
 
                                     <!-- Right Action Stack -->
-                                    <div class="absolute right-3 bottom-8 flex flex-col items-center gap-3.5 z-20">
+                                    <div class="absolute right-3 bottom-6 flex flex-col items-center gap-3.5 z-20">
                                         <button onclick="toggleReelLike('${r.id}')" class="flex flex-col items-center gap-1 transition active:scale-125">
-                                            <div class="w-10 h-10 rounded-full bg-black/45 backdrop-blur-sm flex items-center justify-center">
+                                            <div id="reel-like-icon-${r.id}" class="w-10 h-10 rounded-full bg-black/45 backdrop-blur-sm flex items-center justify-center">
                                                 <i data-lucide="heart" class="w-6 h-6 ${r.isLiked ? 'text-rose-500 fill-rose-500' : 'text-white'}"></i>
                                             </div>
-                                            <span class="text-xs font-semibold drop-shadow">${r.likes}</span>
+                                            <span id="reel-likes-count-${r.id}" class="text-xs font-semibold text-white drop-shadow">${r.likes}</span>
                                         </button>
                                         <button onclick="openReelCommentsModal('${r.id}')" class="flex flex-col items-center gap-1">
                                             <div class="w-10 h-10 rounded-full bg-black/45 backdrop-blur-sm flex items-center justify-center">
                                                 <i data-lucide="message-circle" class="w-6 h-6 text-white"></i>
                                             </div>
-                                            <span class="text-xs font-semibold drop-shadow">${r.comments ? r.comments.length : 0}</span>
+                                            <span id="reel-comments-count-${r.id}" class="text-xs font-semibold text-white drop-shadow">${r.comments ? r.comments.length : 0}</span>
                                         </button>
                                         <button onclick="openReelEditor('${r.id}')" class="flex flex-col items-center gap-1" title="Edit Reel">
                                             <div class="w-10 h-10 rounded-full bg-black/45 backdrop-blur-sm flex items-center justify-center hover:bg-amber-500/40 transition">
                                                 <i data-lucide="scissors" class="w-5 h-5 text-amber-300"></i>
                                             </div>
-                                            <span class="text-[10px] font-medium drop-shadow">Edit</span>
+                                            <span class="text-[10px] font-medium text-white drop-shadow">Edit</span>
                                         </button>
                                         <button onclick="shareReelWithFriend('${r.id}')" class="flex flex-col items-center gap-1" title="Share Reel to Friend">
                                             <div class="w-10 h-10 rounded-full bg-black/45 backdrop-blur-sm flex items-center justify-center">
                                                 <i data-lucide="send" class="w-5 h-5 text-white"></i>
                                             </div>
-                                            <span class="text-[10px] font-medium drop-shadow">Share</span>
+                                            <span class="text-[10px] font-medium text-white drop-shadow">Share</span>
                                         </button>
                                     </div>
                                 </div>
@@ -2650,13 +2982,13 @@
                                     </video>
 
                                     <!-- Live Text Overlay Sticker -->
-                                    ${st.overlayText ? `
-                                        <div class="absolute inset-x-0 ${overlay.posClass} flex justify-center pointer-events-none px-3 z-10">
+                                    <div id="editorLiveOverlayContainer" class="absolute inset-x-0 ${overlay.posClass || 'inset-y-0 items-center'} flex justify-center pointer-events-none px-3 z-10">
+                                        ${st.overlayText ? `
                                             <div class="${overlay.boxClass}" style="color: ${st.overlayStyle === 'boxed' ? '#000000' : st.overlayColor};">
                                                 ${st.overlayText}
                                             </div>
-                                        </div>
-                                    ` : ''}
+                                        ` : ''}
+                                    </div>
 
                                     <!-- Top Badges on Preview -->
                                     <div class="absolute top-3 left-3 right-3 flex items-center justify-between pointer-events-none">
@@ -2675,10 +3007,10 @@
 
                                     <!-- Bottom Preview Info -->
                                     <div class="absolute bottom-0 inset-x-0 p-3 bg-gradient-to-t from-black/90 via-black/40 to-transparent space-y-1 pointer-events-none">
-                                        <p class="text-[11px] text-zinc-100 line-clamp-2">${st.caption}</p>
+                                        <p id="editorPreviewCaption" class="text-[11px] text-zinc-100 line-clamp-2">${st.caption}</p>
                                         <div class="flex items-center gap-1.5 text-[10px] text-amber-300 font-semibold">
                                             <i data-lucide="music" class="w-3 h-3"></i>
-                                            <span class="truncate">${st.audio}</span>
+                                            <span id="editorPreviewAudio" class="truncate">${st.audio}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -2796,7 +3128,7 @@
                                     <div class="space-y-4">
                                         <div>
                                             <label class="block text-xs font-semibold text-zinc-400 mb-1.5">Text Overlay Sticker</label>
-                                            <input type="text" value="${st.overlayText.replace(/"/g, '&quot;')}" oninput="window.reelEditorState.overlayText=this.value;" onchange="render();" placeholder="Type text to appear on your Reel..." class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-rose-500" />
+                                            <input type="text" value="${st.overlayText.replace(/"/g, '&quot;')}" oninput="window.reelEditorState.overlayText=this.value; updateEditorTextOverlayLive();" placeholder="Type text to appear on your Reel..." class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-rose-500" />
                                             <div class="flex flex-wrap gap-1.5 mt-2">
                                                 ${['🔥 Trending', '✨ Golden Hour', 'Watch Till End 👀', 'POV: Weekend 🌊', 'New Reel! 🎬'].map(chip => `
                                                     <button onclick="window.reelEditorState.overlayText='${chip}'; render();" class="px-2.5 py-1 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-full text-[11px] text-zinc-300">${chip}</button>
@@ -2888,7 +3220,7 @@
                                         </div>
                                         <div>
                                             <label class="block text-xs text-zinc-400 mb-1">Or custom audio title:</label>
-                                            <input type="text" value="${st.audio.replace(/"/g, '&quot;')}" oninput="window.reelEditorState.audio=this.value;" onchange="render();" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-2.5 text-xs text-white focus:outline-none" />
+                                            <input type="text" value="${st.audio.replace(/"/g, '&quot;')}" oninput="window.reelEditorState.audio=this.value; updateEditorCaptionAudioLive();" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-2.5 text-xs text-white focus:outline-none" />
                                         </div>
                                     </div>
                                 ` : ''}
@@ -2897,7 +3229,7 @@
                                     <div class="space-y-3">
                                         <div>
                                             <label class="block text-xs font-semibold text-zinc-400 mb-1.5">Reel Caption & Hashtags</label>
-                                            <textarea rows="3" oninput="window.reelEditorState.caption=this.value;" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-rose-500 resize-none">${st.caption}</textarea>
+                                            <textarea rows="3" oninput="window.reelEditorState.caption=this.value; updateEditorCaptionAudioLive();" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-rose-500 resize-none">${st.caption}</textarea>
                                         </div>
                                         <div>
                                             <label class="block text-xs font-semibold text-zinc-400 mb-1.5">Cover Thumbnail URL</label>
@@ -2916,7 +3248,6 @@
                 setTimeout(() => attachReelEditorPlayback(), 40);
             }
             else if (currentTab === 'reelsbot') {
-                const aiReelsList = reels.filter(r => r.isAiBot);
                 container.innerHTML = `
                     <div class="space-y-5">
                         <!-- Header -->
@@ -2926,130 +3257,103 @@
                                     <span class="p-1.5 rounded-xl bg-gradient-to-r from-purple-600 to-rose-500 text-white">
                                         <i data-lucide="bot" class="w-5 h-5"></i>
                                     </span>
-                                    <span>AI Reels Bot</span>
+                                    <span>100 AI Bots • 24h Reels Engine</span>
                                 </h2>
-                                <p class="text-xs text-zinc-400 mt-0.5">Automated AI publisher that strictly uploads Video Reels only (never home feed photos).</p>
+                                <p class="text-xs text-zinc-600 dark:text-zinc-400 mt-0.5">Strict 1 active video per bot. Expired reels auto-delete & replace every 24 hours (persisted in localStorage).</p>
                             </div>
-                            <span class="text-[10px] bg-purple-500/20 text-purple-300 font-bold px-2.5 py-1 rounded-full border border-purple-500/40">
-                                Reels Only • Zero Photo Spam
+                            <span class="text-[10px] bg-purple-600 dark:bg-purple-500/20 text-white dark:text-purple-300 font-bold px-2.5 py-1 rounded-full border border-purple-500/40">
+                                1 Video / Bot • 24h Auto-Replace
                             </span>
                         </div>
 
-                        <!-- Master Control Card -->
+                        ${window.aiBotLastBanner ? `
+                            <div class="p-3 rounded-xl bg-green-950/60 border border-green-700/50 text-xs text-green-300 flex items-center justify-between gap-2">
+                                <span class="flex items-center gap-2"><i data-lucide="check-circle-2" class="w-4 h-4 text-green-400 flex-shrink-0"></i> ${window.aiBotLastBanner}</span>
+                                <button onclick="window.aiBotLastBanner=''; render();" class="text-green-400 hover:text-white"><i data-lucide="x" class="w-4 h-4"></i></button>
+                            </div>
+                        ` : ''}
+
+                        <!-- Master 24-Hour Lifecycle Card -->
                         <div class="bg-zinc-950 border border-zinc-800 rounded-2xl p-5 space-y-4 shadow-xl">
-                            <div class="flex items-center justify-between gap-3">
+                            <div class="flex items-center justify-between gap-3 flex-wrap">
                                 <div class="flex items-center gap-3">
                                     <div class="w-12 h-12 rounded-2xl ${window.aiReelsBotActive ? 'bg-green-950 border-green-700 text-green-400' : 'bg-zinc-900 border-zinc-700 text-zinc-400'} border flex items-center justify-center">
-                                        <i data-lucide="clapperboard" class="w-6 h-6"></i>
+                                        <i data-lucide="refresh-cw" class="w-6 h-6"></i>
                                     </div>
                                     <div>
                                         <h3 class="font-bold text-sm flex items-center gap-2">
-                                            <span>Auto-Upload AI Reels</span>
+                                            <span>24-Hour Auto-Delete & Replace</span>
                                             <span class="text-[10px] px-2 py-0.5 rounded-full font-bold ${window.aiReelsBotActive ? 'bg-green-500/20 text-green-400' : 'bg-zinc-800 text-zinc-400'}">
-                                                ${window.aiReelsBotActive ? 'ACTIVE' : 'PAUSED'}
+                                                ${window.aiReelsBotActive ? 'WATCHDOG ON' : 'PAUSED'}
                                             </span>
                                         </h3>
-                                        <p class="text-xs text-zinc-400">Publishes curated vertical video reels every ${window.aiBotIntervalSec}s directly to Watch Reels.</p>
+                                        <p class="text-xs text-zinc-400">Checks timestamps automatically & keeps max 1 reel per bot across all 100 bot accounts.</p>
                                     </div>
                                 </div>
-                                <button onclick="toggleAiReelsBot()" class="px-4 py-2 rounded-xl font-bold text-xs transition shadow ${window.aiReelsBotActive ? 'bg-rose-600 hover:bg-rose-500 text-white' : 'bg-green-600 hover:bg-green-500 text-white'}">
-                                    ${window.aiReelsBotActive ? 'Pause Bot' : 'Enable Bot'}
+                                <button onclick="toggleAiReelsBot()" class="px-4 py-2 rounded-xl font-bold text-xs transition shadow ${window.aiReelsBotActive ? 'bg-zinc-800 hover:bg-zinc-700 text-white' : 'bg-green-600 hover:bg-green-500 text-white'}">
+                                    ${window.aiReelsBotActive ? 'Pause Watchdog' : 'Enable Watchdog'}
                                 </button>
                             </div>
 
-                            <!-- Niche & Interval Selectors -->
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-zinc-900">
-                                <div>
-                                    <label class="block text-xs text-zinc-400 mb-1.5 font-semibold">Reels Content Niche</label>
-                                    <select id="aiBotNicheSelect" onchange="updateAiBotSettings()" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-purple-500">
-                                        <option value="All Trending Reels" ${window.aiBotReelNiche === 'All Trending Reels' ? 'selected' : ''}>All Trending Reels</option>
-                                        <option value="Nature & Adventure" ${window.aiBotReelNiche === 'Nature & Adventure' ? 'selected' : ''}>Nature & Adventure</option>
-                                        <option value="Deep Ocean & Wildlife" ${window.aiBotReelNiche === 'Deep Ocean & Wildlife' ? 'selected' : ''}>Deep Ocean & Wildlife</option>
-                                        <option value="Botanical Slow-Motion" ${window.aiBotReelNiche === 'Botanical Slow-Motion' ? 'selected' : ''}>Botanical Slow-Motion</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="block text-xs text-zinc-400 mb-1.5 font-semibold">Upload Frequency</label>
-                                    <select id="aiBotIntervalSelect" onchange="updateAiBotSettings()" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-purple-500">
-                                        <option value="15" ${window.aiBotIntervalSec === 15 ? 'selected' : ''}>Every 15 seconds</option>
-                                        <option value="25" ${window.aiBotIntervalSec === 25 ? 'selected' : ''}>Every 25 seconds</option>
-                                        <option value="45" ${window.aiBotIntervalSec === 45 ? 'selected' : ''}>Every 45 seconds</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <!-- Primary CTAs -->
+                            <!-- Primary Test & Watch CTAs -->
                             <div class="flex flex-col sm:flex-row gap-2.5 pt-1">
-                                <button onclick="generateAndUploadAiReel(true)" class="flex-1 py-3 bg-gradient-to-r from-purple-600 via-rose-500 to-amber-500 hover:opacity-95 text-white font-bold text-xs rounded-xl shadow-lg flex items-center justify-center gap-2 transition">
-                                    <i data-lucide="sparkles" class="w-4 h-4"></i>
-                                    <span>Upload 1 AI Reel Now</span>
+                                <button onclick="simulateNextDay24h()" class="flex-1 py-3 bg-gradient-to-r from-purple-600 via-rose-500 to-amber-500 hover:opacity-95 text-white font-bold text-xs rounded-xl shadow-lg flex items-center justify-center gap-2 transition">
+                                    <i data-lucide="fast-forward" class="w-4 h-4"></i>
+                                    <span>Simulate Next Day (24h)</span>
                                 </button>
-                                <button onclick="setReelsFilter('all'); switchTab('reels');" class="sm:w-48 py-3 bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-2 transition">
+                                <button onclick="setReelsFilter('aibot'); switchTab('reels');" class="sm:w-52 py-3 bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-2 transition">
                                     <i data-lucide="play-circle" class="w-4 h-4 text-rose-400"></i>
-                                    <span>Watch Reels Area →</span>
+                                    <span>Watch Swipe Reels →</span>
                                 </button>
                             </div>
                         </div>
 
-                        <!-- AI Bot Stats -->
+                        <!-- Live Invariant Stats -->
                         <div class="grid grid-cols-3 gap-3 text-center">
                             <div class="bg-zinc-950 border border-zinc-800 rounded-2xl p-3.5">
-                                <p class="text-xl font-bold text-purple-400">${aiReelsList.length}</p>
-                                <p class="text-[11px] text-zinc-400 mt-0.5">AI Reels Live</p>
+                                <p class="text-xl font-bold text-purple-400">${window.aiBots.length}</p>
+                                <p class="text-[11px] text-zinc-400 mt-0.5">Unique AI Bots</p>
                             </div>
                             <div class="bg-zinc-950 border border-zinc-800 rounded-2xl p-3.5">
-                                <p class="text-xl font-bold text-rose-400">${reels.length}</p>
-                                <p class="text-[11px] text-zinc-400 mt-0.5">Total Watch Reels</p>
+                                <p class="text-xl font-bold text-rose-400">${window.aiBotReels.length}</p>
+                                <p class="text-[11px] text-zinc-400 mt-0.5">Active Bot Reels (1/Bot)</p>
                             </div>
                             <div class="bg-zinc-950 border border-zinc-800 rounded-2xl p-3.5">
-                                <p class="text-xl font-bold text-green-400">0</p>
-                                <p class="text-[11px] text-zinc-400 mt-0.5">Feed Photo Posts</p>
+                                <p class="text-xl font-bold text-green-400">24h</p>
+                                <p class="text-[11px] text-zinc-400 mt-0.5">Auto-Replace Cycle</p>
                             </div>
                         </div>
 
-                        <!-- AI Uploaded Reels Gallery (Tap any to watch) -->
-                        <div class="space-y-2.5">
-                            <div class="flex items-center justify-between">
-                                <h3 class="text-sm font-bold flex items-center gap-2">
-                                    <i data-lucide="film" class="w-4 h-4 text-rose-400"></i>
-                                    <span>AI-Uploaded Reels (Tap to Watch)</span>
-                                </h3>
-                                <button onclick="setReelsFilter('aibot'); switchTab('reels');" class="text-xs text-purple-400 hover:underline font-semibold">Watch All AI Reels →</button>
-                            </div>
-                            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                                ${aiReelsList.map(r => `
-                                    <div onclick="openReelInWatchArea('${r.id}')" class="relative aspect-[9/14] rounded-2xl overflow-hidden bg-zinc-900 border border-zinc-800 cursor-pointer group shadow">
-                                        <img src="${r.poster}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
-                                        <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent flex flex-col justify-between p-2.5">
-                                            <span class="self-start text-[9px] font-bold px-2 py-0.5 rounded-full bg-purple-600/90 text-white flex items-center gap-1">
-                                                <i data-lucide="bot" class="w-2.5 h-2.5"></i> AI Reel
-                                            </span>
-                                            <div class="space-y-1">
-                                                <p class="text-[11px] font-semibold text-white line-clamp-2">${r.caption}</p>
-                                                <div class="flex items-center justify-between text-[10px] text-zinc-300">
-                                                    <span class="flex items-center gap-1"><i data-lucide="play" class="w-3 h-3 fill-white"></i> Watch</span>
-                                                    <span class="flex items-center gap-1"><i data-lucide="heart" class="w-3 h-3 text-rose-400"></i> ${r.likes}</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                `).join('')}
-                            </div>
-                        </div>
-
-                        <!-- Live Activity Log -->
+                        <!-- Live Lifecycle Activity Log -->
                         <div class="bg-zinc-950 border border-zinc-800 rounded-2xl p-4 space-y-2">
                             <h3 class="text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-1.5">
                                 <i data-lucide="terminal" class="w-3.5 h-3.5 text-green-400"></i>
-                                <span>AI Reels Bot Activity Log</span>
+                                <span>24-Hour Auto-Replace Log</span>
                             </h3>
-                            <div class="space-y-1.5 max-h-40 overflow-y-auto hide-scrollbar text-xs font-mono">
+                            <div class="space-y-1.5 max-h-36 overflow-y-auto hide-scrollbar text-xs font-mono">
                                 ${window.aiBotLogs.map(log => `
                                     <div class="flex items-start gap-2 text-zinc-300 border-b border-zinc-900 pb-1">
                                         <span class="text-zinc-500 flex-shrink-0">[${log.time}]</span>
                                         <span>${log.text}</span>
                                     </div>
                                 `).join('')}
+                            </div>
+                        </div>
+
+                        <!-- 100 AI Bots Directory + Search -->
+                        <div class="space-y-3">
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                <h3 class="text-sm font-bold flex items-center gap-2">
+                                    <i data-lucide="users" class="w-4 h-4 text-purple-400"></i>
+                                    <span>All 100 AI Bot Accounts (${window.aiBotReels.length} Active Reels)</span>
+                                </h3>
+                                <div class="relative sm:w-64">
+                                    <i data-lucide="search" class="w-3.5 h-3.5 absolute left-3 top-2.5 text-zinc-400"></i>
+                                    <input type="text" value="${(window.aiBotSearchQuery || '').replace(/"/g, '&quot;')}" oninput="updateBotDirectorySearch(this.value)" placeholder="Filter 100 bots by handle or niche..." class="w-full bg-zinc-900 border border-zinc-800 rounded-xl pl-8 pr-3 py-1.5 text-xs text-white focus:outline-none focus:border-purple-500" />
+                                </div>
+                            </div>
+                            <div id="aiBotsDirectoryGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                ${renderBotDirectoryCardsHtml()}
                             </div>
                         </div>
                     </div>
