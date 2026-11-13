@@ -204,7 +204,18 @@
             <nav class="space-y-1.5" id="desktopNav">
                 <button onclick="switchTab('home')" class="nav-btn w-full flex items-center gap-3.5 p-3 hover:bg-zinc-900 rounded-xl transition font-medium text-rose-500" data-tab="home"><i data-lucide="home" class="w-5 h-5"></i> <span>Home Feed</span></button>
                 <button onclick="switchTab('explore')" class="nav-btn w-full flex items-center gap-3.5 p-3 hover:bg-zinc-900 rounded-xl transition font-medium text-zinc-300" data-tab="explore"><i data-lucide="compass" class="w-5 h-5"></i> <span>Explore</span></button>
-                <button onclick="switchTab('reels')" class="nav-btn w-full flex items-center gap-3.5 p-3 hover:bg-zinc-900 rounded-xl transition font-medium text-zinc-300" data-tab="reels"><i data-lucide="clapperboard" class="w-5 h-5"></i> <span>Reels</span></button>
+                <button onclick="switchTab('reels')" class="nav-btn w-full flex items-center gap-3.5 p-3 hover:bg-zinc-900 rounded-xl transition font-medium text-zinc-300" data-tab="reels">
+                    <i data-lucide="clapperboard" class="w-5 h-5"></i> <span>Watch Reels</span>
+                    <span id="desktopReelsCountBadge" class="ml-auto bg-rose-500/20 text-rose-400 border border-rose-500/30 text-[10px] font-bold px-2 py-0.5 rounded-full">2</span>
+                </button>
+                <button onclick="openReelEditor()" class="nav-btn w-full flex items-center gap-3.5 p-3 hover:bg-zinc-900 rounded-xl transition font-medium text-zinc-300" data-tab="reeledit">
+                    <i data-lucide="scissors" class="w-5 h-5 text-amber-400"></i> <span>Reels Editor</span>
+                    <span class="ml-auto text-[9px] bg-amber-500/15 text-amber-300 border border-amber-500/30 font-bold px-1.5 py-0.5 rounded">Studio</span>
+                </button>
+                <button onclick="switchTab('reelsbot')" class="nav-btn w-full flex items-center gap-3.5 p-3 hover:bg-zinc-900 rounded-xl transition font-medium text-zinc-300" data-tab="reelsbot">
+                    <i data-lucide="bot" class="w-5 h-5 text-purple-400"></i> <span>AI Reels Bot</span>
+                    <span id="desktopAiBotDot" class="ml-auto w-2 h-2 rounded-full bg-green-400 animate-pulse" title="Reels Bot Active"></span>
+                </button>
                 <button onclick="switchTab('messages')" class="nav-btn w-full flex items-center gap-3.5 p-3 hover:bg-zinc-900 rounded-xl transition font-bold text-blue-400 relative" data-tab="messages">
                     <i data-lucide="message-circle" class="w-5 h-5"></i> <span>Direct Messages</span>
                     <span id="desktopMsgBadge" class="ml-auto bg-gradient-to-r from-rose-500 to-purple-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">3</span>
@@ -265,6 +276,10 @@
             <span class="text-[9px] bg-amber-500/20 text-amber-300 font-bold px-1.5 py-0.5 rounded border border-amber-600/40">Firebase</span>
         </div>
         <div class="flex items-center gap-2.5">
+            <button onclick="switchTab('reelsbot')" class="p-1.5 rounded-lg bg-purple-950/70 border border-purple-700/50 text-purple-300 hover:text-white flex items-center gap-1 text-[11px] font-bold" title="AI Reels Bot">
+                <i data-lucide="bot" class="w-4 h-4"></i>
+                <span>Bot</span>
+            </button>
             <button onclick="openUploadStudio('post')" class="p-1 text-zinc-300 hover:text-white" title="Upload Post/Reel/Story">
                 <i data-lucide="plus-square" class="w-6 h-6 text-amber-400"></i>
             </button>
@@ -285,10 +300,10 @@
     <!-- ========================================== -->
     <nav class="md:hidden flex items-center justify-around py-2.5 border-t border-zinc-800 bg-black fixed bottom-0 left-0 right-0 z-40">
         <button onclick="switchTab('home')" class="p-1" data-tab-mobile="home"><i data-lucide="home" class="w-6 h-6 text-rose-500"></i></button>
-        <button onclick="switchTab('explore')" class="p-1" data-tab-mobile="explore"><i data-lucide="compass" class="w-6 h-6 text-zinc-400"></i></button>
+        <button onclick="switchTab('reels')" class="p-1" data-tab-mobile="reels" title="Watch Reels"><i data-lucide="clapperboard" class="w-6 h-6 text-zinc-400"></i></button>
         <button onclick="openUploadStudio('post')" class="p-1" data-tab-mobile="create"><i data-lucide="plus-circle" class="w-7 h-7 text-amber-400"></i></button>
+        <button onclick="switchTab('reelsbot')" class="p-1" data-tab-mobile="reelsbot" title="AI Reels Bot"><i data-lucide="bot" class="w-6 h-6 text-zinc-400"></i></button>
         <button onclick="switchTab('messages')" class="p-1" data-tab-mobile="messages"><i data-lucide="message-circle" class="w-6 h-6 text-zinc-400"></i></button>
-        <button onclick="switchTab('reels')" class="p-1" data-tab-mobile="reels"><i data-lucide="clapperboard" class="w-6 h-6 text-zinc-400"></i></button>
         <button onclick="switchTab('profile')" class="p-1" data-tab-mobile="profile">
             <div class="w-6 h-6 rounded-full overflow-hidden border border-zinc-700">
                 <img id="mobileBottomNavAvatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150" class="w-full h-full object-cover">
@@ -586,12 +601,18 @@
                                 likes: data.likes || 1,
                                 caption: data.caption || '',
                                 audio: data.audio || 'Original Soundtrack',
+                                isAiBot: Boolean(data.isAiBot),
+                                niche: data.niche || '',
+                                editConfig: data.editConfig || null,
+                                comments: data.comments || [],
                                 isFollowing: false,
                                 isLiked: false
                             });
                         });
-                        window.reels = [...firestoreReels, ...window.defaultReels];
-                        if (window.currentTab === 'reels') window.render();
+                        const localUnsynced = (window.localAiReels || []).filter(lr => !firestoreReels.some(fr => fr.caption === lr.caption && fr.video === lr.video));
+                        window.reels = [...localUnsynced, ...firestoreReels, ...window.defaultReels];
+                        if (window.updateReelsBadge) window.updateReelsBadge();
+                        if (window.currentTab === 'reels' || window.currentTab === 'reelsbot') window.render();
                     }
                 }, (err) => console.log("Firestore reels listener warning:", err));
             } catch (e) {
@@ -612,10 +633,52 @@
         window.uploadMode = 'post';
         window.isDarkMode = true;
         window.activeCommentPostId = null;
+        window.activeCommentTargetType = 'post';
         window.activeChatUser = null;
         window.isAuthenticated = false;
         window.isLandingSignUp = false;
         window.isFriendTyping = false;
+
+        // AI Reels Bot & Reels Watch Area State (Reels-Only Bot)
+        window.aiReelsBotActive = true;
+        window.aiBotReelNiche = 'All Trending Reels';
+        window.aiBotIntervalSec = 25;
+        window.aiBotReelsCount = 1;
+        window.aiBotTimerId = null;
+        window.aiBotIsUploading = false;
+        window.localAiReels = [];
+        window.aiBotLogs = [
+            {
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+                text: 'AI Reels Bot initialized (Reels-only mode — photo feed posts disabled).'
+            }
+        ];
+        window.reelsFilter = 'all';
+        window.isReelsMuted = true;
+        window.activeReelIndex = 0;
+
+        // Instagram Reels Editor State
+        window.reelEditorState = {
+            editingReelId: null,
+            activeTool: 'trim', // 'trim' | 'text' | 'filter' | 'audio' | 'publish'
+            video: 'https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-576p.mp4',
+            poster: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800',
+            caption: 'Edited in InstaClone Reels Studio ✨ #reels #creator',
+            audio: 'Coastal Horizon • AI Beat Lab',
+            filterName: 'Original',
+            brightness: 100,
+            contrast: 100,
+            speed: 1,
+            trimStart: 0,
+            trimEnd: 15,
+            duration: 15,
+            objectFit: 'cover',
+            overlayText: '',
+            overlayStyle: 'pill', // 'pill' | 'neon' | 'classic' | 'boxed'
+            overlayColor: '#ffffff',
+            overlayPos: 'center', // 'top' | 'center' | 'bottom'
+            isMutedPreview: true
+        };
 
         // Current uploaded file buffer
         window.uploadedMediaBase64 = null;
@@ -780,6 +843,23 @@
 
         window.defaultReels = [
             {
+                id: 'reel-ai-seed-1',
+                user: 'ReelGenius_AI',
+                avatar: 'https://api.dicebear.com/7.x/bottts-neutral/svg?seed=ReelGeniusAI',
+                video: 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4',
+                poster: 'https://images.unsplash.com/photo-1490750967868-88aa4486c946?w=800',
+                likes: 920,
+                caption: 'Morning petals opening in ultra-crisp slow motion 🌸 #AIReels #Botanical #ReelsOnly',
+                audio: 'Ambient Bloom • AI Studio Mix',
+                isAiBot: true,
+                niche: 'Botanical Slow-Motion',
+                comments: [
+                    { author: 'Priya Sharma', text: 'So relaxing to watch on loop!' }
+                ],
+                isFollowing: true,
+                isLiked: false
+            },
+            {
                 id: 1,
                 user: 'Sara Ali',
                 avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150',
@@ -788,6 +868,10 @@
                 likes: 1840,
                 caption: 'Chasing waves with friends 🌊 #ocean #surf #weekendvibes',
                 audio: 'Original Soundtrack • Ocean Chill',
+                isAiBot: false,
+                comments: [
+                    { author: 'Mohit Verma', text: 'Epic wave shot!' }
+                ],
                 isFollowing: false,
                 isLiked: false
             },
@@ -800,12 +884,168 @@
                 likes: 3420,
                 caption: 'Crystal blue waters and marine life 🐬 #scubadiving #travel',
                 audio: 'Underwater Symphony • Lo-Fi Remix',
+                isAiBot: false,
+                comments: [
+                    { author: 'Aarav Patel', text: 'Need to go diving here next month!' }
+                ],
                 isFollowing: true,
                 isLiked: true
             }
         ];
 
         window.reels = [...window.defaultReels];
+
+        // ==========================================
+        // AI REELS BOT WORKER (STRICTLY REELS ONLY)
+        // ==========================================
+        const AI_REEL_TEMPLATES = [
+            {
+                niche: 'Nature & Adventure',
+                video: 'https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-576p.mp4',
+                poster: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800',
+                caption: 'Catching golden barrel waves at sunrise 🌊🏄‍♂️ #SurfReels #OceanAdventure #AIReels',
+                audio: 'Coastal Horizon • AI Beat Lab'
+            },
+            {
+                niche: 'Deep Ocean & Wildlife',
+                video: 'https://vjs.zencdn.net/v/oceans.mp4',
+                poster: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800',
+                caption: 'Beneath the turquoise tide: sea turtles & coral reefs 🐢💙 #DeepOcean #WildlifeReels #AIReels',
+                audio: 'Deep Blue Drift • AI Synth'
+            },
+            {
+                niche: 'Botanical Slow-Motion',
+                video: 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4',
+                poster: 'https://images.unsplash.com/photo-1490750967868-88aa4486c946?w=800',
+                caption: 'Macro spring bloom unfolding frame by frame 🌼✨ #MacroReels #NatureSlowMo #AIReels',
+                audio: 'Sunlit Garden • AI Lo-Fi'
+            }
+        ];
+
+        window.updateReelsBadge = function() {
+            const badge = document.getElementById('desktopReelsCountBadge');
+            if (badge) badge.textContent = window.reels.length;
+            const dot = document.getElementById('desktopAiBotDot');
+            if (dot) {
+                dot.className = window.aiReelsBotActive
+                    ? 'ml-auto w-2 h-2 rounded-full bg-green-400 animate-pulse'
+                    : 'ml-auto w-2 h-2 rounded-full bg-zinc-600';
+            }
+        };
+
+        async function generateAndUploadAiReel(isManual = false) {
+            if (window.aiBotIsUploading) return;
+            window.aiBotIsUploading = true;
+
+            try {
+                const matchingTemplates = window.aiBotReelNiche === 'All Trending Reels'
+                    ? AI_REEL_TEMPLATES
+                    : AI_REEL_TEMPLATES.filter(t => t.niche === window.aiBotReelNiche);
+                const pool = matchingTemplates.length > 0 ? matchingTemplates : AI_REEL_TEMPLATES;
+                const pick = pool[Math.floor(Math.random() * pool.length)];
+
+                const newAiReel = {
+                    id: 'aireel-' + Date.now() + '-' + Math.floor(Math.random() * 1000),
+                    user: 'ReelGenius_AI',
+                    avatar: 'https://api.dicebear.com/7.x/bottts-neutral/svg?seed=ReelGeniusAI',
+                    video: pick.video,
+                    poster: pick.poster,
+                    likes: Math.floor(Math.random() * 600) + 120,
+                    caption: pick.caption,
+                    audio: pick.audio,
+                    isAiBot: true,
+                    niche: pick.niche,
+                    comments: [],
+                    isFollowing: true,
+                    isLiked: false,
+                    createdAt: new Date().toISOString()
+                };
+
+                // Strictly append ONLY to Reels (never to window.posts)
+                window.localAiReels.unshift(newAiReel);
+                window.reels.unshift(newAiReel);
+                window.aiBotReelsCount += 1;
+
+                const timeNow = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                window.aiBotLogs.unshift({
+                    time: timeNow,
+                    text: `${isManual ? '[Manual]' : '[Auto]'} Uploaded Reel (${pick.niche}) → Reels Watch Area.`
+                });
+                if (window.aiBotLogs.length > 15) window.aiBotLogs.pop();
+
+                if (window.firebaseDb) {
+                    try {
+                        const { collection, addDoc, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js");
+                        await addDoc(collection(window.firebaseDb, "reels"), {
+                            user: newAiReel.user,
+                            avatar: newAiReel.avatar,
+                            video: newAiReel.video,
+                            poster: newAiReel.poster,
+                            likes: newAiReel.likes,
+                            caption: newAiReel.caption,
+                            audio: newAiReel.audio,
+                            isAiBot: true,
+                            niche: newAiReel.niche,
+                            comments: [],
+                            createdAt: serverTimestamp()
+                        });
+                    } catch (e) {
+                        console.log("AI Reel Firestore sync notice:", e);
+                    }
+                }
+
+                window.updateReelsBadge();
+                if (window.currentTab === 'reelsbot' || window.currentTab === 'reels') {
+                    render();
+                }
+            } finally {
+                window.aiBotIsUploading = false;
+            }
+        }
+
+        function startAiReelsBotTimer() {
+            if (window.aiBotTimerId) {
+                clearInterval(window.aiBotTimerId);
+                window.aiBotTimerId = null;
+            }
+            if (window.aiReelsBotActive) {
+                window.aiBotTimerId = setInterval(() => {
+                    if (window.aiReelsBotActive) {
+                        generateAndUploadAiReel(false);
+                    }
+                }, window.aiBotIntervalSec * 1000);
+            }
+            window.updateReelsBadge();
+        }
+
+        function toggleAiReelsBot() {
+            window.aiReelsBotActive = !window.aiReelsBotActive;
+            const timeNow = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            window.aiBotLogs.unshift({
+                time: timeNow,
+                text: window.aiReelsBotActive
+                    ? `AI Reels Bot RESUMED (every ${window.aiBotIntervalSec}s, Reels-only).`
+                    : 'AI Reels Bot PAUSED.'
+            });
+            startAiReelsBotTimer();
+            render();
+        }
+
+        function updateAiBotSettings() {
+            const nicheSel = document.getElementById('aiBotNicheSelect');
+            const freqSel = document.getElementById('aiBotIntervalSelect');
+            if (nicheSel) window.aiBotReelNiche = nicheSel.value;
+            if (freqSel) window.aiBotIntervalSec = parseInt(freqSel.value, 10) || 25;
+            const timeNow = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            window.aiBotLogs.unshift({
+                time: timeNow,
+                text: `Settings updated: Niche="${window.aiBotReelNiche}", Interval=${window.aiBotIntervalSec}s.`
+            });
+            startAiReelsBotTimer();
+            render();
+        }
+
+        startAiReelsBotTimer();
 
         // ==========================================
         // AUTHENTICATION LOGIC (Instagram Landing Gate)
@@ -1065,6 +1305,29 @@
             }
         }
 
+        function shareReelWithFriend(reelId) {
+            const reel = reels.find(r => String(r.id) === String(reelId));
+            if (!reel) return;
+            const matchingFriend = friends.find(f => f.name === reel.user || f.username === reel.user);
+            const targetFriend = matchingFriend ? matchingFriend.name : friends[0].name;
+            let conv = messages.find(m => m.user === targetFriend);
+            if (!conv) {
+                openFriendChat(targetFriend);
+                conv = messages.find(m => m.user === targetFriend);
+            }
+            if (conv) {
+                conv.chats.push({
+                    fromMe: true,
+                    text: `Check out this Reel by @${reel.user}: "${reel.caption.slice(0, 48)}..." 🎬`,
+                    time: 'Just now'
+                });
+                conv.lastMsg = `Shared a Reel by @${reel.user}`;
+                conv.time = 'Just now';
+                activeChatUser = conv.user;
+                switchTab('messages');
+            }
+        }
+
         function sendStoryReply() {
             const input = document.getElementById('storyReplyInput');
             const text = input ? input.value.trim() : '';
@@ -1194,6 +1457,8 @@
                         likes: 1,
                         caption: caption || 'New reel! 🔥 #friends #lifestyle',
                         audio: audioName || 'Original Audio',
+                        isAiBot: false,
+                        comments: [],
                         isFollowing: false,
                         isLiked: false,
                         createdAt: new Date().toISOString()
@@ -1212,6 +1477,7 @@
                     }
 
                     reels.unshift(newReel);
+                    if (window.updateReelsBadge) window.updateReelsBadge();
                     switchTab('reels');
 
                 } else if (window.uploadMode === 'story') {
@@ -1313,14 +1579,358 @@
         }
 
         // ==========================================
-        // VIDEO REELS PLAY/PAUSE INTERACTION
+        // VIDEO REELS PLAY/PAUSE & WATCH AREA CONTROLS
         // ==========================================
+        let reelsObserver = null;
+
         function toggleVideoPlay(videoElement) {
+            const card = videoElement.closest('.reel-item');
+            const pauseBadge = card ? card.querySelector('.reel-pause-indicator') : null;
             if (videoElement.paused) {
-                videoElement.play();
+                videoElement.play().catch(() => {});
+                if (pauseBadge) pauseBadge.classList.add('hidden');
             } else {
                 videoElement.pause();
+                if (pauseBadge) pauseBadge.classList.remove('hidden');
             }
+        }
+
+        function toggleReelsMute() {
+            window.isReelsMuted = !window.isReelsMuted;
+            document.querySelectorAll('.reel-item video').forEach(v => {
+                v.muted = window.isReelsMuted;
+            });
+            render();
+        }
+
+        function setReelsFilter(filter) {
+            window.reelsFilter = filter;
+            window.activeReelIndex = 0;
+            render();
+        }
+
+        function scrollToReelIndex(idx) {
+            const items = document.querySelectorAll('#reelsWatchContainer .reel-item');
+            if (!items.length) return;
+            const clamped = Math.max(0, Math.min(idx, items.length - 1));
+            window.activeReelIndex = clamped;
+            items[clamped].scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function openReelInWatchArea(reelId) {
+            window.reelsFilter = 'all';
+            switchTab('reels');
+            setTimeout(() => {
+                const target = document.querySelector(`#reelsWatchContainer .reel-item[data-reel-id="${reelId}"]`);
+                if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 80);
+        }
+
+        function setupReelsIntersectionObserver() {
+            if (reelsObserver) {
+                reelsObserver.disconnect();
+                reelsObserver = null;
+            }
+            const root = document.getElementById('reelsWatchContainer');
+            if (!root) return;
+
+            const items = root.querySelectorAll('.reel-item');
+            reelsObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    const video = entry.target.querySelector('video');
+                    const pauseBadge = entry.target.querySelector('.reel-pause-indicator');
+                    if (!video) return;
+                    if (entry.isIntersecting && entry.intersectionRatio >= 0.6) {
+                        video.muted = window.isReelsMuted;
+                        video.play().catch(() => {});
+                        if (pauseBadge) pauseBadge.classList.add('hidden');
+                    } else {
+                        video.pause();
+                    }
+                });
+            }, { root, threshold: [0.6] });
+
+            items.forEach(item => reelsObserver.observe(item));
+        }
+
+        // ==========================================
+        // INSTAGRAM-STYLE REELS EDITOR LOGIC
+        // ==========================================
+        const REEL_FILTER_PRESETS = [
+            { name: 'Original', filter: 'none', badge: 'bg-zinc-800' },
+            { name: 'Clarendon', filter: 'contrast(1.22) saturate(1.35)', badge: 'bg-sky-600' },
+            { name: 'Juno', filter: 'contrast(1.15) saturate(1.45) sepia(0.15)', badge: 'bg-amber-600' },
+            { name: 'Lark', filter: 'brightness(1.08) contrast(0.92) saturate(1.2)', badge: 'bg-teal-600' },
+            { name: 'Gingham', filter: 'brightness(1.06) sepia(0.22) contrast(0.95)', badge: 'bg-rose-400' },
+            { name: 'Moon', filter: 'grayscale(1) contrast(1.2) brightness(1.05)', badge: 'bg-zinc-600' },
+            { name: 'Warm Sunset', filter: 'sepia(0.35) saturate(1.5) brightness(1.04)', badge: 'bg-orange-600' },
+            { name: 'Cyber Neon', filter: 'hue-rotate(25deg) saturate(1.75) contrast(1.18)', badge: 'bg-purple-600' }
+        ];
+
+        const REEL_AUDIO_PRESETS = [
+            'Original Audio',
+            'Coastal Horizon • AI Beat Lab',
+            'Midnight Synthwave • Trending',
+            'Underwater Symphony • Lo-Fi',
+            'Golden Hour Acoustic • Chill',
+            'Hyper Pop Drop • Viral Mix'
+        ];
+
+        function buildReelFilterCss(cfg) {
+            if (!cfg) return 'none';
+            const preset = REEL_FILTER_PRESETS.find(f => f.name === cfg.filterName);
+            const baseFilter = preset && preset.filter !== 'none' ? preset.filter : '';
+            const brightness = (cfg.brightness !== undefined && cfg.brightness !== 100) ? `brightness(${cfg.brightness / 100})` : '';
+            const contrast = (cfg.contrast !== undefined && cfg.contrast !== 100) ? `contrast(${cfg.contrast / 100})` : '';
+            const combined = [baseFilter, brightness, contrast].filter(Boolean).join(' ');
+            return combined || 'none';
+        }
+
+        function getOverlayClasses(cfg) {
+            if (!cfg || !cfg.overlayText) return { posClass: '', boxClass: '' };
+            const posClass = cfg.overlayPos === 'top'
+                ? 'top-14 items-start'
+                : (cfg.overlayPos === 'bottom' ? 'bottom-24 items-end' : 'inset-y-0 items-center');
+            let boxClass = 'px-4 py-2 rounded-2xl font-bold text-base sm:text-lg text-center max-w-[85%] shadow-xl ';
+            if (cfg.overlayStyle === 'pill') {
+                boxClass += 'bg-black/75 backdrop-blur-md border border-white/20';
+            } else if (cfg.overlayStyle === 'neon') {
+                boxClass += 'bg-purple-950/60 border-2 border-fuchsia-400 shadow-[0_0_20px_rgba(232,121,249,0.7)]';
+            } else if (cfg.overlayStyle === 'boxed') {
+                boxClass += 'bg-white text-black rounded-lg';
+            } else {
+                boxClass += 'drop-shadow-[0_2px_10px_rgba(0,0,0,0.95)]';
+            }
+            return { posClass, boxClass };
+        }
+
+        function openReelEditor(reelId = null) {
+            if (reelId !== null && reelId !== undefined) {
+                const reel = reels.find(r => String(r.id) === String(reelId));
+                if (reel) {
+                    const ec = reel.editConfig || {};
+                    window.reelEditorState = {
+                        editingReelId: reel.id,
+                        activeTool: 'trim',
+                        video: reel.video,
+                        poster: reel.poster || 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800',
+                        caption: reel.caption || '',
+                        audio: reel.audio || 'Original Audio',
+                        filterName: ec.filterName || 'Original',
+                        brightness: ec.brightness ?? 100,
+                        contrast: ec.contrast ?? 100,
+                        speed: ec.speed ?? 1,
+                        trimStart: ec.trimStart ?? 0,
+                        trimEnd: ec.trimEnd ?? 15,
+                        duration: ec.duration ?? 15,
+                        objectFit: ec.objectFit || 'cover',
+                        overlayText: ec.overlayText || '',
+                        overlayStyle: ec.overlayStyle || 'pill',
+                        overlayColor: ec.overlayColor || '#ffffff',
+                        overlayPos: ec.overlayPos || 'center',
+                        isMutedPreview: true
+                    };
+                }
+            } else {
+                const defaultClip = reels[0] || {};
+                window.reelEditorState = {
+                    editingReelId: null,
+                    activeTool: 'trim',
+                    video: defaultClip.video || 'https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-576p.mp4',
+                    poster: defaultClip.poster || 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800',
+                    caption: 'Edited in InstaClone Reels Studio ✨ #reels #edit',
+                    audio: defaultClip.audio || 'Coastal Horizon • AI Beat Lab',
+                    filterName: 'Original',
+                    brightness: 100,
+                    contrast: 100,
+                    speed: 1,
+                    trimStart: 0,
+                    trimEnd: 15,
+                    duration: 15,
+                    objectFit: 'cover',
+                    overlayText: '',
+                    overlayStyle: 'pill',
+                    overlayColor: '#ffffff',
+                    overlayPos: 'center',
+                    isMutedPreview: true
+                };
+            }
+            switchTab('reeledit');
+        }
+
+        function openReelEditorFromCreator() {
+            const manualUrl = document.getElementById('creatorManualUrl') ? document.getElementById('creatorManualUrl').value.trim() : '';
+            const caption = document.getElementById('creatorCaption') ? document.getElementById('creatorCaption').value.trim() : '';
+            const audio = document.getElementById('creatorAudioName') ? document.getElementById('creatorAudioName').value.trim() : '';
+            const src = window.uploadedMediaBase64 || manualUrl || 'https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-576p.mp4';
+
+            window.reelEditorState = {
+                editingReelId: null,
+                activeTool: 'trim',
+                video: src,
+                poster: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800',
+                caption: caption || 'Edited in InstaClone Reels Studio ✨ #reels #creator',
+                audio: audio || 'Coastal Horizon • AI Beat Lab',
+                filterName: 'Original',
+                brightness: 100,
+                contrast: 100,
+                speed: 1,
+                trimStart: 0,
+                trimEnd: 15,
+                duration: 15,
+                objectFit: 'cover',
+                overlayText: '',
+                overlayStyle: 'pill',
+                overlayColor: '#ffffff',
+                overlayPos: 'center',
+                isMutedPreview: true
+            };
+            switchTab('reeledit');
+        }
+
+        function handleEditorVideoFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                window.reelEditorState.video = e.target.result;
+                window.reelEditorState.trimStart = 0;
+                window.reelEditorState.trimEnd = 15;
+                render();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function setEditorTool(tool) {
+            window.reelEditorState.activeTool = tool;
+            render();
+        }
+
+        function setEditorFilter(filterName) {
+            window.reelEditorState.filterName = filterName;
+            updateEditorLivePreview();
+            render();
+        }
+
+        function setEditorSpeed(speed) {
+            window.reelEditorState.speed = speed;
+            const vid = document.getElementById('reelEditorPreviewVideo');
+            if (vid) vid.playbackRate = speed;
+            render();
+        }
+
+        function updateEditorLivePreview() {
+            const vid = document.getElementById('reelEditorPreviewVideo');
+            if (vid) {
+                vid.style.filter = buildReelFilterCss(window.reelEditorState);
+                vid.playbackRate = window.reelEditorState.speed;
+                vid.style.objectFit = window.reelEditorState.objectFit;
+            }
+        }
+
+        function attachReelEditorPlayback() {
+            const vid = document.getElementById('reelEditorPreviewVideo');
+            if (!vid) return;
+
+            vid.playbackRate = window.reelEditorState.speed || 1;
+            vid.style.filter = buildReelFilterCss(window.reelEditorState);
+            vid.muted = window.reelEditorState.isMutedPreview;
+
+            vid.onloadedmetadata = () => {
+                if (vid.duration && isFinite(vid.duration)) {
+                    const dur = Math.max(2, Math.round(vid.duration));
+                    if (window.reelEditorState.duration !== dur) {
+                        window.reelEditorState.duration = dur;
+                        if (window.reelEditorState.trimEnd > dur || window.reelEditorState.trimEnd === 15) {
+                            window.reelEditorState.trimEnd = dur;
+                        }
+                        const endInput = document.getElementById('editorTrimEnd');
+                        const startInput = document.getElementById('editorTrimStart');
+                        const durLabel = document.getElementById('editorDurationLabel');
+                        if (endInput) { endInput.max = dur; endInput.value = window.reelEditorState.trimEnd; }
+                        if (startInput) { startInput.max = Math.max(0, dur - 1); }
+                        if (durLabel) durLabel.textContent = `${window.reelEditorState.trimStart}s – ${window.reelEditorState.trimEnd}s / ${dur}s`;
+                    }
+                }
+            };
+
+            vid.ontimeupdate = () => {
+                const start = window.reelEditorState.trimStart || 0;
+                const end = window.reelEditorState.trimEnd || vid.duration || 15;
+                if (vid.currentTime < start) {
+                    vid.currentTime = start;
+                }
+                if (vid.currentTime >= end) {
+                    vid.currentTime = start;
+                }
+                const curLabel = document.getElementById('editorCurrentTimeLabel');
+                if (curLabel) curLabel.textContent = `${vid.currentTime.toFixed(1)}s`;
+            };
+        }
+
+        async function saveOrPublishEditedReel() {
+            const st = window.reelEditorState;
+            const editConfig = {
+                filterName: st.filterName,
+                filterCss: buildReelFilterCss(st),
+                brightness: st.brightness,
+                contrast: st.contrast,
+                speed: st.speed,
+                trimStart: st.trimStart,
+                trimEnd: st.trimEnd,
+                duration: st.duration,
+                objectFit: st.objectFit,
+                overlayText: st.overlayText,
+                overlayStyle: st.overlayStyle,
+                overlayColor: st.overlayColor,
+                overlayPos: st.overlayPos
+            };
+
+            if (st.editingReelId !== null && st.editingReelId !== undefined) {
+                const target = reels.find(r => String(r.id) === String(st.editingReelId));
+                if (target) {
+                    target.video = st.video;
+                    target.poster = st.poster;
+                    target.caption = st.caption;
+                    target.audio = st.audio;
+                    target.editConfig = editConfig;
+                    openReelInWatchArea(target.id);
+                    return;
+                }
+            }
+
+            const newEditedReel = {
+                id: 'edited-reel-' + Date.now(),
+                user: userProfile.username,
+                avatar: userProfile.avatar,
+                video: st.video,
+                poster: st.poster,
+                likes: 1,
+                caption: st.caption || 'Edited in Reels Studio ✨ #reels',
+                audio: st.audio || 'Original Audio',
+                isAiBot: false,
+                editConfig,
+                comments: [],
+                isFollowing: false,
+                isLiked: false,
+                createdAt: new Date().toISOString()
+            };
+
+            if (window.firebaseDb) {
+                try {
+                    const { collection, addDoc, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js");
+                    await addDoc(collection(window.firebaseDb, "reels"), {
+                        ...newEditedReel,
+                        createdAt: serverTimestamp()
+                    });
+                } catch (e) {
+                    console.log("Edited Reel Firestore sync warning:", e);
+                }
+            }
+
+            reels.unshift(newEditedReel);
+            if (window.updateReelsBadge) window.updateReelsBadge();
+            openReelInWatchArea(newEditedReel.id);
         }
 
         function handleVideoError(videoElement, posterUrl) {
@@ -1380,7 +1990,7 @@
         }
 
         function toggleLike(postId) {
-            const post = posts.find(p => p.id === postId);
+            const post = posts.find(p => String(p.id) === String(postId));
             if (post) {
                 post.isLiked = !post.isLiked;
                 post.likes += post.isLiked ? 1 : -1;
@@ -1394,7 +2004,7 @@
                 burst.classList.remove('hidden');
                 setTimeout(() => burst.classList.add('hidden'), 800);
             }
-            const post = posts.find(p => p.id === postId);
+            const post = posts.find(p => String(p.id) === String(postId));
             if (post && !post.isLiked) {
                 post.isLiked = true;
                 post.likes += 1;
@@ -1402,8 +2012,22 @@
             }
         }
 
+        function triggerReelDoubleTapLike(reelId) {
+            const burst = document.getElementById(`reel-burst-${reelId}`);
+            if (burst) {
+                burst.classList.remove('hidden');
+                setTimeout(() => burst.classList.add('hidden'), 800);
+            }
+            const reel = reels.find(r => String(r.id) === String(reelId));
+            if (reel && !reel.isLiked) {
+                reel.isLiked = true;
+                reel.likes += 1;
+                render();
+            }
+        }
+
         function toggleReelLike(reelId) {
-            const reel = reels.find(r => r.id === reelId);
+            const reel = reels.find(r => String(r.id) === String(reelId));
             if (reel) {
                 reel.isLiked = !reel.isLiked;
                 reel.likes += reel.isLiked ? 1 : -1;
@@ -1412,7 +2036,7 @@
         }
 
         function toggleFollow(reelId) {
-            const reel = reels.find(r => r.id === reelId);
+            const reel = reels.find(r => String(r.id) === String(reelId));
             if (reel) {
                 reel.isFollowing = !reel.isFollowing;
                 render();
@@ -1420,8 +2044,9 @@
         }
 
         function openCommentsModal(postId) {
+            activeCommentTargetType = 'post';
             activeCommentPostId = postId;
-            const post = posts.find(p => p.id === postId);
+            const post = posts.find(p => String(p.id) === String(postId));
             if (!post) return;
 
             const container = document.getElementById('commentsContainer');
@@ -1438,6 +2063,26 @@
             lucide.createIcons();
         }
 
+        function openReelCommentsModal(reelId) {
+            activeCommentTargetType = 'reel';
+            activeCommentPostId = reelId;
+            const reel = reels.find(r => String(r.id) === String(reelId));
+            if (!reel) return;
+
+            const container = document.getElementById('commentsContainer');
+            container.innerHTML = reel.comments && reel.comments.length > 0
+                ? reel.comments.map(c => `
+                    <div class="flex items-start gap-2.5 text-xs">
+                        <span class="font-bold text-rose-400">@${c.author}</span>
+                        <span class="text-zinc-200">${c.text}</span>
+                    </div>
+                `).join('')
+                : `<p class="text-xs text-zinc-500 text-center py-4">No comments on this reel yet. Drop the first comment!</p>`;
+
+            document.getElementById('commentsModal').classList.remove('hidden');
+            lucide.createIcons();
+        }
+
         function closeCommentsModal() {
             document.getElementById('commentsModal').classList.add('hidden');
         }
@@ -1447,12 +2092,23 @@
             const text = input.value.trim();
             if (!text || !activeCommentPostId) return;
 
-            const post = posts.find(p => p.id === activeCommentPostId);
-            if (post) {
-                post.comments = post.comments || [];
-                post.comments.push({ author: userProfile.username, text });
-                input.value = '';
-                openCommentsModal(activeCommentPostId);
+            if (activeCommentTargetType === 'reel') {
+                const reel = reels.find(r => String(r.id) === String(activeCommentPostId));
+                if (reel) {
+                    reel.comments = reel.comments || [];
+                    reel.comments.push({ author: userProfile.username, text });
+                    input.value = '';
+                    openReelCommentsModal(activeCommentPostId);
+                    if (currentTab === 'reels') render();
+                }
+            } else {
+                const post = posts.find(p => String(p.id) === String(activeCommentPostId));
+                if (post) {
+                    post.comments = post.comments || [];
+                    post.comments.push({ author: userProfile.username, text });
+                    input.value = '';
+                    openCommentsModal(activeCommentPostId);
+                }
             }
         }
 
@@ -1747,66 +2403,655 @@
                 }
             }
             else if (currentTab === 'reels') {
+                const filteredReels = window.reelsFilter === 'aibot'
+                    ? reels.filter(r => r.isAiBot)
+                    : (window.reelsFilter === 'friends' ? reels.filter(r => !r.isAiBot) : reels);
+
                 container.innerHTML = `
-                    <div class="flex items-center justify-between mb-4 px-1">
-                        <h2 class="text-xl font-bold flex items-center gap-2">
-                            <span>Reels</span>
-                        </h2>
-                        <button onclick="openUploadStudio('reel')" class="px-3 py-1.5 bg-gradient-to-r from-amber-500 via-rose-500 to-purple-600 text-white font-bold text-xs rounded-xl shadow flex items-center gap-1.5">
-                            <i data-lucide="plus-circle" class="w-4 h-4"></i>
-                            <span>Upload Reel</span>
-                        </button>
+                    <!-- Reels Watch Area Header & Filter Controls -->
+                    <div class="space-y-3 mb-3 px-1">
+                        <div class="flex items-center justify-between gap-2">
+                            <div class="flex items-center gap-2">
+                                <h2 class="text-xl font-bold flex items-center gap-2">
+                                    <i data-lucide="clapperboard" class="w-5 h-5 text-rose-500"></i>
+                                    <span>Watch Reels</span>
+                                </h2>
+                                <span class="text-[11px] bg-zinc-900 border border-zinc-800 text-zinc-300 px-2 py-0.5 rounded-full font-semibold">${filteredReels.length} videos</span>
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <button onclick="toggleReelsMute()" class="p-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-xl text-zinc-200 transition" title="${window.isReelsMuted ? 'Unmute Sound' : 'Mute Sound'}">
+                                    <i data-lucide="${window.isReelsMuted ? 'volume-x' : 'volume-2'}" class="w-4 h-4 ${window.isReelsMuted ? 'text-zinc-400' : 'text-amber-400'}"></i>
+                                </button>
+                                <button onclick="openReelEditor()" class="px-2.5 py-1.5 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 font-bold text-xs rounded-xl flex items-center gap-1 transition">
+                                    <i data-lucide="scissors" class="w-3.5 h-3.5"></i>
+                                    <span>Edit Reel</span>
+                                </button>
+                                <button onclick="switchTab('reelsbot')" class="px-2.5 py-1.5 bg-purple-950/70 hover:bg-purple-900/70 border border-purple-700/50 text-purple-200 font-bold text-xs rounded-xl flex items-center gap-1 transition">
+                                    <i data-lucide="bot" class="w-3.5 h-3.5 text-purple-400"></i>
+                                    <span>AI Bot</span>
+                                </button>
+                                <button onclick="openUploadStudio('reel')" class="px-3 py-1.5 bg-gradient-to-r from-amber-500 via-rose-500 to-purple-600 text-white font-bold text-xs rounded-xl shadow flex items-center gap-1.5">
+                                    <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                                    <span>Upload</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Filter Pills -->
+                        <div class="flex items-center gap-2 overflow-x-auto hide-scrollbar">
+                            <button onclick="setReelsFilter('all')" class="px-3.5 py-1.5 rounded-full text-xs font-bold transition whitespace-nowrap ${window.reelsFilter === 'all' ? 'bg-white text-black' : 'bg-zinc-900 text-zinc-400 border border-zinc-800 hover:text-white'}">
+                                All Reels (${reels.length})
+                            </button>
+                            <button onclick="setReelsFilter('aibot')" class="px-3.5 py-1.5 rounded-full text-xs font-bold transition whitespace-nowrap flex items-center gap-1.5 ${window.reelsFilter === 'aibot' ? 'bg-gradient-to-r from-purple-600 to-rose-500 text-white' : 'bg-zinc-900 text-zinc-400 border border-zinc-800 hover:text-white'}">
+                                <i data-lucide="bot" class="w-3.5 h-3.5"></i>
+                                AI Bot Reels (${reels.filter(r => r.isAiBot).length})
+                            </button>
+                            <button onclick="setReelsFilter('friends')" class="px-3.5 py-1.5 rounded-full text-xs font-bold transition whitespace-nowrap ${window.reelsFilter === 'friends' ? 'bg-blue-600 text-white' : 'bg-zinc-900 text-zinc-400 border border-zinc-800 hover:text-white'}">
+                                Friends (${reels.filter(r => !r.isAiBot).length})
+                            </button>
+                        </div>
                     </div>
 
-                    <div class="h-[80vh] overflow-y-scroll reel-container snap-y snap-mandatory hide-scrollbar space-y-4">
-                        ${reels.map(r => `
-                            <div class="h-full w-full relative reel-item flex items-center justify-center bg-black rounded-2xl overflow-hidden border border-zinc-900 shadow-xl group">
-                                <video 
-                                    src="${r.video}" 
-                                    poster="${r.poster}" 
-                                    autoplay 
-                                    loop 
-                                    muted 
-                                    playsinline 
-                                    preload="metadata"
-                                    onclick="toggleVideoPlay(this)"
-                                    onerror="handleVideoError(this, '${r.poster}')"
-                                    class="w-full h-full object-cover cursor-pointer">
-                                </video>
+                    ${filteredReels.length === 0 ? `
+                        <div class="h-[72vh] bg-zinc-950 border border-zinc-800 rounded-2xl flex flex-col items-center justify-center p-6 text-center space-y-3">
+                            <i data-lucide="clapperboard" class="w-12 h-12 text-zinc-600"></i>
+                            <h3 class="font-bold text-base">No reels in this filter yet</h3>
+                            <p class="text-xs text-zinc-400 max-w-xs">Generate a fresh reel with the AI Reels Bot or upload your own video reel.</p>
+                            <div class="flex gap-2 pt-2">
+                                <button onclick="generateAndUploadAiReel(true); setReelsFilter('all');" class="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold rounded-xl">Generate AI Reel</button>
+                                <button onclick="openUploadStudio('reel')" class="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-white text-xs font-bold rounded-xl">Upload Reel</button>
+                            </div>
+                        </div>
+                    ` : `
+                        <!-- Vertical Snap-Scrolling Reels Player -->
+                        <div id="reelsWatchContainer" class="h-[76vh] overflow-y-scroll reel-container snap-y snap-mandatory hide-scrollbar space-y-4">
+                            ${filteredReels.map((r, idx) => {
+                                const ec = r.editConfig;
+                                const filterStyle = ec && ec.filterCss ? `filter: ${ec.filterCss};` : '';
+                                const fitClass = ec && ec.objectFit === 'contain' ? 'object-contain' : 'object-cover';
+                                const overlay = getOverlayClasses(ec);
+                                return `
+                                <div data-reel-id="${r.id}" class="h-full w-full relative reel-item flex items-center justify-center bg-black rounded-2xl overflow-hidden border border-zinc-800 shadow-2xl group">
+                                    <video 
+                                        src="${r.video}" 
+                                        poster="${r.poster}" 
+                                        ${idx === 0 ? 'autoplay' : ''}
+                                        loop 
+                                        ${window.isReelsMuted ? 'muted' : ''}
+                                        playsinline 
+                                        preload="metadata"
+                                        style="${filterStyle}"
+                                        onloadedmetadata="${ec && ec.speed ? `this.playbackRate=${ec.speed};` : ''}"
+                                        ontimeupdate="${ec ? `if(this.currentTime < ${ec.trimStart || 0} || this.currentTime >= ${ec.trimEnd || 9999}){this.currentTime=${ec.trimStart || 0};}` : ''}"
+                                        onclick="toggleVideoPlay(this)"
+                                        ondblclick="triggerReelDoubleTapLike('${r.id}')"
+                                        onerror="handleVideoError(this, '${r.poster}')"
+                                        class="w-full h-full ${fitClass} cursor-pointer">
+                                    </video>
 
-                                <!-- Play/Pause Tap Hint -->
-                                <div class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-0 group-hover:opacity-40 transition">
-                                    <div class="w-16 h-16 rounded-full bg-black/60 flex items-center justify-center text-white">
-                                        <i data-lucide="play" class="w-8 h-8 ml-1"></i>
+                                    ${ec && ec.overlayText ? `
+                                        <div class="absolute inset-x-0 ${overlay.posClass} flex justify-center pointer-events-none px-4 z-10">
+                                            <div class="${overlay.boxClass}" style="color: ${ec.overlayStyle === 'boxed' ? '#000000' : (ec.overlayColor || '#ffffff')};">
+                                                ${ec.overlayText}
+                                            </div>
+                                        </div>
+                                    ` : ''}
+
+                                    <!-- Top Gradient & Source Badge -->
+                                    <div class="absolute top-0 left-0 right-0 p-3.5 bg-gradient-to-b from-black/70 via-black/20 to-transparent flex items-center justify-between pointer-events-none">
+                                        <div class="flex items-center gap-1.5">
+                                            ${r.isAiBot ? `
+                                                <span class="px-2.5 py-1 rounded-full bg-gradient-to-r from-purple-600/90 to-rose-500/90 backdrop-blur-sm text-white text-[10px] font-bold flex items-center gap-1 shadow">
+                                                    <i data-lucide="bot" class="w-3 h-3"></i>
+                                                    <span>AI Bot Reel • ${r.niche || 'Trending'}</span>
+                                                </span>
+                                            ` : `
+                                                <span class="px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-sm border border-white/15 text-zinc-200 text-[10px] font-semibold">
+                                                    Creator Reel
+                                                </span>
+                                            `}
+                                            ${ec ? `
+                                                <span class="px-2 py-0.5 rounded-full bg-amber-500/25 border border-amber-400/40 text-amber-200 text-[10px] font-bold">
+                                                    ${ec.filterName !== 'Original' ? ec.filterName : 'Edited'}${ec.speed && ec.speed !== 1 ? ` • ${ec.speed}x` : ''}
+                                                </span>
+                                            ` : ''}
+                                        </div>
+                                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-black/50 text-zinc-200 border border-white/10">
+                                            ${idx + 1} / ${filteredReels.length}
+                                        </span>
                                     </div>
-                                </div>
 
-                                <div class="absolute bottom-4 left-4 right-16 space-y-2 pointer-events-auto">
-                                    <div class="flex items-center gap-3">
-                                        <img src="${r.avatar}" class="w-10 h-10 rounded-full border border-white" />
-                                        <span class="font-semibold text-sm drop-shadow">${r.user}</span>
-                                        <button onclick="toggleFollow(${r.id})" class="border border-white px-3 py-1 text-xs rounded-full font-medium ${r.isFollowing ? 'bg-white text-black' : 'bg-transparent text-white'}">
-                                            ${r.isFollowing ? 'Following' : 'Follow'}
+                                    <!-- Top-Right Up/Down & Mute Controls -->
+                                    <div class="absolute top-12 right-3 flex flex-col gap-1.5 z-20">
+                                        <button onclick="toggleReelsMute()" class="w-9 h-9 rounded-full bg-black/60 hover:bg-black/80 backdrop-blur-sm border border-white/15 flex items-center justify-center text-white transition" title="Mute / Unmute">
+                                            <i data-lucide="${window.isReelsMuted ? 'volume-x' : 'volume-2'}" class="w-4 h-4"></i>
+                                        </button>
+                                        ${idx > 0 ? `
+                                            <button onclick="scrollToReelIndex(${idx - 1})" class="w-9 h-9 rounded-full bg-black/60 hover:bg-black/80 backdrop-blur-sm border border-white/15 flex items-center justify-center text-white transition" title="Previous Reel">
+                                                <i data-lucide="chevron-up" class="w-4 h-4"></i>
+                                            </button>
+                                        ` : ''}
+                                        ${idx < filteredReels.length - 1 ? `
+                                            <button onclick="scrollToReelIndex(${idx + 1})" class="w-9 h-9 rounded-full bg-black/60 hover:bg-black/80 backdrop-blur-sm border border-white/15 flex items-center justify-center text-white transition" title="Next Reel">
+                                                <i data-lucide="chevron-down" class="w-4 h-4"></i>
+                                            </button>
+                                        ` : ''}
+                                    </div>
+
+                                    <!-- Paused Tap State Overlay -->
+                                    <div class="reel-pause-indicator hidden absolute inset-0 flex items-center justify-center pointer-events-none">
+                                        <div class="w-16 h-16 rounded-full bg-black/65 backdrop-blur-sm flex items-center justify-center text-white border border-white/20">
+                                            <i data-lucide="play" class="w-8 h-8 ml-1"></i>
+                                        </div>
+                                    </div>
+
+                                    <!-- Double-Tap Heart Burst -->
+                                    <div id="reel-burst-${r.id}" class="hidden absolute inset-0 flex items-center justify-center pointer-events-none">
+                                        <i data-lucide="heart" class="w-24 h-24 text-rose-500 fill-rose-500 heart-burst drop-shadow-xl"></i>
+                                    </div>
+
+                                    <!-- Bottom Creator Overlay -->
+                                    <div class="absolute bottom-0 left-0 right-0 pt-16 pb-4 px-4 pr-16 bg-gradient-to-t from-black/90 via-black/45 to-transparent space-y-2 pointer-events-auto">
+                                        <div class="flex items-center gap-2.5">
+                                            <img src="${r.avatar}" class="w-10 h-10 rounded-full border-2 ${r.isAiBot ? 'border-purple-400' : 'border-white'} object-cover bg-zinc-900" />
+                                            <span class="font-bold text-sm drop-shadow">${r.user}</span>
+                                            <button onclick="toggleFollow('${r.id}')" class="border border-white/70 px-3 py-0.5 text-xs rounded-full font-semibold transition ${r.isFollowing ? 'bg-white text-black' : 'bg-black/30 text-white hover:bg-white/20'}">
+                                                ${r.isFollowing ? 'Following' : 'Follow'}
+                                            </button>
+                                        </div>
+                                        <p class="text-xs sm:text-sm text-zinc-100 drop-shadow leading-snug">${r.caption}</p>
+                                        <div class="flex items-center gap-2 text-xs text-zinc-200 drop-shadow">
+                                            <i data-lucide="music" class="w-3.5 h-3.5 text-amber-400 animate-spin" style="animation-duration: 5s;"></i>
+                                            <span class="truncate">${r.audio}</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Right Action Stack -->
+                                    <div class="absolute right-3 bottom-8 flex flex-col items-center gap-3.5 z-20">
+                                        <button onclick="toggleReelLike('${r.id}')" class="flex flex-col items-center gap-1 transition active:scale-125">
+                                            <div class="w-10 h-10 rounded-full bg-black/45 backdrop-blur-sm flex items-center justify-center">
+                                                <i data-lucide="heart" class="w-6 h-6 ${r.isLiked ? 'text-rose-500 fill-rose-500' : 'text-white'}"></i>
+                                            </div>
+                                            <span class="text-xs font-semibold drop-shadow">${r.likes}</span>
+                                        </button>
+                                        <button onclick="openReelCommentsModal('${r.id}')" class="flex flex-col items-center gap-1">
+                                            <div class="w-10 h-10 rounded-full bg-black/45 backdrop-blur-sm flex items-center justify-center">
+                                                <i data-lucide="message-circle" class="w-6 h-6 text-white"></i>
+                                            </div>
+                                            <span class="text-xs font-semibold drop-shadow">${r.comments ? r.comments.length : 0}</span>
+                                        </button>
+                                        <button onclick="openReelEditor('${r.id}')" class="flex flex-col items-center gap-1" title="Edit Reel">
+                                            <div class="w-10 h-10 rounded-full bg-black/45 backdrop-blur-sm flex items-center justify-center hover:bg-amber-500/40 transition">
+                                                <i data-lucide="scissors" class="w-5 h-5 text-amber-300"></i>
+                                            </div>
+                                            <span class="text-[10px] font-medium drop-shadow">Edit</span>
+                                        </button>
+                                        <button onclick="shareReelWithFriend('${r.id}')" class="flex flex-col items-center gap-1" title="Share Reel to Friend">
+                                            <div class="w-10 h-10 rounded-full bg-black/45 backdrop-blur-sm flex items-center justify-center">
+                                                <i data-lucide="send" class="w-5 h-5 text-white"></i>
+                                            </div>
+                                            <span class="text-[10px] font-medium drop-shadow">Share</span>
                                         </button>
                                     </div>
-                                    <p class="text-sm text-zinc-100 drop-shadow">${r.caption}</p>
-                                    <div class="flex items-center gap-2 text-xs text-zinc-200 drop-shadow"><i data-lucide="music" class="w-3 h-3"></i> ${r.audio}</div>
                                 </div>
-                                <div class="absolute right-3 bottom-12 flex flex-col items-center gap-4">
-                                    <button onclick="toggleReelLike(${r.id})" class="flex flex-col items-center gap-1">
-                                        <i data-lucide="heart" class="w-7 h-7 ${r.isLiked ? 'text-rose-500 fill-rose-500' : 'text-white'}"></i>
-                                        <span class="text-xs">${r.likes}</span>
-                                    </button>
-                                    <button class="flex flex-col items-center gap-1" onclick="openCommentsModal(1)">
-                                        <i data-lucide="message-circle" class="w-7 h-7 text-white"></i>
-                                        <span class="text-xs">48</span>
-                                    </button>
-                                    <button onclick="openFriendChat('${r.user}')" class="flex flex-col items-center gap-1" title="Message Creator">
-                                        <i data-lucide="send" class="w-7 h-7 text-white"></i>
-                                    </button>
+                            `;
+                            }).join('')}
+                        </div>
+                    `}
+                `;
+                setTimeout(() => setupReelsIntersectionObserver(), 60);
+            }
+            else if (currentTab === 'reeledit') {
+                const st = window.reelEditorState;
+                const overlay = getOverlayClasses(st);
+                const filterCss = buildReelFilterCss(st);
+                const trimLeftPct = st.duration > 0 ? Math.min(95, (st.trimStart / st.duration) * 100) : 0;
+                const trimWidthPct = st.duration > 0 ? Math.max(5, ((st.trimEnd - st.trimStart) / st.duration) * 100) : 100;
+
+                container.innerHTML = `
+                    <div class="space-y-4">
+                        <!-- Top Editor Bar -->
+                        <div class="flex items-center justify-between gap-2 border-b border-zinc-800 pb-3">
+                            <div class="flex items-center gap-2.5">
+                                <button onclick="switchTab('reels')" class="p-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-xl text-zinc-200 transition" title="Back to Watch Reels">
+                                    <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                                </button>
+                                <div>
+                                    <h2 class="text-lg sm:text-xl font-bold flex items-center gap-2">
+                                        <i data-lucide="scissors" class="w-5 h-5 text-amber-400"></i>
+                                        <span>Reels Edit Studio</span>
+                                    </h2>
+                                    <p class="text-[11px] text-zinc-400">${st.editingReelId ? 'Editing existing reel' : 'Create & edit a new Instagram Reel'}</p>
                                 </div>
                             </div>
-                        `).join('')}
+                            <button onclick="saveOrPublishEditedReel()" class="px-4 py-2 bg-gradient-to-r from-amber-500 via-rose-500 to-purple-600 hover:opacity-95 text-white font-bold text-xs rounded-xl shadow-lg flex items-center gap-1.5 transition">
+                                <i data-lucide="check-circle" class="w-4 h-4"></i>
+                                <span>${st.editingReelId ? 'Save Reel' : 'Share Reel'}</span>
+                            </button>
+                        </div>
+
+                        <!-- Main Editor Grid: Vertical 9:16 Live Preview + Timeline + Tools -->
+                        <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-start">
+                            <!-- Left: 9:16 Instagram Live Canvas -->
+                            <div class="md:col-span-5 flex flex-col items-center space-y-2.5">
+                                <div class="relative w-full max-w-[290px] aspect-[9/16] bg-black rounded-3xl overflow-hidden border-2 border-zinc-800 shadow-2xl">
+                                    <video
+                                        id="reelEditorPreviewVideo"
+                                        src="${st.video}"
+                                        poster="${st.poster}"
+                                        autoplay
+                                        loop
+                                        ${st.isMutedPreview ? 'muted' : ''}
+                                        playsinline
+                                        style="filter: ${filterCss}; object-fit: ${st.objectFit};"
+                                        onclick="toggleVideoPlay(this)"
+                                        onerror="handleVideoError(this, '${st.poster}')"
+                                        class="w-full h-full cursor-pointer">
+                                    </video>
+
+                                    <!-- Live Text Overlay Sticker -->
+                                    ${st.overlayText ? `
+                                        <div class="absolute inset-x-0 ${overlay.posClass} flex justify-center pointer-events-none px-3 z-10">
+                                            <div class="${overlay.boxClass}" style="color: ${st.overlayStyle === 'boxed' ? '#000000' : st.overlayColor};">
+                                                ${st.overlayText}
+                                            </div>
+                                        </div>
+                                    ` : ''}
+
+                                    <!-- Top Badges on Preview -->
+                                    <div class="absolute top-3 left-3 right-3 flex items-center justify-between pointer-events-none">
+                                        <span class="px-2 py-0.5 rounded-full bg-black/65 backdrop-blur-sm border border-white/15 text-[10px] font-bold text-amber-300">
+                                            ${st.filterName} • ${st.speed}x
+                                        </span>
+                                        <span id="editorCurrentTimeLabel" class="px-2 py-0.5 rounded-full bg-black/65 text-[10px] font-mono text-zinc-200">
+                                            ${st.trimStart}.0s
+                                        </span>
+                                    </div>
+
+                                    <!-- Preview Mute Toggle -->
+                                    <button onclick="window.reelEditorState.isMutedPreview = !window.reelEditorState.isMutedPreview; render();" class="absolute top-11 right-3 w-8 h-8 rounded-full bg-black/65 border border-white/15 flex items-center justify-center text-white z-20">
+                                        <i data-lucide="${st.isMutedPreview ? 'volume-x' : 'volume-2'}" class="w-4 h-4"></i>
+                                    </button>
+
+                                    <!-- Bottom Preview Info -->
+                                    <div class="absolute bottom-0 inset-x-0 p-3 bg-gradient-to-t from-black/90 via-black/40 to-transparent space-y-1 pointer-events-none">
+                                        <p class="text-[11px] text-zinc-100 line-clamp-2">${st.caption}</p>
+                                        <div class="flex items-center gap-1.5 text-[10px] text-amber-300 font-semibold">
+                                            <i data-lucide="music" class="w-3 h-3"></i>
+                                            <span class="truncate">${st.audio}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Playback & Timeline Strip -->
+                                <div class="w-full max-w-[290px] bg-zinc-950 border border-zinc-800 rounded-2xl p-2.5 space-y-2">
+                                    <div class="flex items-center justify-between text-[10px] text-zinc-400">
+                                        <button onclick="const v=document.getElementById('reelEditorPreviewVideo'); if(v) toggleVideoPlay(v);" class="px-2.5 py-1 bg-zinc-900 hover:bg-zinc-800 rounded-lg text-white font-bold flex items-center gap-1">
+                                            <i data-lucide="play" class="w-3 h-3"></i> Play / Pause
+                                        </button>
+                                        <span id="editorDurationLabel" class="font-mono text-amber-300">${st.trimStart}s – ${st.trimEnd}s / ${st.duration}s</span>
+                                    </div>
+                                    <!-- Visual Filmstrip Timeline Bar -->
+                                    <div class="relative h-6 bg-zinc-900 rounded-lg overflow-hidden border border-zinc-800">
+                                        <div class="absolute inset-0 flex opacity-40">
+                                            <div class="flex-1 border-r border-zinc-700 bg-gradient-to-r from-amber-500/20 to-rose-500/20"></div>
+                                            <div class="flex-1 border-r border-zinc-700 bg-gradient-to-r from-rose-500/20 to-purple-500/20"></div>
+                                            <div class="flex-1 bg-gradient-to-r from-purple-500/20 to-blue-500/20"></div>
+                                        </div>
+                                        <div class="absolute top-0 bottom-0 border-2 border-amber-400 bg-amber-400/20 rounded" style="left: ${trimLeftPct}%; width: ${trimWidthPct}%;"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Right: Instagram Tool Tabs & Controls -->
+                            <div class="md:col-span-7 bg-zinc-950 border border-zinc-800 rounded-2xl p-4 space-y-4 shadow-xl">
+                                <!-- 5 Instagram Editor Tool Switchers -->
+                                <div class="grid grid-cols-5 gap-1.5 bg-black p-1.5 rounded-xl border border-zinc-800">
+                                    <button onclick="setEditorTool('trim')" class="py-2 rounded-lg text-[11px] font-bold flex flex-col items-center gap-1 transition ${st.activeTool === 'trim' ? 'bg-zinc-800 text-amber-400' : 'text-zinc-400 hover:text-white'}">
+                                        <i data-lucide="scissors" class="w-4 h-4"></i>
+                                        <span>Clip</span>
+                                    </button>
+                                    <button onclick="setEditorTool('text')" class="py-2 rounded-lg text-[11px] font-bold flex flex-col items-center gap-1 transition ${st.activeTool === 'text' ? 'bg-zinc-800 text-rose-400' : 'text-zinc-400 hover:text-white'}">
+                                        <i data-lucide="type" class="w-4 h-4"></i>
+                                        <span>Text</span>
+                                    </button>
+                                    <button onclick="setEditorTool('filter')" class="py-2 rounded-lg text-[11px] font-bold flex flex-col items-center gap-1 transition ${st.activeTool === 'filter' ? 'bg-zinc-800 text-purple-400' : 'text-zinc-400 hover:text-white'}">
+                                        <i data-lucide="sparkles" class="w-4 h-4"></i>
+                                        <span>Filters</span>
+                                    </button>
+                                    <button onclick="setEditorTool('audio')" class="py-2 rounded-lg text-[11px] font-bold flex flex-col items-center gap-1 transition ${st.activeTool === 'audio' ? 'bg-zinc-800 text-blue-400' : 'text-zinc-400 hover:text-white'}">
+                                        <i data-lucide="music" class="w-4 h-4"></i>
+                                        <span>Audio</span>
+                                    </button>
+                                    <button onclick="setEditorTool('publish')" class="py-2 rounded-lg text-[11px] font-bold flex flex-col items-center gap-1 transition ${st.activeTool === 'publish' ? 'bg-zinc-800 text-green-400' : 'text-zinc-400 hover:text-white'}">
+                                        <i data-lucide="sliders" class="w-4 h-4"></i>
+                                        <span>Caption</span>
+                                    </button>
+                                </div>
+
+                                ${st.activeTool === 'trim' ? `
+                                    <div class="space-y-4">
+                                        <!-- Upload or Pick Clip -->
+                                        <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-zinc-900">
+                                            <div>
+                                                <h4 class="text-xs font-bold text-zinc-200">Video Clip Source</h4>
+                                                <p class="text-[11px] text-zinc-400">Upload your own MP4 or edit an existing Reel</p>
+                                            </div>
+                                            <label class="px-3 py-1.5 bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 rounded-xl text-xs font-bold text-amber-300 cursor-pointer flex items-center gap-1.5">
+                                                <i data-lucide="upload" class="w-3.5 h-3.5"></i>
+                                                <span>Load Video File</span>
+                                                <input type="file" accept="video/*" class="hidden" onchange="handleEditorVideoFile(event)" />
+                                            </label>
+                                        </div>
+
+                                        <!-- Quick Select Existing Reel -->
+                                        <div>
+                                            <label class="block text-xs font-semibold text-zinc-400 mb-1.5">Or switch clip from Watch Reels:</label>
+                                            <select onchange="if(this.value) openReelEditor(this.value)" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-2.5 text-xs text-white focus:outline-none">
+                                                <option value="">-- Choose a Reel to Edit --</option>
+                                                ${reels.map(r => `<option value="${r.id}" ${String(st.editingReelId) === String(r.id) ? 'selected' : ''}>@${r.user}: ${r.caption.slice(0, 42)}...</option>`).join('')}
+                                            </select>
+                                        </div>
+
+                                        <!-- Trim Start & End Sliders -->
+                                        <div class="space-y-3 bg-zinc-900/50 border border-zinc-800 rounded-xl p-3">
+                                            <div class="flex items-center justify-between text-xs">
+                                                <span class="font-bold text-zinc-200">Trim Clip Window</span>
+                                                <span class="font-mono text-amber-400">${st.trimStart}s → ${st.trimEnd}s</span>
+                                            </div>
+                                            <div>
+                                                <label class="flex justify-between text-[11px] text-zinc-400 mb-1"><span>Start Time</span><span>${st.trimStart}s</span></label>
+                                                <input id="editorTrimStart" type="range" min="0" max="${Math.max(0, st.duration - 1)}" value="${st.trimStart}" oninput="const v=parseInt(this.value,10); window.reelEditorState.trimStart = Math.min(v, window.reelEditorState.trimEnd - 1); const vid=document.getElementById('reelEditorPreviewVideo'); if(vid) vid.currentTime=window.reelEditorState.trimStart; render();" class="w-full accent-amber-500" />
+                                            </div>
+                                            <div>
+                                                <label class="flex justify-between text-[11px] text-zinc-400 mb-1"><span>End Time</span><span>${st.trimEnd}s</span></label>
+                                                <input id="editorTrimEnd" type="range" min="1" max="${st.duration}" value="${st.trimEnd}" oninput="const v=parseInt(this.value,10); window.reelEditorState.trimEnd = Math.max(v, window.reelEditorState.trimStart + 1); render();" class="w-full accent-rose-500" />
+                                            </div>
+                                        </div>
+
+                                        <!-- Playback Speed & Aspect Fit -->
+                                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                            <div>
+                                                <label class="block text-xs font-semibold text-zinc-400 mb-1.5">Playback Speed</label>
+                                                <div class="grid grid-cols-4 gap-1.5">
+                                                    ${[0.5, 1, 1.5, 2].map(spd => `
+                                                        <button onclick="setEditorSpeed(${spd})" class="py-2 rounded-xl text-xs font-bold border transition ${st.speed === spd ? 'bg-amber-500 text-black border-amber-400' : 'bg-zinc-900 text-zinc-300 border-zinc-800 hover:bg-zinc-800'}">
+                                                            ${spd}x
+                                                        </button>
+                                                    `).join('')}
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <label class="block text-xs font-semibold text-zinc-400 mb-1.5">Frame Crop</label>
+                                                <div class="grid grid-cols-2 gap-1.5">
+                                                    <button onclick="window.reelEditorState.objectFit='cover'; render();" class="py-2 rounded-xl text-xs font-bold border transition ${st.objectFit === 'cover' ? 'bg-white text-black border-white' : 'bg-zinc-900 text-zinc-300 border-zinc-800'}">9:16 Fill</button>
+                                                    <button onclick="window.reelEditorState.objectFit='contain'; render();" class="py-2 rounded-xl text-xs font-bold border transition ${st.objectFit === 'contain' ? 'bg-white text-black border-white' : 'bg-zinc-900 text-zinc-300 border-zinc-800'}">Fit Full</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ` : ''}
+
+                                ${st.activeTool === 'text' ? `
+                                    <div class="space-y-4">
+                                        <div>
+                                            <label class="block text-xs font-semibold text-zinc-400 mb-1.5">Text Overlay Sticker</label>
+                                            <input type="text" value="${st.overlayText.replace(/"/g, '&quot;')}" oninput="window.reelEditorState.overlayText=this.value;" onchange="render();" placeholder="Type text to appear on your Reel..." class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-rose-500" />
+                                            <div class="flex flex-wrap gap-1.5 mt-2">
+                                                ${['🔥 Trending', '✨ Golden Hour', 'Watch Till End 👀', 'POV: Weekend 🌊', 'New Reel! 🎬'].map(chip => `
+                                                    <button onclick="window.reelEditorState.overlayText='${chip}'; render();" class="px-2.5 py-1 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-full text-[11px] text-zinc-300">${chip}</button>
+                                                `).join('')}
+                                                <button onclick="window.reelEditorState.overlayText=''; render();" class="px-2.5 py-1 bg-rose-950/60 border border-rose-800/50 rounded-full text-[11px] text-rose-300">Clear</button>
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label class="block text-xs font-semibold text-zinc-400 mb-1.5">Sticker Style</label>
+                                            <div class="grid grid-cols-4 gap-1.5">
+                                                ${[
+                                                    { id: 'pill', label: 'Blur Pill' },
+                                                    { id: 'neon', label: 'Neon' },
+                                                    { id: 'boxed', label: 'White Box' },
+                                                    { id: 'classic', label: 'Classic' }
+                                                ].map(s => `
+                                                    <button onclick="window.reelEditorState.overlayStyle='${s.id}'; render();" class="py-2 rounded-xl text-xs font-bold border transition ${st.overlayStyle === s.id ? 'bg-rose-500 text-white border-rose-400' : 'bg-zinc-900 text-zinc-300 border-zinc-800'}">${s.label}</button>
+                                                `).join('')}
+                                            </div>
+                                        </div>
+
+                                        <div class="grid grid-cols-2 gap-3">
+                                            <div>
+                                                <label class="block text-xs font-semibold text-zinc-400 mb-1.5">Position</label>
+                                                <div class="grid grid-cols-3 gap-1.5">
+                                                    ${['top', 'center', 'bottom'].map(p => `
+                                                        <button onclick="window.reelEditorState.overlayPos='${p}'; render();" class="py-1.5 rounded-xl text-xs font-bold capitalize border ${st.overlayPos === p ? 'bg-white text-black border-white' : 'bg-zinc-900 text-zinc-300 border-zinc-800'}">${p}</button>
+                                                    `).join('')}
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <label class="block text-xs font-semibold text-zinc-400 mb-1.5">Text Color</label>
+                                                <div class="flex items-center gap-2 pt-1">
+                                                    ${['#ffffff', '#fbbf24', '#fb7185', '#c084fc', '#38bdf8'].map(c => `
+                                                        <button onclick="window.reelEditorState.overlayColor='${c}'; render();" class="w-7 h-7 rounded-full border-2 ${st.overlayColor === c ? 'border-white scale-110' : 'border-zinc-700'}" style="background:${c};"></button>
+                                                    `).join('')}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <button onclick="render();" class="w-full py-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 rounded-xl text-xs font-bold text-white">Apply Text Preview</button>
+                                    </div>
+                                ` : ''}
+
+                                ${st.activeTool === 'filter' ? `
+                                    <div class="space-y-4">
+                                        <div>
+                                            <label class="block text-xs font-semibold text-zinc-400 mb-2">Instagram Video Filters</label>
+                                            <div class="grid grid-cols-4 gap-2">
+                                                ${REEL_FILTER_PRESETS.map(fp => `
+                                                    <button onclick="setEditorFilter('${fp.name}')" class="p-2 rounded-xl border text-center transition ${st.filterName === fp.name ? 'border-purple-400 bg-purple-950/40' : 'border-zinc-800 bg-zinc-900 hover:border-zinc-700'}">
+                                                        <div class="h-10 rounded-lg overflow-hidden mb-1.5 bg-black">
+                                                            <img src="${st.poster}" style="filter: ${fp.filter};" class="w-full h-full object-cover" />
+                                                        </div>
+                                                        <span class="text-[11px] font-bold block truncate ${st.filterName === fp.name ? 'text-purple-300' : 'text-zinc-300'}">${fp.name}</span>
+                                                    </button>
+                                                `).join('')}
+                                            </div>
+                                        </div>
+
+                                        <div class="grid grid-cols-2 gap-3 bg-zinc-900/50 border border-zinc-800 rounded-xl p-3">
+                                            <div>
+                                                <label class="flex justify-between text-[11px] text-zinc-400 mb-1"><span>Brightness</span><span>${st.brightness}%</span></label>
+                                                <input type="range" min="60" max="140" value="${st.brightness}" oninput="window.reelEditorState.brightness=parseInt(this.value,10); updateEditorLivePreview();" onchange="render();" class="w-full accent-purple-500" />
+                                            </div>
+                                            <div>
+                                                <label class="flex justify-between text-[11px] text-zinc-400 mb-1"><span>Contrast</span><span>${st.contrast}%</span></label>
+                                                <input type="range" min="60" max="150" value="${st.contrast}" oninput="window.reelEditorState.contrast=parseInt(this.value,10); updateEditorLivePreview();" onchange="render();" class="w-full accent-rose-500" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                ` : ''}
+
+                                ${st.activeTool === 'audio' ? `
+                                    <div class="space-y-3">
+                                        <label class="block text-xs font-semibold text-zinc-400">Select Trending Audio Track</label>
+                                        <div class="space-y-2 max-h-56 overflow-y-auto hide-scrollbar">
+                                            ${REEL_AUDIO_PRESETS.map(track => `
+                                                <div onclick="window.reelEditorState.audio='${track}'; render();" class="flex items-center justify-between p-3 rounded-xl border cursor-pointer transition ${st.audio === track ? 'bg-blue-950/40 border-blue-500 text-white' : 'bg-zinc-900 border-zinc-800 text-zinc-300 hover:bg-zinc-800'}">
+                                                    <div class="flex items-center gap-2.5">
+                                                        <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-blue-500 to-purple-600 flex items-center justify-center text-white">
+                                                            <i data-lucide="music" class="w-4 h-4"></i>
+                                                        </div>
+                                                        <span class="text-xs font-semibold">${track}</span>
+                                                    </div>
+                                                    ${st.audio === track ? `<span class="text-[10px] font-bold text-blue-300">Selected ✓</span>` : ''}
+                                                </div>
+                                            `).join('')}
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs text-zinc-400 mb-1">Or custom audio title:</label>
+                                            <input type="text" value="${st.audio.replace(/"/g, '&quot;')}" oninput="window.reelEditorState.audio=this.value;" onchange="render();" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-2.5 text-xs text-white focus:outline-none" />
+                                        </div>
+                                    </div>
+                                ` : ''}
+
+                                ${st.activeTool === 'publish' ? `
+                                    <div class="space-y-3">
+                                        <div>
+                                            <label class="block text-xs font-semibold text-zinc-400 mb-1.5">Reel Caption & Hashtags</label>
+                                            <textarea rows="3" oninput="window.reelEditorState.caption=this.value;" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-rose-500 resize-none">${st.caption}</textarea>
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-semibold text-zinc-400 mb-1.5">Cover Thumbnail URL</label>
+                                            <input type="text" value="${st.poster.replace(/"/g, '&quot;')}" oninput="window.reelEditorState.poster=this.value;" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-2.5 text-xs text-white focus:outline-none" />
+                                        </div>
+                                        <button onclick="saveOrPublishEditedReel()" class="w-full py-3 bg-gradient-to-r from-amber-500 via-rose-500 to-purple-600 hover:opacity-95 text-white font-bold text-xs rounded-xl shadow-lg flex items-center justify-center gap-2">
+                                            <i data-lucide="send" class="w-4 h-4"></i>
+                                            <span>${st.editingReelId ? 'Save Edits & Watch Reel' : 'Publish Edited Reel to Watch Area'}</span>
+                                        </button>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                setTimeout(() => attachReelEditorPlayback(), 40);
+            }
+            else if (currentTab === 'reelsbot') {
+                const aiReelsList = reels.filter(r => r.isAiBot);
+                container.innerHTML = `
+                    <div class="space-y-5">
+                        <!-- Header -->
+                        <div class="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-800 pb-3">
+                            <div>
+                                <h2 class="text-2xl font-bold flex items-center gap-2">
+                                    <span class="p-1.5 rounded-xl bg-gradient-to-r from-purple-600 to-rose-500 text-white">
+                                        <i data-lucide="bot" class="w-5 h-5"></i>
+                                    </span>
+                                    <span>AI Reels Bot</span>
+                                </h2>
+                                <p class="text-xs text-zinc-400 mt-0.5">Automated AI publisher that strictly uploads Video Reels only (never home feed photos).</p>
+                            </div>
+                            <span class="text-[10px] bg-purple-500/20 text-purple-300 font-bold px-2.5 py-1 rounded-full border border-purple-500/40">
+                                Reels Only • Zero Photo Spam
+                            </span>
+                        </div>
+
+                        <!-- Master Control Card -->
+                        <div class="bg-zinc-950 border border-zinc-800 rounded-2xl p-5 space-y-4 shadow-xl">
+                            <div class="flex items-center justify-between gap-3">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-12 h-12 rounded-2xl ${window.aiReelsBotActive ? 'bg-green-950 border-green-700 text-green-400' : 'bg-zinc-900 border-zinc-700 text-zinc-400'} border flex items-center justify-center">
+                                        <i data-lucide="clapperboard" class="w-6 h-6"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-bold text-sm flex items-center gap-2">
+                                            <span>Auto-Upload AI Reels</span>
+                                            <span class="text-[10px] px-2 py-0.5 rounded-full font-bold ${window.aiReelsBotActive ? 'bg-green-500/20 text-green-400' : 'bg-zinc-800 text-zinc-400'}">
+                                                ${window.aiReelsBotActive ? 'ACTIVE' : 'PAUSED'}
+                                            </span>
+                                        </h3>
+                                        <p class="text-xs text-zinc-400">Publishes curated vertical video reels every ${window.aiBotIntervalSec}s directly to Watch Reels.</p>
+                                    </div>
+                                </div>
+                                <button onclick="toggleAiReelsBot()" class="px-4 py-2 rounded-xl font-bold text-xs transition shadow ${window.aiReelsBotActive ? 'bg-rose-600 hover:bg-rose-500 text-white' : 'bg-green-600 hover:bg-green-500 text-white'}">
+                                    ${window.aiReelsBotActive ? 'Pause Bot' : 'Enable Bot'}
+                                </button>
+                            </div>
+
+                            <!-- Niche & Interval Selectors -->
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-zinc-900">
+                                <div>
+                                    <label class="block text-xs text-zinc-400 mb-1.5 font-semibold">Reels Content Niche</label>
+                                    <select id="aiBotNicheSelect" onchange="updateAiBotSettings()" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-purple-500">
+                                        <option value="All Trending Reels" ${window.aiBotReelNiche === 'All Trending Reels' ? 'selected' : ''}>All Trending Reels</option>
+                                        <option value="Nature & Adventure" ${window.aiBotReelNiche === 'Nature & Adventure' ? 'selected' : ''}>Nature & Adventure</option>
+                                        <option value="Deep Ocean & Wildlife" ${window.aiBotReelNiche === 'Deep Ocean & Wildlife' ? 'selected' : ''}>Deep Ocean & Wildlife</option>
+                                        <option value="Botanical Slow-Motion" ${window.aiBotReelNiche === 'Botanical Slow-Motion' ? 'selected' : ''}>Botanical Slow-Motion</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-zinc-400 mb-1.5 font-semibold">Upload Frequency</label>
+                                    <select id="aiBotIntervalSelect" onchange="updateAiBotSettings()" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-purple-500">
+                                        <option value="15" ${window.aiBotIntervalSec === 15 ? 'selected' : ''}>Every 15 seconds</option>
+                                        <option value="25" ${window.aiBotIntervalSec === 25 ? 'selected' : ''}>Every 25 seconds</option>
+                                        <option value="45" ${window.aiBotIntervalSec === 45 ? 'selected' : ''}>Every 45 seconds</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Primary CTAs -->
+                            <div class="flex flex-col sm:flex-row gap-2.5 pt-1">
+                                <button onclick="generateAndUploadAiReel(true)" class="flex-1 py-3 bg-gradient-to-r from-purple-600 via-rose-500 to-amber-500 hover:opacity-95 text-white font-bold text-xs rounded-xl shadow-lg flex items-center justify-center gap-2 transition">
+                                    <i data-lucide="sparkles" class="w-4 h-4"></i>
+                                    <span>Upload 1 AI Reel Now</span>
+                                </button>
+                                <button onclick="setReelsFilter('all'); switchTab('reels');" class="sm:w-48 py-3 bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-2 transition">
+                                    <i data-lucide="play-circle" class="w-4 h-4 text-rose-400"></i>
+                                    <span>Watch Reels Area →</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- AI Bot Stats -->
+                        <div class="grid grid-cols-3 gap-3 text-center">
+                            <div class="bg-zinc-950 border border-zinc-800 rounded-2xl p-3.5">
+                                <p class="text-xl font-bold text-purple-400">${aiReelsList.length}</p>
+                                <p class="text-[11px] text-zinc-400 mt-0.5">AI Reels Live</p>
+                            </div>
+                            <div class="bg-zinc-950 border border-zinc-800 rounded-2xl p-3.5">
+                                <p class="text-xl font-bold text-rose-400">${reels.length}</p>
+                                <p class="text-[11px] text-zinc-400 mt-0.5">Total Watch Reels</p>
+                            </div>
+                            <div class="bg-zinc-950 border border-zinc-800 rounded-2xl p-3.5">
+                                <p class="text-xl font-bold text-green-400">0</p>
+                                <p class="text-[11px] text-zinc-400 mt-0.5">Feed Photo Posts</p>
+                            </div>
+                        </div>
+
+                        <!-- AI Uploaded Reels Gallery (Tap any to watch) -->
+                        <div class="space-y-2.5">
+                            <div class="flex items-center justify-between">
+                                <h3 class="text-sm font-bold flex items-center gap-2">
+                                    <i data-lucide="film" class="w-4 h-4 text-rose-400"></i>
+                                    <span>AI-Uploaded Reels (Tap to Watch)</span>
+                                </h3>
+                                <button onclick="setReelsFilter('aibot'); switchTab('reels');" class="text-xs text-purple-400 hover:underline font-semibold">Watch All AI Reels →</button>
+                            </div>
+                            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                ${aiReelsList.map(r => `
+                                    <div onclick="openReelInWatchArea('${r.id}')" class="relative aspect-[9/14] rounded-2xl overflow-hidden bg-zinc-900 border border-zinc-800 cursor-pointer group shadow">
+                                        <img src="${r.poster}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
+                                        <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent flex flex-col justify-between p-2.5">
+                                            <span class="self-start text-[9px] font-bold px-2 py-0.5 rounded-full bg-purple-600/90 text-white flex items-center gap-1">
+                                                <i data-lucide="bot" class="w-2.5 h-2.5"></i> AI Reel
+                                            </span>
+                                            <div class="space-y-1">
+                                                <p class="text-[11px] font-semibold text-white line-clamp-2">${r.caption}</p>
+                                                <div class="flex items-center justify-between text-[10px] text-zinc-300">
+                                                    <span class="flex items-center gap-1"><i data-lucide="play" class="w-3 h-3 fill-white"></i> Watch</span>
+                                                    <span class="flex items-center gap-1"><i data-lucide="heart" class="w-3 h-3 text-rose-400"></i> ${r.likes}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+
+                        <!-- Live Activity Log -->
+                        <div class="bg-zinc-950 border border-zinc-800 rounded-2xl p-4 space-y-2">
+                            <h3 class="text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-1.5">
+                                <i data-lucide="terminal" class="w-3.5 h-3.5 text-green-400"></i>
+                                <span>AI Reels Bot Activity Log</span>
+                            </h3>
+                            <div class="space-y-1.5 max-h-40 overflow-y-auto hide-scrollbar text-xs font-mono">
+                                ${window.aiBotLogs.map(log => `
+                                    <div class="flex items-start gap-2 text-zinc-300 border-b border-zinc-900 pb-1">
+                                        <span class="text-zinc-500 flex-shrink-0">[${log.time}]</span>
+                                        <span>${log.text}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
                     </div>
                 `;
             }
@@ -1973,10 +3218,18 @@
                             </div>
 
                             <!-- Submit Button -->
-                            <button type="button" id="publishSubmitBtn" onclick="handleCreatorPublish()" class="w-full py-3 bg-gradient-to-r from-amber-500 via-rose-500 to-purple-600 hover:opacity-95 text-white font-bold text-xs rounded-xl shadow-lg transition flex items-center justify-center gap-2">
-                                <i data-lucide="send" class="w-4 h-4"></i>
-                                <span>${isStory ? 'Publish to Story' : (isReel ? 'Share Reel' : 'Publish Post')}</span>
-                            </button>
+                            <div class="flex flex-col sm:flex-row gap-2.5">
+                                ${isReel ? `
+                                    <button type="button" onclick="openReelEditorFromCreator()" class="sm:w-52 py-3 bg-zinc-900 hover:bg-zinc-800 border border-amber-500/40 text-amber-300 font-bold text-xs rounded-xl transition flex items-center justify-center gap-2">
+                                        <i data-lucide="scissors" class="w-4 h-4"></i>
+                                        <span>Edit in Reels Studio</span>
+                                    </button>
+                                ` : ''}
+                                <button type="button" id="publishSubmitBtn" onclick="handleCreatorPublish()" class="flex-1 py-3 bg-gradient-to-r from-amber-500 via-rose-500 to-purple-600 hover:opacity-95 text-white font-bold text-xs rounded-xl shadow-lg transition flex items-center justify-center gap-2">
+                                    <i data-lucide="send" class="w-4 h-4"></i>
+                                    <span>${isStory ? 'Publish to Story' : (isReel ? 'Share Reel' : 'Publish Post')}</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 `;
