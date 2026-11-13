@@ -179,7 +179,7 @@
                         </div>
                         <div>
                             <p class="text-xs font-bold">Android App Ready</p>
-                            <p class="text-[10px] text-zinc-400">Direct APK Download (26 MB)</p>
+                            <p class="text-[10px] text-zinc-400">Direct APK Download (v1.1 • 26 MB)</p>
                         </div>
                     </div>
                     <button onclick="triggerDirectApkDownload()" class="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg text-xs font-bold transition flex items-center gap-1 shadow">
@@ -390,6 +390,40 @@
 
             <div id="friendsSelectionList" class="space-y-2 max-h-60 overflow-y-auto hide-scrollbar">
                 <!-- Dynamic friend items injected here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- APK Install Helper & Troubleshooter Modal -->
+    <div id="apkInstallModal" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-zinc-950 border border-zinc-800 rounded-2xl max-w-md w-full overflow-hidden shadow-2xl relative p-5 space-y-4">
+            <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
+                <div class="flex items-center gap-2">
+                    <div class="p-1.5 rounded-lg bg-gradient-to-tr from-amber-500 to-rose-500 text-white">
+                        <i data-lucide="smartphone" class="w-4 h-4"></i>
+                    </div>
+                    <h3 class="font-bold text-sm text-white">InstaClone Android APK (v1.1)</h3>
+                </div>
+                <button onclick="closeApkInstallModal()" class="text-zinc-400 hover:text-white p-1 rounded-lg hover:bg-zinc-900"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <div id="apkModalStatusBox" class="p-3 rounded-xl bg-green-950/50 border border-green-700/50 text-xs text-green-300">
+                Download started! Tap the downloaded <strong>InstaClone-v1.1.apk</strong> in your browser notifications to install.
+            </div>
+            <div class="space-y-2 text-xs text-zinc-300 bg-zinc-900/70 border border-zinc-800 rounded-xl p-3.5">
+                <p class="font-bold text-amber-300">Seeing "App not installed" on Android?</p>
+                <ul class="list-disc pl-4 space-y-1.5 text-[11px] text-zinc-300">
+                    <li><strong>Uninstall older InstaClone first:</strong> If an earlier test APK is already on your phone with a different signature, uninstall it first and then install this v1.1 APK.</li>
+                    <li><strong>Allow Unknown Apps:</strong> Open <em>Settings → Apps → Special app access → Install unknown apps</em> and enable it for Chrome / your browser.</li>
+                    <li><strong>Play Protect prompt:</strong> Tap <em>More details → Install anyway</em> if Play Protect prompts for debug builds.</li>
+                </ul>
+            </div>
+            <div class="flex items-center gap-2">
+                <a id="apkDirectDownloadLink" href="./instaclone.apk" download="InstaClone-v1.1.apk" class="flex-1 py-2.5 bg-gradient-to-r from-amber-500 via-rose-500 to-purple-600 text-white text-xs font-bold rounded-xl text-center shadow">
+                    Download APK Again
+                </a>
+                <button onclick="closeApkInstallModal()" class="px-4 py-2.5 bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-zinc-200 text-xs font-bold rounded-xl">
+                    Done
+                </button>
             </div>
         </div>
     </div>
@@ -1797,17 +1831,70 @@
         // ==========================================
         // DIRECT APK DOWNLOAD HANDLER
         // ==========================================
-        function triggerDirectApkDownload() {
+        function closeApkInstallModal() {
+            const modal = document.getElementById('apkInstallModal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        async function resolveValidApkUrl() {
+            const candidates = ['./instaclone.apk', './app-debug.apk'];
+            for (const url of candidates) {
+                try {
+                    const res = await fetch(url, { method: 'HEAD', cache: 'no-store' });
+                    if (!res.ok) continue;
+                    const ct = (res.headers.get('content-type') || '').toLowerCase();
+                    const len = parseInt(res.headers.get('content-length') || '0', 10);
+                    if (!ct.includes('text/html') && (isNaN(len) || len === 0 || len > 1000000)) {
+                        return url;
+                    }
+                } catch (e) {
+                    // Ignore network/HEAD restriction and try next candidate
+                }
+            }
+            return null;
+        }
+
+        async function triggerDirectApkDownload() {
+            const modal = document.getElementById('apkInstallModal');
+            const statusBox = document.getElementById('apkModalStatusBox');
+            const directLink = document.getElementById('apkDirectDownloadLink');
+
+            const validUrl = await resolveValidApkUrl();
+            const targetUrl = validUrl || './instaclone.apk';
+
+            if (directLink) {
+                directLink.href = targetUrl;
+                directLink.download = 'InstaClone-v1.1.apk';
+            }
+
+            if (!validUrl && window.location.protocol !== 'file:') {
+                if (statusBox) {
+                    statusBox.className = 'p-3 rounded-xl bg-amber-950/60 border border-amber-700/50 text-xs text-amber-200';
+                    statusBox.innerHTML = 'This web server did not return a binary APK file (it may be serving HTML or blocking <code>.apk</code> files). Download <strong>app-debug.apk</strong> from your project build outputs or GitHub Releases instead.';
+                }
+                if (modal) {
+                    modal.classList.remove('hidden');
+                    lucide.createIcons();
+                }
+                return;
+            }
+
             const a = document.createElement('a');
-            a.href = './instaclone.apk';
-            a.download = 'InstaClone-v1.0.apk';
+            a.href = targetUrl;
+            a.download = 'InstaClone-v1.1.apk';
+            a.rel = 'noopener';
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
 
-            setTimeout(() => {
-                alert("Downloading InstaClone Android APK (26 MB).\n\nIf prompt appears on your phone, click 'Download anyway' and proceed to install.");
-            }, 500);
+            if (statusBox) {
+                statusBox.className = 'p-3 rounded-xl bg-green-950/50 border border-green-700/50 text-xs text-green-300';
+                statusBox.innerHTML = 'Download started (<strong>InstaClone-v1.1.apk</strong>, v1/v2/v3 signed). Tap the file once downloaded to install.';
+            }
+            if (modal) {
+                modal.classList.remove('hidden');
+                lucide.createIcons();
+            }
         }
 
         // ==========================================
