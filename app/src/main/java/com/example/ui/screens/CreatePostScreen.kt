@@ -27,6 +27,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.ContentCut
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material.icons.filled.Public
@@ -60,6 +61,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun CreatePostScreen(
     isPublishing: Boolean,
+    onOpenReelsStudio: () -> Unit = {},
     onPublishPost: (imageData: String, caption: String, location: String, visibility: String) -> Unit
 ) {
     val context = LocalContext.current
@@ -106,11 +108,30 @@ fun CreatePostScreen(
                 .padding(horizontal = 16.dp, vertical = 14.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Text(
-                text = stringResource(R.string.create_new_post),
-                style = MaterialTheme.typography.headlineMedium,
-                color = MaterialTheme.colorScheme.onBackground
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = stringResource(R.string.create_new_post),
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+                OutlinedButton(
+                    onClick = onOpenReelsStudio,
+                    shape = RoundedCornerShape(14.dp),
+                    modifier = Modifier.testTag("switch_to_reels_studio_button")
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.ContentCut,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text("Reels Studio")
+                }
+            }
 
             // Live 1:1 Square Preview
             Box(

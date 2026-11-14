@@ -16,6 +16,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.example.data.bot.AiBotReelsStore
 import com.example.data.repository.InstaCloneRepository
 import com.example.ui.auth.AuthScreen
 import com.example.ui.auth.authStateFlow
@@ -106,7 +107,8 @@ private fun AuthenticatedAppSession(
                     currentUserId = user.uid,
                     initialDisplayName = user.displayName,
                     initialEmailPrefix = user.email?.substringBefore('@'),
-                    initialPhotoUrl = user.photoUrl?.toString()
+                    initialPhotoUrl = user.photoUrl?.toString(),
+                    botReelsStore = AiBotReelsStore(app.applicationContext)
                 )
             }
         }

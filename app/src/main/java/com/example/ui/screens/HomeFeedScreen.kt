@@ -23,6 +23,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Send
 import androidx.compose.material.icons.filled.AddPhotoAlternate
+import androidx.compose.material.icons.filled.Movie
+import androidx.compose.material.icons.filled.SmartToy
 import androidx.compose.material.icons.outlined.DarkMode
 import androidx.compose.material.icons.outlined.LightMode
 import androidx.compose.material3.Badge
@@ -62,8 +64,11 @@ fun HomeFeedScreen(
     likedPostIds: Set<String>,
     bookmarkedPostIds: Set<String>,
     conversationsCount: Int,
+    aiBotReelsCount: Int,
     isDarkTheme: Boolean,
     onToggleTheme: () -> Unit,
+    onOpenAiBotsHub: () -> Unit,
+    onOpenReelsWatch: () -> Unit,
     onOpenMessagesInbox: () -> Unit,
     onOpenCreatePost: () -> Unit,
     onToggleLike: (Post) -> Unit,
@@ -93,6 +98,36 @@ fun HomeFeedScreen(
                 color = MaterialTheme.colorScheme.onBackground,
                 modifier = Modifier.weight(1f)
             )
+
+            IconButton(
+                onClick = onOpenAiBotsHub,
+                modifier = Modifier.testTag("home_ai_bots_button")
+            ) {
+                BadgedBox(
+                    badge = {
+                        if (aiBotReelsCount > 0) {
+                            Badge { Text(aiBotReelsCount.coerceAtMost(999).toString()) }
+                        }
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.SmartToy,
+                        contentDescription = stringResource(R.string.cd_ai_bots_hub),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+
+            IconButton(
+                onClick = onOpenReelsWatch,
+                modifier = Modifier.testTag("home_watch_reels_button")
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Movie,
+                    contentDescription = stringResource(R.string.cd_watch_reels),
+                    tint = MaterialTheme.colorScheme.onBackground
+                )
+            }
 
             IconButton(
                 onClick = onToggleTheme,

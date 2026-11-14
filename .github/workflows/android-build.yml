@@ -112,7 +112,7 @@ jobs:
         run: |
           ls -lh app/build/outputs/apk/debug/app-debug.apk
           cp app/build/outputs/apk/debug/app-debug.apk ./instaclone.apk
-          cp app/build/outputs/apk/debug/app-debug.apk ./InstaClone-v1.1.apk
+          cp app/build/outputs/apk/debug/app-debug.apk ./InstaClone-v1.2.apk
 
       - name: Upload APK to GitHub Artifacts
         uses: actions/upload-artifact@v4
@@ -126,8 +126,8 @@ jobs:
         uses: softprops/action-gh-release@v2
         continue-on-error: true
         with:
-          tag_name: v1.1.${{ github.run_number }}
-          name: InstaClone v1.1 (Build ${{ github.run_number }})
+          tag_name: v1.2.${{ github.run_number }}
+          name: InstaClone v1.2 (Build ${{ github.run_number }})
           body: |
             ## 📱 InstaClone Android APK Release
             Download and install the native Android APK on your phone:

@@ -61,4 +61,14 @@
     <string name="edit_username">Username</string>
     <string name="edit_bio">Bio</string>
     <string name="change_avatar">Change Profile Photo</string>
+    <string name="nav_reels">Reels</string>
+    <string name="cd_ai_bots_hub">Open 100 AI Bots manager</string>
+    <string name="cd_watch_reels">Watch vertical reels</string>
+    <string name="reels_filter_all">All</string>
+    <string name="reels_filter_bots">AI Bots (100)</string>
+    <string name="reels_filter_following">Following</string>
+    <string name="ai_bots_title">100 AI Bots (24h Cycle)</string>
+    <string name="simulate_next_day_24h">Simulate Next Day (24h)</string>
+    <string name="reels_studio_title">Reels Edit Studio</string>
+    <string name="publish_reel">Publish Reel</string>
 </resources>

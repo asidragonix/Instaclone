@@ -14,11 +14,15 @@ import androidx.compose.material.icons.automirrored.outlined.Send
 import androidx.compose.material.icons.filled.AddBox
 import androidx.compose.material.icons.filled.Explore
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Movie
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.outlined.AddBox
 import androidx.compose.material.icons.outlined.Explore
 import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.Movie
 import androidx.compose.material.icons.outlined.Person
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.sp
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -44,6 +48,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.R
+import com.example.data.bot.BotReel
 import com.example.data.model.Post
 import com.example.data.model.UiState
 import com.example.data.model.UserProfile
@@ -58,6 +63,7 @@ enum class InstaTab(
 ) {
     HOME(R.string.nav_home, Icons.Filled.Home, Icons.Outlined.Home, "nav_home_tab"),
     EXPLORE(R.string.nav_explore, Icons.Filled.Explore, Icons.Outlined.Explore, "nav_explore_tab"),
+    REELS(R.string.nav_reels, Icons.Filled.Movie, Icons.Outlined.Movie, "nav_reels_tab"),
     CREATE(R.string.nav_create, Icons.Filled.AddBox, Icons.Outlined.AddBox, "nav_create_tab"),
     MESSAGES(R.string.nav_messages, Icons.AutoMirrored.Filled.Send, Icons.AutoMirrored.Outlined.Send, "nav_messages_tab"),
     PROFILE(R.string.nav_profile, Icons.Filled.Person, Icons.Outlined.Person, "nav_profile_tab")
@@ -85,9 +91,14 @@ fun AdaptiveMainScaffold(
     val followingIds by viewModel.followingIds.collectAsStateWithLifecycle()
     val conversationsState by viewModel.conversationsState.collectAsStateWithLifecycle()
     val isPublishing by viewModel.isPublishing.collectAsStateWithLifecycle()
+    val aiBotUiState by viewModel.aiBotUiState.collectAsStateWithLifecycle()
 
     var currentTab by rememberSaveable { mutableStateOf(InstaTab.HOME) }
     var inspectedUserId by rememberSaveable { mutableStateOf<String?>(null) }
+    var showAiBotsHub by rememberSaveable { mutableStateOf(false) }
+    var showReelsEditor by rememberSaveable { mutableStateOf(false) }
+    var reelsEditorSeedReel by remember { mutableStateOf<BotReel?>(null) }
+    var focusedReelId by rememberSaveable { mutableStateOf<String?>(null) }
     var activeChatPeer by remember { mutableStateOf<UserProfile?>(null) }
     var commentSheetPost by remember { mutableStateOf<Post?>(null) }
 
@@ -95,6 +106,8 @@ fun AdaptiveMainScaffold(
     val allPublicPosts = (feedPostsState as? UiState.Success)?.data.orEmpty()
 
     val openUserProfile: (String) -> Unit = { targetUid ->
+        showAiBotsHub = false
+        showReelsEditor = false
         if (targetUid == viewModel.currentUserId) {
             inspectedUserId = null
             currentTab = InstaTab.PROFILE
@@ -104,6 +117,8 @@ fun AdaptiveMainScaffold(
     }
 
     val openDirectChat: (UserProfile) -> Unit = { peer ->
+        showAiBotsHub = false
+        showReelsEditor = false
         inspectedUserId = null
         activeChatPeer = peer
         currentTab = InstaTab.MESSAGES
@@ -136,10 +151,12 @@ fun AdaptiveMainScaffold(
                         containerColor = MaterialTheme.colorScheme.surface
                     ) {
                         InstaTab.entries.forEach { tab ->
-                            val selected = currentTab == tab && inspectedUserId == null
+                            val selected = currentTab == tab && inspectedUserId == null && !showAiBotsHub && !showReelsEditor
                             NavigationBarItem(
                                 selected = selected,
                                 onClick = {
+                                    showAiBotsHub = false
+                                    showReelsEditor = false
                                     inspectedUserId = null
                                     currentTab = tab
                                 },
@@ -149,7 +166,15 @@ fun AdaptiveMainScaffold(
                                         contentDescription = stringResource(tab.labelRes)
                                     )
                                 },
-                                label = { Text(stringResource(tab.labelRes)) },
+                                label = {
+                                    Text(
+                                        text = stringResource(tab.labelRes),
+                                        fontSize = 10.sp,
+                                        maxLines = 1,
+                                        softWrap = false,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                },
                                 modifier = Modifier.testTag(tab.tag)
                             )
                         }
@@ -168,10 +193,12 @@ fun AdaptiveMainScaffold(
                         modifier = Modifier.fillMaxHeight()
                     ) {
                         InstaTab.entries.forEach { tab ->
-                            val selected = currentTab == tab && inspectedUserId == null
+                            val selected = currentTab == tab && inspectedUserId == null && !showAiBotsHub && !showReelsEditor
                             NavigationRailItem(
                                 selected = selected,
                                 onClick = {
+                                    showAiBotsHub = false
+                                    showReelsEditor = false
                                     inspectedUserId = null
                                     currentTab = tab
                                 },
@@ -181,7 +208,13 @@ fun AdaptiveMainScaffold(
                                         contentDescription = stringResource(tab.labelRes)
                                     )
                                 },
-                                label = { Text(stringResource(tab.labelRes)) },
+                                label = {
+                                    Text(
+                                        text = stringResource(tab.labelRes),
+                                        maxLines = 1,
+                                        softWrap = false
+                                    )
+                                },
                                 modifier = Modifier.testTag(tab.tag)
                             )
                         }
@@ -195,7 +228,47 @@ fun AdaptiveMainScaffold(
                         .fillMaxHeight()
                 ) {
                     val overrideUid = inspectedUserId
-                    if (overrideUid != null) {
+                    if (showReelsEditor) {
+                        ReelsEditScreen(
+                            initialReel = reelsEditorSeedReel,
+                            onBack = {
+                                showReelsEditor = false
+                                reelsEditorSeedReel = null
+                            },
+                            onPublishReel = { videoUrl, posterUrl, caption, audioTrack, filterPreset, speed, trimStart, trimEnd, overlayText ->
+                                viewModel.publishEditedReel(
+                                    videoUrl = videoUrl,
+                                    posterUrl = posterUrl,
+                                    caption = caption,
+                                    audioTrack = audioTrack,
+                                    filterPreset = filterPreset,
+                                    playbackSpeed = speed,
+                                    trimStartPct = trimStart,
+                                    trimEndPct = trimEnd,
+                                    overlayText = overlayText
+                                ) { created ->
+                                    showReelsEditor = false
+                                    reelsEditorSeedReel = null
+                                    focusedReelId = created.id
+                                    currentTab = InstaTab.REELS
+                                }
+                            }
+                        )
+                    } else if (showAiBotsHub) {
+                        AiBotsHubScreen(
+                            uiState = aiBotUiState,
+                            onBack = { showAiBotsHub = false },
+                            onSimulateNextDay24h = { viewModel.simulateNextDay24h() },
+                            onRunAutoCheckNow = { viewModel.runAutoReplaceCheckNow() },
+                            onToggleWatchdog = { viewModel.toggleAutoWatchdog() },
+                            onReplaceSingleBotReel = { botId -> viewModel.replaceSingleBotReel(botId) },
+                            onWatchReel = { reelId ->
+                                showAiBotsHub = false
+                                focusedReelId = reelId
+                                currentTab = InstaTab.REELS
+                            }
+                        )
+                    } else if (overrideUid != null) {
                         val profileFlow = remember(overrideUid) { viewModel.observeUserProfile(overrideUid) }
                         val postsFlow = remember(overrideUid) { viewModel.observeAuthorPosts(overrideUid) }
                         ProfileScreen(
@@ -229,8 +302,11 @@ fun AdaptiveMainScaffold(
                                     likedPostIds = likedPostIds,
                                     bookmarkedPostIds = bookmarkedPostIds,
                                     conversationsCount = conversationsCount,
+                                    aiBotReelsCount = aiBotUiState.botReelsCount,
                                     isDarkTheme = isDarkTheme,
                                     onToggleTheme = onToggleTheme,
+                                    onOpenAiBotsHub = { showAiBotsHub = true },
+                                    onOpenReelsWatch = { currentTab = InstaTab.REELS },
                                     onOpenMessagesInbox = { currentTab = InstaTab.MESSAGES },
                                     onOpenCreatePost = { currentTab = InstaTab.CREATE },
                                     onToggleLike = { post -> viewModel.toggleLike(post.id, post.id in likedPostIds) },
@@ -280,9 +356,29 @@ fun AdaptiveMainScaffold(
                                 )
                             }
 
+                            InstaTab.REELS -> {
+                                ReelsScreen(
+                                    uiState = aiBotUiState,
+                                    initialFocusedReelId = focusedReelId,
+                                    onClearFocusedReel = { focusedReelId = null },
+                                    onToggleLike = { reelId -> viewModel.toggleReelLike(reelId) },
+                                    onAddComment = { reelId, text -> viewModel.addReelComment(reelId, text) },
+                                    onToggleFollow = { botId, uname -> viewModel.toggleFollowBot(botId, uname) },
+                                    onOpenAiBotsHub = { showAiBotsHub = true },
+                                    onOpenReelsEditor = { seedReel ->
+                                        reelsEditorSeedReel = seedReel
+                                        showReelsEditor = true
+                                    }
+                                )
+                            }
+
                             InstaTab.CREATE -> {
                                 CreatePostScreen(
                                     isPublishing = isPublishing,
+                                    onOpenReelsStudio = {
+                                        reelsEditorSeedReel = null
+                                        showReelsEditor = true
+                                    },
                                     onPublishPost = { imageData, caption, location, visibility ->
                                         viewModel.createPost(
                                             imageData = imageData,
