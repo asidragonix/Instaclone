@@ -27,7 +27,9 @@ jobs:
 
       - name: Accept Android SDK Licenses & Install API 36 / 36.1
         run: |
-          SDK_DIR="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
+          SDK_DIR="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}}"
+          echo "ANDROID_HOME=$SDK_DIR" >> "$GITHUB_ENV"
+          echo "ANDROID_SDK_ROOT=$SDK_DIR" >> "$GITHUB_ENV"
           mkdir -p "$SDK_DIR/licenses"
           grep -q "24333f8a63b6825ea9c5514f83c2829b004d1fee" "$SDK_DIR/licenses/android-sdk-license" 2>/dev/null || \
             printf "\n24333f8a63b6825ea9c5514f83c2829b004d1fee\n8933bad161af4178b1185d1a37fbf41ea5269c55\nd56f5187479451eabf01fb78af6dfcb131a6481e\n" >> "$SDK_DIR/licenses/android-sdk-license"
@@ -46,17 +48,28 @@ jobs:
 
           SDKMANAGER_BIN="$SDK_DIR/cmdline-tools/latest/bin/sdkmanager"
           if [ ! -x "$SDKMANAGER_BIN" ]; then
+            SDKMANAGER_BIN="$(find "$SDK_DIR/cmdline-tools" -maxdepth 3 -name sdkmanager -type f 2>/dev/null | sort -V | tail -n 1)"
+          fi
+          if [ ! -x "$SDKMANAGER_BIN" ]; then
             SDKMANAGER_BIN="$(command -v sdkmanager)"
           fi
 
           accept_and_install "$SDKMANAGER_BIN" --licenses > /dev/null 2>&1 || true
-          if ! accept_and_install "$SDKMANAGER_BIN" --install "platform-tools" "build-tools;36.0.0" "platforms;android-36" "platforms;android-36.1"; then
-            accept_and_install "$SDKMANAGER_BIN" --install "cmdline-tools;latest" > /dev/null 2>&1 || true
+          if [ ! -x "$SDK_DIR/cmdline-tools/latest/bin/sdkmanager" ]; then
+            accept_and_install "$SDKMANAGER_BIN" --sdk_root="$SDK_DIR" --install "cmdline-tools;latest" > /dev/null 2>&1 || true
             [ -x "$SDK_DIR/cmdline-tools/latest/bin/sdkmanager" ] && SDKMANAGER_BIN="$SDK_DIR/cmdline-tools/latest/bin/sdkmanager"
-            accept_and_install "$SDKMANAGER_BIN" --licenses > /dev/null 2>&1 || true
-            accept_and_install "$SDKMANAGER_BIN" --install "platform-tools" "build-tools;36.0.0" "platforms;android-36" "platforms;android-36.1" || \
-              accept_and_install "$SDKMANAGER_BIN" --install "platform-tools" "build-tools;36.0.0" "platforms;android-36"
           fi
+
+          accept_and_install "$SDKMANAGER_BIN" --sdk_root="$SDK_DIR" --licenses > /dev/null 2>&1 || true
+          if ! accept_and_install "$SDKMANAGER_BIN" --sdk_root="$SDK_DIR" --install "platform-tools" "build-tools;36.0.0" "platforms;android-36" "platforms;android-36.1"; then
+            accept_and_install "$SDKMANAGER_BIN" --sdk_root="$SDK_DIR" --install "cmdline-tools;latest" > /dev/null 2>&1 || true
+            [ -x "$SDK_DIR/cmdline-tools/latest/bin/sdkmanager" ] && SDKMANAGER_BIN="$SDK_DIR/cmdline-tools/latest/bin/sdkmanager"
+            accept_and_install "$SDKMANAGER_BIN" --sdk_root="$SDK_DIR" --licenses > /dev/null 2>&1 || true
+            accept_and_install "$SDKMANAGER_BIN" --sdk_root="$SDK_DIR" --install "platform-tools" "build-tools;36.0.0" "platforms;android-36" "platforms;android-36.1"
+          fi
+
+          test -d "$SDK_DIR/build-tools/36.0.0"
+          test -d "$SDK_DIR/platforms/android-36.1"
 
       - name: Configure Runner Swap Space
         run: |
@@ -95,4 +108,15 @@ jobs:
           chmod +x gradlew
 
       - name: Build Debug APK
-        run: ./gradlew :app:assembleDebug --no-daemon --console=plain --stacktrace --max-workers=2 -Dorg.gradle.parallel=false -Dorg.gradle.configuration-cache=false -Dorg.gradle.jvmargs="-Xmx2048m -XX:MaxMetaspaceSize=768m -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8"
+        env:
+          JAVA_OPTS: "-Xmx512m"
+        run: |
+          ./gradlew :app:assembleDebug \
+            --no-daemon \
+            --console=plain \
+            --stacktrace \
+            --max-workers=2 \
+            -Dorg.gradle.parallel=false \
+            -Dorg.gradle.configuration-cache=false \
+            -Dkotlin.compiler.execution.strategy=in-process \
+            -Dorg.gradle.jvmargs="-Xmx3584m -XX:MaxMetaspaceSize=1024m -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8"
