@@ -3,17 +3,16 @@ package com.example.ui.viewmodel
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.data.bot.AiBotReelsStore
-import com.example.data.bot.AiBotReelsUiState
-import com.example.data.bot.BotReel
 import com.example.data.model.Comment
 import com.example.data.model.Conversation
 import com.example.data.model.DirectMessage
 import com.example.data.model.Post
+import com.example.data.model.Reel
+import com.example.data.model.ReelsUiState
 import com.example.data.model.UiState
 import com.example.data.model.UserProfile
 import com.example.data.repository.InstaCloneRepository
-import kotlinx.coroutines.delay
+import com.example.data.repository.ReelsStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -25,7 +24,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 class InstaCloneViewModel(
@@ -34,7 +32,7 @@ class InstaCloneViewModel(
     initialDisplayName: String?,
     initialEmailPrefix: String?,
     initialPhotoUrl: String?,
-    private val botReelsStore: AiBotReelsStore? = null
+    private val reelsStore: ReelsStore? = null
 ) : ViewModel() {
 
     private val _snackbarEvents = MutableSharedFlow<String>(extraBufferCapacity = 4)
@@ -43,8 +41,8 @@ class InstaCloneViewModel(
     private val _isPublishing = MutableStateFlow(false)
     val isPublishing: StateFlow<Boolean> = _isPublishing.asStateFlow()
 
-    val aiBotUiState: StateFlow<AiBotReelsUiState> =
-        botReelsStore?.uiState ?: MutableStateFlow(AiBotReelsUiState()).asStateFlow()
+    val reelsUiState: StateFlow<ReelsUiState> =
+        reelsStore?.uiState ?: MutableStateFlow(ReelsUiState()).asStateFlow()
 
     val myProfileState: StateFlow<UiState<UserProfile?>> = repository
         .observeUserProfile(currentUserId)
@@ -142,16 +140,6 @@ class InstaCloneViewModel(
                 preferredAvatarUrl = initialPhotoUrl
             ).onFailure { err ->
                 _snackbarEvents.tryEmit(err.localizedMessage ?: "Could not initialize profile")
-            }
-        }
-        if (botReelsStore != null) {
-            viewModelScope.launch {
-                while (isActive) {
-                    delay(30_000L)
-                    if (aiBotUiState.value.isWatchdogActive) {
-                        botReelsStore.run24HourLifecycleCheck(forceSimulateNextDay = false)
-                    }
-                }
             }
         }
     }
@@ -311,41 +299,17 @@ class InstaCloneViewModel(
         }
     }
 
-    fun simulateNextDay24h() {
-        val store = botReelsStore ?: return
-        val replaced = store.simulateNextDay24h()
-        _snackbarEvents.tryEmit("24h cycle simulated: replaced $replaced AI bot reels (1/1 per bot).")
-    }
-
-    fun runAutoReplaceCheckNow() {
-        val store = botReelsStore ?: return
-        val replaced = store.run24HourLifecycleCheck(forceSimulateNextDay = false)
-        _snackbarEvents.tryEmit(
-            if (replaced > 0) "Auto-replaced $replaced expired AI bot reel(s)."
-            else "All 100 AI bot reels are active (< 24h old)."
-        )
-    }
-
-    fun replaceSingleBotReel(botId: String) {
-        botReelsStore?.replaceSingleBotReel(botId)
-        _snackbarEvents.tryEmit("Replaced bot's daily reel (still strictly 1/1).")
-    }
-
-    fun toggleAutoWatchdog() {
-        botReelsStore?.toggleAutoWatchdog()
-    }
-
     fun toggleReelLike(reelId: String) {
-        botReelsStore?.toggleLikeReel(reelId)
+        reelsStore?.toggleLikeReel(reelId)
     }
 
     fun addReelComment(reelId: String, text: String) {
         val myProfile = currentMyProfileOrFallback()
-        botReelsStore?.addComment(reelId, myProfile.username, text)
+        reelsStore?.addComment(reelId, myProfile.username, text)
     }
 
-    fun toggleFollowBot(targetBotId: String?, targetUsername: String) {
-        botReelsStore?.toggleFollowBot(targetBotId, targetUsername)
+    fun toggleFollowReelCreator(targetUsername: String) {
+        reelsStore?.toggleFollowCreator(targetUsername)
     }
 
     fun publishEditedReel(
@@ -358,11 +322,12 @@ class InstaCloneViewModel(
         trimStartPct: Float,
         trimEndPct: Float,
         overlayText: String,
-        onPublished: (BotReel) -> Unit
+        onPublished: (Reel) -> Unit
     ) {
-        val store = botReelsStore ?: return
+        val store = reelsStore ?: return
         val myProfile = currentMyProfileOrFallback()
         val created = store.publishEditedReel(
+            authorId = currentUserId,
             username = myProfile.username,
             displayName = myProfile.displayName,
             avatarUrl = myProfile.avatarData,
@@ -376,7 +341,7 @@ class InstaCloneViewModel(
             trimEndPct = trimEndPct,
             overlayText = overlayText
         )
-        _snackbarEvents.tryEmit("Published edited reel to Reels Watch!")
+        _snackbarEvents.tryEmit("Published edited reel to Reels!")
         onPublished(created)
     }
 

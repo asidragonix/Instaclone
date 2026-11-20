@@ -48,8 +48,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.R
-import com.example.data.bot.BotReel
 import com.example.data.model.Post
+import com.example.data.model.Reel
 import com.example.data.model.UiState
 import com.example.data.model.UserProfile
 import com.example.ui.components.CommentsBottomSheet
@@ -91,13 +91,12 @@ fun AdaptiveMainScaffold(
     val followingIds by viewModel.followingIds.collectAsStateWithLifecycle()
     val conversationsState by viewModel.conversationsState.collectAsStateWithLifecycle()
     val isPublishing by viewModel.isPublishing.collectAsStateWithLifecycle()
-    val aiBotUiState by viewModel.aiBotUiState.collectAsStateWithLifecycle()
+    val reelsUiState by viewModel.reelsUiState.collectAsStateWithLifecycle()
 
     var currentTab by rememberSaveable { mutableStateOf(InstaTab.HOME) }
     var inspectedUserId by rememberSaveable { mutableStateOf<String?>(null) }
-    var showAiBotsHub by rememberSaveable { mutableStateOf(false) }
     var showReelsEditor by rememberSaveable { mutableStateOf(false) }
-    var reelsEditorSeedReel by remember { mutableStateOf<BotReel?>(null) }
+    var reelsEditorSeedReel by remember { mutableStateOf<Reel?>(null) }
     var focusedReelId by rememberSaveable { mutableStateOf<String?>(null) }
     var activeChatPeer by remember { mutableStateOf<UserProfile?>(null) }
     var commentSheetPost by remember { mutableStateOf<Post?>(null) }
@@ -106,7 +105,6 @@ fun AdaptiveMainScaffold(
     val allPublicPosts = (feedPostsState as? UiState.Success)?.data.orEmpty()
 
     val openUserProfile: (String) -> Unit = { targetUid ->
-        showAiBotsHub = false
         showReelsEditor = false
         if (targetUid == viewModel.currentUserId) {
             inspectedUserId = null
@@ -117,7 +115,6 @@ fun AdaptiveMainScaffold(
     }
 
     val openDirectChat: (UserProfile) -> Unit = { peer ->
-        showAiBotsHub = false
         showReelsEditor = false
         inspectedUserId = null
         activeChatPeer = peer
@@ -151,11 +148,10 @@ fun AdaptiveMainScaffold(
                         containerColor = MaterialTheme.colorScheme.surface
                     ) {
                         InstaTab.entries.forEach { tab ->
-                            val selected = currentTab == tab && inspectedUserId == null && !showAiBotsHub && !showReelsEditor
+                            val selected = currentTab == tab && inspectedUserId == null && !showReelsEditor
                             NavigationBarItem(
                                 selected = selected,
                                 onClick = {
-                                    showAiBotsHub = false
                                     showReelsEditor = false
                                     inspectedUserId = null
                                     currentTab = tab
@@ -193,11 +189,10 @@ fun AdaptiveMainScaffold(
                         modifier = Modifier.fillMaxHeight()
                     ) {
                         InstaTab.entries.forEach { tab ->
-                            val selected = currentTab == tab && inspectedUserId == null && !showAiBotsHub && !showReelsEditor
+                            val selected = currentTab == tab && inspectedUserId == null && !showReelsEditor
                             NavigationRailItem(
                                 selected = selected,
                                 onClick = {
-                                    showAiBotsHub = false
                                     showReelsEditor = false
                                     inspectedUserId = null
                                     currentTab = tab
@@ -254,20 +249,6 @@ fun AdaptiveMainScaffold(
                                 }
                             }
                         )
-                    } else if (showAiBotsHub) {
-                        AiBotsHubScreen(
-                            uiState = aiBotUiState,
-                            onBack = { showAiBotsHub = false },
-                            onSimulateNextDay24h = { viewModel.simulateNextDay24h() },
-                            onRunAutoCheckNow = { viewModel.runAutoReplaceCheckNow() },
-                            onToggleWatchdog = { viewModel.toggleAutoWatchdog() },
-                            onReplaceSingleBotReel = { botId -> viewModel.replaceSingleBotReel(botId) },
-                            onWatchReel = { reelId ->
-                                showAiBotsHub = false
-                                focusedReelId = reelId
-                                currentTab = InstaTab.REELS
-                            }
-                        )
                     } else if (overrideUid != null) {
                         val profileFlow = remember(overrideUid) { viewModel.observeUserProfile(overrideUid) }
                         val postsFlow = remember(overrideUid) { viewModel.observeAuthorPosts(overrideUid) }
@@ -302,10 +283,8 @@ fun AdaptiveMainScaffold(
                                     likedPostIds = likedPostIds,
                                     bookmarkedPostIds = bookmarkedPostIds,
                                     conversationsCount = conversationsCount,
-                                    aiBotReelsCount = aiBotUiState.botReelsCount,
                                     isDarkTheme = isDarkTheme,
                                     onToggleTheme = onToggleTheme,
-                                    onOpenAiBotsHub = { showAiBotsHub = true },
                                     onOpenReelsWatch = { currentTab = InstaTab.REELS },
                                     onOpenMessagesInbox = { currentTab = InstaTab.MESSAGES },
                                     onOpenCreatePost = { currentTab = InstaTab.CREATE },
@@ -358,13 +337,12 @@ fun AdaptiveMainScaffold(
 
                             InstaTab.REELS -> {
                                 ReelsScreen(
-                                    uiState = aiBotUiState,
+                                    uiState = reelsUiState,
                                     initialFocusedReelId = focusedReelId,
                                     onClearFocusedReel = { focusedReelId = null },
                                     onToggleLike = { reelId -> viewModel.toggleReelLike(reelId) },
                                     onAddComment = { reelId, text -> viewModel.addReelComment(reelId, text) },
-                                    onToggleFollow = { botId, uname -> viewModel.toggleFollowBot(botId, uname) },
-                                    onOpenAiBotsHub = { showAiBotsHub = true },
+                                    onToggleFollow = { uname -> viewModel.toggleFollowReelCreator(uname) },
                                     onOpenReelsEditor = { seedReel ->
                                         reelsEditorSeedReel = seedReel
                                         showReelsEditor = true

@@ -41,12 +41,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.VolumeOff
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
-import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.ContentCut
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Movie
 import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.Share
-import androidx.compose.material.icons.filled.SmartToy
 import androidx.compose.material.icons.outlined.ChatBubbleOutline
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -86,32 +85,29 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import coil.compose.AsyncImage
 import com.example.R
-import com.example.data.bot.AiBotReelsStore
-import com.example.data.bot.AiBotReelsUiState
-import com.example.data.bot.BotReel
+import com.example.data.model.Reel
+import com.example.data.model.ReelsUiState
+import com.example.data.repository.ReelsStore
 import com.example.ui.components.StoryAvatarRing
 import com.example.ui.theme.HeartLikeRed
 import com.example.ui.theme.InstaCoral
-import com.example.ui.theme.InstaViolet
 import kotlinx.coroutines.delay
 
 enum class ReelsFeedFilter(val label: String) {
     ALL("All"),
-    AI_BOTS("AI Bots (100)"),
     FOLLOWING("Following")
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReelsScreen(
-    uiState: AiBotReelsUiState,
+    uiState: ReelsUiState,
     initialFocusedReelId: String?,
     onClearFocusedReel: () -> Unit,
     onToggleLike: (String) -> Unit,
     onAddComment: (String, String) -> Unit,
-    onToggleFollow: (String?, String) -> Unit,
-    onOpenAiBotsHub: () -> Unit,
-    onOpenReelsEditor: (BotReel?) -> Unit
+    onToggleFollow: (String) -> Unit,
+    onOpenReelsEditor: (Reel?) -> Unit
 ) {
     val context = LocalContext.current
     var activeFilter by remember { mutableStateOf(ReelsFeedFilter.ALL) }
@@ -121,7 +117,6 @@ fun ReelsScreen(
     val filteredReels = remember(uiState.reels, activeFilter) {
         when (activeFilter) {
             ReelsFeedFilter.ALL -> uiState.reels
-            ReelsFeedFilter.AI_BOTS -> uiState.reels.filter { it.isAiBot }
             ReelsFeedFilter.FOLLOWING -> uiState.reels.filter { it.isFollowing }
         }
     }
@@ -166,7 +161,7 @@ fun ReelsScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Icon(
-                    imageVector = Icons.Filled.SmartToy,
+                    imageVector = Icons.Filled.Movie,
                     contentDescription = null,
                     tint = Color.White,
                     modifier = Modifier.size(56.dp)
@@ -203,7 +198,7 @@ fun ReelsScreen(
                     },
                     onToggleLike = { onToggleLike(reel.id) },
                     onOpenComments = { commentTargetReelId = reel.id },
-                    onToggleFollow = { onToggleFollow(reel.botId, reel.username) },
+                    onToggleFollow = { onToggleFollow(reel.username) },
                     onShare = {
                         val shareIntent = Intent(Intent.ACTION_SEND).apply {
                             type = "text/plain"
@@ -219,7 +214,7 @@ fun ReelsScreen(
             }
         }
 
-        // Top Overlay Header with Filter Chips, 100 AI Bots Hub, and Reels Edit Studio
+        // Top Overlay Header with Filter Chips and Reels Edit Studio
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -242,35 +237,6 @@ fun ReelsScreen(
                     color = Color.White,
                     modifier = Modifier.weight(1f)
                 )
-
-                Surface(
-                    shape = RoundedCornerShape(20.dp),
-                    color = InstaViolet.copy(alpha = 0.9f),
-                    modifier = Modifier
-                        .clickable(onClick = onOpenAiBotsHub)
-                        .testTag("open_ai_bots_hub_pill")
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.SmartToy,
-                            contentDescription = stringResource(R.string.cd_ai_bots_hub),
-                            tint = Color.White,
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                            text = "${uiState.botReelsCount} AI Bots",
-                            style = MaterialTheme.typography.labelMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.width(8.dp))
 
                 Surface(
                     shape = RoundedCornerShape(20.dp),
@@ -327,7 +293,7 @@ fun ReelsScreen(
 
 @Composable
 private fun ReelPagerItem(
-    reel: BotReel,
+    reel: Reel,
     isActivePage: Boolean,
     isMuted: Boolean,
     onToggleMute: () -> Unit,
@@ -514,7 +480,7 @@ private fun ReelPagerItem(
                     )
                 }
                 Text(
-                    text = AiBotReelsStore.formatFollowerCount(reel.likesCount),
+                    text = ReelsStore.formatCount(reel.likesCount),
                     style = MaterialTheme.typography.labelMedium,
                     color = Color.White,
                     fontWeight = FontWeight.SemiBold
@@ -581,7 +547,7 @@ private fun ReelPagerItem(
             }
         }
 
-        // Bottom-left Creator Info, 24h Expiry Badge, Caption & Scrolling Audio
+        // Bottom-left Creator Info, Caption & Scrolling Audio
         Column(
             verticalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier
@@ -589,54 +555,6 @@ private fun ReelPagerItem(
                 .fillMaxWidth()
                 .padding(start = 16.dp, end = 80.dp, bottom = 22.dp)
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                if (reel.isAiBot) {
-                    Surface(
-                        shape = RoundedCornerShape(10.dp),
-                        color = InstaViolet.copy(alpha = 0.88f)
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.AutoAwesome,
-                                contentDescription = null,
-                                tint = Color.White,
-                                modifier = Modifier.size(12.dp)
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(
-                                text = "AI BOT • 1/1 DAILY",
-                                style = MaterialTheme.typography.labelSmall,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.White
-                            )
-                        }
-                    }
-
-                    Surface(
-                        shape = RoundedCornerShape(10.dp),
-                        color = Color.Black.copy(alpha = 0.65f),
-                        modifier = Modifier.border(
-                            1.dp,
-                            Color(0xFFFFC837).copy(alpha = 0.65f),
-                            RoundedCornerShape(10.dp)
-                        )
-                    ) {
-                        Text(
-                            text = AiBotReelsStore.formatExpiresInBadge(reel.createdAtMillis),
-                            style = MaterialTheme.typography.labelSmall,
-                            fontWeight = FontWeight.SemiBold,
-                            color = Color(0xFFFFD166),
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
-                        )
-                    }
-                }
-            }
 
             Row(verticalAlignment = Alignment.CenterVertically) {
                 StoryAvatarRing(
@@ -706,7 +624,7 @@ private fun ReelPagerItem(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ReelCommentsSheet(
-    reel: BotReel,
+    reel: Reel,
     onAddComment: (String) -> Unit,
     onDismiss: () -> Unit
 ) {

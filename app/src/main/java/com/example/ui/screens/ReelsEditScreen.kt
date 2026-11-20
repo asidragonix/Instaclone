@@ -62,13 +62,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import coil.compose.AsyncImage
 import com.example.R
-import com.example.data.bot.AiBotReelsStore
-import com.example.data.bot.BotReel
+import com.example.data.model.Reel
+import com.example.data.repository.ReelsStore
 import com.example.ui.theme.InstaCoral
 
 @Composable
 fun ReelsEditScreen(
-    initialReel: BotReel?,
+    initialReel: Reel?,
     onBack: () -> Unit,
     onPublishReel: (
         videoUrl: String,
@@ -85,10 +85,10 @@ fun ReelsEditScreen(
     BackHandler(onBack = onBack)
 
     var videoUrl by remember(initialReel) {
-        mutableStateOf(initialReel?.videoUrl ?: AiBotReelsStore.MEDIA_CATALOG.first().videoUrl)
+        mutableStateOf(initialReel?.videoUrl ?: ReelsStore.STUDIO_MEDIA_CLIPS.first().videoUrl)
     }
     var posterUrl by remember(initialReel) {
-        mutableStateOf(initialReel?.posterUrl ?: AiBotReelsStore.MEDIA_CATALOG.first().posterUrl)
+        mutableStateOf(initialReel?.posterUrl ?: ReelsStore.STUDIO_MEDIA_CLIPS.first().posterUrl)
     }
     var caption by remember(initialReel) {
         mutableStateOf(
@@ -285,7 +285,7 @@ fun ReelsEditScreen(
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
                 contentPadding = PaddingValues(vertical = 2.dp)
             ) {
-                items(AiBotReelsStore.MEDIA_CATALOG, key = { it.niche }) { item ->
+                items(ReelsStore.STUDIO_MEDIA_CLIPS, key = { it.label }) { item ->
                     val selected = videoUrl == item.videoUrl
                     Surface(
                         shape = RoundedCornerShape(12.dp),
@@ -298,7 +298,7 @@ fun ReelsEditScreen(
                             }
                     ) {
                         Text(
-                            text = item.niche,
+                            text = item.label,
                             style = MaterialTheme.typography.labelMedium,
                             fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
                             modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp)
