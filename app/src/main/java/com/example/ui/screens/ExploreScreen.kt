@@ -70,16 +70,27 @@ fun ExploreScreen(
     likedPostIds: Set<String>,
     bookmarkedPostIds: Set<String>,
     followingIds: Set<String>,
+    initialSearchQuery: String = "",
+    onClearInitialSearch: () -> Unit = {},
     onToggleFollow: (String, Boolean) -> Unit,
     onToggleLike: (Post) -> Unit,
     onOpenComments: (Post) -> Unit,
     onToggleBookmark: (Post) -> Unit,
+    onSharePost: (Post) -> Unit,
+    onEditPost: (Post) -> Unit,
     onOpenProfile: (String) -> Unit,
     onDirectMessageAuthor: (String, String, String) -> Unit,
     onDeletePost: (String) -> Unit
 ) {
-    var searchQuery by remember { mutableStateOf("") }
+    var searchQuery by remember { mutableStateOf(initialSearchQuery) }
     var selectedPostId by remember { mutableStateOf<String?>(null) }
+
+    androidx.compose.runtime.LaunchedEffect(initialSearchQuery) {
+        if (initialSearchQuery.isNotBlank()) {
+            searchQuery = initialSearchQuery
+            onClearInitialSearch()
+        }
+    }
 
     val allPosts = (postsState as? UiState.Success)?.data.orEmpty()
     val allCreators = (creatorsState as? UiState.Success)?.data.orEmpty()
@@ -134,6 +145,13 @@ fun ExploreScreen(
                     onToggleLike = { onToggleLike(selectedPost) },
                     onOpenComments = { onOpenComments(selectedPost) },
                     onToggleBookmark = { onToggleBookmark(selectedPost) },
+                    onSharePost = { onSharePost(selectedPost) },
+                    onEditPost = if (selectedPost.authorId == currentUserId) {
+                        {
+                            selectedPostId = null
+                            onEditPost(selectedPost)
+                        }
+                    } else null,
                     onOpenProfile = { uid ->
                         selectedPostId = null
                         onOpenProfile(uid)

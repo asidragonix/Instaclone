@@ -21,8 +21,6 @@ import androidx.compose.material.icons.outlined.Explore
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Movie
 import androidx.compose.material.icons.outlined.Person
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.sp
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -45,14 +43,22 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.R
 import com.example.data.model.Post
 import com.example.data.model.Reel
+import com.example.data.model.Story
 import com.example.data.model.UiState
 import com.example.data.model.UserProfile
+import com.example.ui.components.CallOverlayDialog
 import com.example.ui.components.CommentsBottomSheet
+import com.example.ui.components.CreateStoryDialog
+import com.example.ui.components.EditCaptionDialog
+import com.example.ui.components.FullScreenStoryViewerDialog
+import com.example.ui.components.ShareContentSheet
 import com.example.ui.viewmodel.InstaCloneViewModel
 
 enum class InstaTab(
@@ -69,6 +75,11 @@ enum class InstaTab(
     PROFILE(R.string.nav_profile, Icons.Filled.Person, Icons.Outlined.Person, "nav_profile_tab")
 }
 
+private data class SharePayload(
+    val title: String,
+    val message: String
+)
+
 @Composable
 fun AdaptiveMainScaffold(
     viewModel: InstaCloneViewModel,
@@ -84,25 +95,51 @@ fun AdaptiveMainScaffold(
         }
     }
 
+    val myProfileState by viewModel.myProfileState.collectAsStateWithLifecycle()
     val feedPostsState by viewModel.feedPostsState.collectAsStateWithLifecycle()
     val creatorsState by viewModel.publicProfilesState.collectAsStateWithLifecycle()
+    val storiesState by viewModel.storiesState.collectAsStateWithLifecycle()
     val likedPostIds by viewModel.likedPostIds.collectAsStateWithLifecycle()
+    val likedStoryIds by viewModel.likedStoryIds.collectAsStateWithLifecycle()
+    val viewedStoryIds by viewModel.viewedStoryIds.collectAsStateWithLifecycle()
     val bookmarkedPostIds by viewModel.bookmarkedPostIds.collectAsStateWithLifecycle()
     val followingIds by viewModel.followingIds.collectAsStateWithLifecycle()
+    val followerIds by viewModel.followerIds.collectAsStateWithLifecycle()
     val conversationsState by viewModel.conversationsState.collectAsStateWithLifecycle()
+    val callSessions by viewModel.callSessionsState.collectAsStateWithLifecycle()
+    val localActiveCall by viewModel.localActiveCall.collectAsStateWithLifecycle()
+    val activeCall by viewModel.activeCallSession.collectAsStateWithLifecycle()
     val isPublishing by viewModel.isPublishing.collectAsStateWithLifecycle()
     val reelsUiState by viewModel.reelsUiState.collectAsStateWithLifecycle()
+
+    LaunchedEffect(localActiveCall, callSessions) {
+        val local = localActiveCall ?: return@LaunchedEffect
+        val remote = callSessions.find { it.id == local.id } ?: return@LaunchedEffect
+        if (remote.status == "ended" || remote.status == "declined" || remote.status == "missed") {
+            viewModel.clearLocalActiveCallOnRemoteTermination(local.id, remote.status)
+        }
+    }
 
     var currentTab by rememberSaveable { mutableStateOf(InstaTab.HOME) }
     var inspectedUserId by rememberSaveable { mutableStateOf<String?>(null) }
     var showReelsEditor by rememberSaveable { mutableStateOf(false) }
     var reelsEditorSeedReel by remember { mutableStateOf<Reel?>(null) }
     var focusedReelId by rememberSaveable { mutableStateOf<String?>(null) }
+    var exploreInitialSearch by rememberSaveable { mutableStateOf("") }
     var activeChatPeer by remember { mutableStateOf<UserProfile?>(null) }
     var commentSheetPost by remember { mutableStateOf<Post?>(null) }
 
-    val conversationsCount = (conversationsState as? UiState.Success)?.data?.size ?: 0
+    var showCreateStoryDialog by rememberSaveable { mutableStateOf(false) }
+    var activeStoryGroup by remember { mutableStateOf<List<Story>?>(null) }
+    var sharePayload by remember { mutableStateOf<SharePayload?>(null) }
+    var editPostTarget by remember { mutableStateOf<Post?>(null) }
+    var editReelTarget by remember { mutableStateOf<Reel?>(null) }
+
+    val myProfile = (myProfileState as? UiState.Success)?.data
+    val allCreators = (creatorsState as? UiState.Success)?.data.orEmpty()
     val allPublicPosts = (feedPostsState as? UiState.Success)?.data.orEmpty()
+    val activeStories = (storiesState as? UiState.Success)?.data.orEmpty()
+    val conversationsCount = (conversationsState as? UiState.Success)?.data?.size ?: 0
 
     val openUserProfile: (String) -> Unit = { targetUid ->
         showReelsEditor = false
@@ -119,6 +156,141 @@ fun AdaptiveMainScaffold(
         inspectedUserId = null
         activeChatPeer = peer
         currentTab = InstaTab.MESSAGES
+    }
+
+    val openExploreWithQuery: (String) -> Unit = { query ->
+        inspectedUserId = null
+        showReelsEditor = false
+        exploreInitialSearch = query
+        currentTab = InstaTab.EXPLORE
+    }
+
+    // Active Incoming or Outgoing Call Overlay
+    val currentActiveCall = activeCall
+    if (currentActiveCall != null) {
+        CallOverlayDialog(
+            callSession = currentActiveCall,
+            currentUserId = viewModel.currentUserId,
+            onAcceptCall = { viewModel.acceptCall(currentActiveCall) },
+            onDeclineCall = { viewModel.declineCall(currentActiveCall) },
+            onMarkConnected = { viewModel.markLocalCallConnected() },
+            onEndCall = { secs -> viewModel.endCall(currentActiveCall, secs) }
+        )
+    }
+
+    // Create Story Fullscreen Dialog
+    if (showCreateStoryDialog) {
+        CreateStoryDialog(
+            isPublishing = isPublishing,
+            onDismiss = { showCreateStoryDialog = false },
+            onPublishStory = { mediaData, mediaType, bgGradient, overlayText, sticker, caption ->
+                viewModel.createStory(
+                    mediaData = mediaData,
+                    mediaType = mediaType,
+                    bgGradient = bgGradient,
+                    overlayText = overlayText,
+                    sticker = sticker,
+                    caption = caption
+                ) {
+                    showCreateStoryDialog = false
+                }
+            }
+        )
+    }
+
+    // Full-Screen Story Viewer
+    val currentStories = activeStoryGroup
+    if (!currentStories.isNullOrEmpty()) {
+        // Keep stories synced with live Firestore counts if present in activeStories
+        val syncedStories = currentStories.map { st ->
+            activeStories.find { it.id == st.id } ?: st
+        }
+        FullScreenStoryViewerDialog(
+            stories = syncedStories,
+            currentUserId = viewModel.currentUserId,
+            likedStoryIds = likedStoryIds,
+            observeComments = { storyId -> viewModel.observeStoryComments(storyId) },
+            onMarkViewed = { st -> viewModel.markStoryViewed(st) },
+            onToggleLike = { st -> viewModel.toggleStoryLike(st.id, st.id in likedStoryIds) },
+            onSendReply = { st, text, alsoDm ->
+                val authorProfile = allCreators.find { it.userId == st.authorId }
+                    ?: UserProfile(
+                        id = st.authorId,
+                        userId = st.authorId,
+                        username = st.authorUsername,
+                        displayName = st.authorUsername,
+                        avatarData = st.authorAvatarData
+                    )
+                viewModel.addStoryComment(
+                    storyId = st.id,
+                    text = text,
+                    alsoSendDmToAuthor = if (alsoDm) authorProfile else null
+                )
+            },
+            onShareStory = { st ->
+                sharePayload = SharePayload(
+                    title = "Share @${st.authorUsername}'s Story",
+                    message = "Check out @${st.authorUsername}'s story on InstaClone: ${st.caption.ifBlank { st.overlayText }}"
+                )
+            },
+            onDeleteStory = { storyId ->
+                viewModel.deleteStory(storyId) {
+                    val remaining = syncedStories.filterNot { it.id == storyId }
+                    activeStoryGroup = remaining.ifEmpty { null }
+                }
+            },
+            onAddAnotherStory = {
+                activeStoryGroup = null
+                showCreateStoryDialog = true
+            },
+            onOpenProfile = openUserProfile,
+            onDismiss = { activeStoryGroup = null }
+        )
+    }
+
+    // Share Sheet (Posts, Reels, Stories -> DM Friend or System Apps)
+    val currentShare = sharePayload
+    if (currentShare != null) {
+        ShareContentSheet(
+            title = currentShare.title,
+            shareText = currentShare.message,
+            friends = allCreators,
+            currentUserId = viewModel.currentUserId,
+            onSendToFriend = { friend ->
+                viewModel.sendMessage(peerProfile = friend, text = currentShare.message) {
+                    viewModel.emitMessage("Shared to @${friend.username}")
+                }
+            },
+            onDismiss = { sharePayload = null }
+        )
+    }
+
+    // Edit Caption Dialog (Post or Reel)
+    val targetEditPost = editPostTarget
+    if (targetEditPost != null) {
+        EditCaptionDialog(
+            initialCaption = targetEditPost.caption,
+            initialLocation = targetEditPost.location,
+            showLocation = true,
+            onDismiss = { editPostTarget = null },
+            onSave = { newCap, newLoc ->
+                viewModel.updatePostCaption(targetEditPost.id, newCap, newLoc)
+                editPostTarget = null
+            }
+        )
+    }
+
+    val targetEditReel = editReelTarget
+    if (targetEditReel != null) {
+        EditCaptionDialog(
+            initialCaption = targetEditReel.caption,
+            showLocation = false,
+            onDismiss = { editReelTarget = null },
+            onSave = { newCap, _ ->
+                viewModel.updateReelCaption(targetEditReel.id, newCap)
+                editReelTarget = null
+            }
+        )
     }
 
     if (commentSheetPost != null) {
@@ -144,9 +316,7 @@ fun AdaptiveMainScaffold(
             snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
             bottomBar = {
                 if (!useNavigationRail) {
-                    NavigationBar(
-                        containerColor = MaterialTheme.colorScheme.surface
-                    ) {
+                    NavigationBar(containerColor = MaterialTheme.colorScheme.surface) {
                         InstaTab.entries.forEach { tab ->
                             val selected = currentTab == tab && inspectedUserId == null && !showReelsEditor
                             NavigationBarItem(
@@ -252,24 +422,52 @@ fun AdaptiveMainScaffold(
                     } else if (overrideUid != null) {
                         val profileFlow = remember(overrideUid) { viewModel.observeUserProfile(overrideUid) }
                         val postsFlow = remember(overrideUid) { viewModel.observeAuthorPosts(overrideUid) }
+                        val highlightsFlow = remember(overrideUid) { viewModel.observeHighlights(overrideUid) }
                         ProfileScreen(
                             targetUserId = overrideUid,
                             currentUserId = viewModel.currentUserId,
                             profileFlow = profileFlow,
                             authorPostsFlow = postsFlow,
+                            highlightsFlow = highlightsFlow,
                             allPublicPosts = allPublicPosts,
+                            allCreators = allCreators,
+                            allReels = reelsUiState.reels,
+                            activeStories = activeStories,
                             likedPostIds = likedPostIds,
                             bookmarkedPostIds = bookmarkedPostIds,
                             followingIds = followingIds,
+                            followerIds = followerIds,
                             showBackButton = true,
                             onBack = { inspectedUserId = null },
                             onToggleFollow = { uid, following -> viewModel.toggleFollow(uid, following) },
                             onMessageUser = openDirectChat,
-                            onUpdateProfile = { _, _, _, _ -> },
+                            onStartCall = { peer, callType -> viewModel.startCall(peer, callType) },
+                            onUpdateProfile = { _, _, _, _, _, _, _, _ -> },
+                            onCreateHighlight = { _, _, _ -> },
+                            onOpenStories = { stories -> activeStoryGroup = stories },
+                            onOpenCreateStory = { showCreateStoryDialog = true },
+                            onOpenCreatePost = { currentTab = InstaTab.CREATE },
+                            onOpenCreateReel = {
+                                reelsEditorSeedReel = null
+                                showReelsEditor = true
+                            },
+                            onOpenReelById = { reelId ->
+                                inspectedUserId = null
+                                focusedReelId = reelId
+                                currentTab = InstaTab.REELS
+                            },
+                            onSearchHashtag = openExploreWithQuery,
                             onSignOut = onSignOut,
                             onToggleLike = { post -> viewModel.toggleLike(post.id, post.id in likedPostIds) },
                             onOpenComments = { post -> commentSheetPost = post },
                             onToggleBookmark = { post -> viewModel.toggleBookmark(post.id, post.id in bookmarkedPostIds) },
+                            onSharePost = { post ->
+                                sharePayload = SharePayload(
+                                    title = "Share @${post.authorUsername}'s Post",
+                                    message = "Check out @${post.authorUsername}'s post on InstaClone: ${post.caption}"
+                                )
+                            },
+                            onEditPost = { post -> editPostTarget = post },
                             onOpenProfile = openUserProfile,
                             onDeletePost = { postId -> viewModel.deletePost(postId) }
                         )
@@ -278,19 +476,34 @@ fun AdaptiveMainScaffold(
                             InstaTab.HOME -> {
                                 HomeFeedScreen(
                                     currentUserId = viewModel.currentUserId,
+                                    currentUserProfile = myProfile,
                                     feedPostsState = feedPostsState,
-                                    creatorsState = creatorsState,
+                                    storiesState = storiesState,
+                                    reels = reelsUiState.reels,
+                                    viewedStoryIds = viewedStoryIds,
                                     likedPostIds = likedPostIds,
                                     bookmarkedPostIds = bookmarkedPostIds,
                                     conversationsCount = conversationsCount,
                                     isDarkTheme = isDarkTheme,
                                     onToggleTheme = onToggleTheme,
-                                    onOpenReelsWatch = { currentTab = InstaTab.REELS },
+                                    onOpenReelsWatch = { reelId ->
+                                        focusedReelId = reelId
+                                        currentTab = InstaTab.REELS
+                                    },
                                     onOpenMessagesInbox = { currentTab = InstaTab.MESSAGES },
                                     onOpenCreatePost = { currentTab = InstaTab.CREATE },
+                                    onOpenCreateStory = { showCreateStoryDialog = true },
+                                    onOpenStoryGroup = { group -> activeStoryGroup = group },
                                     onToggleLike = { post -> viewModel.toggleLike(post.id, post.id in likedPostIds) },
                                     onOpenComments = { post -> commentSheetPost = post },
                                     onToggleBookmark = { post -> viewModel.toggleBookmark(post.id, post.id in bookmarkedPostIds) },
+                                    onSharePost = { post ->
+                                        sharePayload = SharePayload(
+                                            title = "Share @${post.authorUsername}'s Post",
+                                            message = "Check out @${post.authorUsername}'s post on InstaClone: ${post.caption}"
+                                        )
+                                    },
+                                    onEditPost = { post -> editPostTarget = post },
                                     onOpenProfile = openUserProfile,
                                     onDirectMessageAuthor = { uid, uname, avatar ->
                                         openDirectChat(
@@ -315,10 +528,19 @@ fun AdaptiveMainScaffold(
                                     likedPostIds = likedPostIds,
                                     bookmarkedPostIds = bookmarkedPostIds,
                                     followingIds = followingIds,
+                                    initialSearchQuery = exploreInitialSearch,
+                                    onClearInitialSearch = { exploreInitialSearch = "" },
                                     onToggleFollow = { uid, following -> viewModel.toggleFollow(uid, following) },
                                     onToggleLike = { post -> viewModel.toggleLike(post.id, post.id in likedPostIds) },
                                     onOpenComments = { post -> commentSheetPost = post },
                                     onToggleBookmark = { post -> viewModel.toggleBookmark(post.id, post.id in bookmarkedPostIds) },
+                                    onSharePost = { post ->
+                                        sharePayload = SharePayload(
+                                            title = "Share @${post.authorUsername}'s Post",
+                                            message = "Check out @${post.authorUsername}'s post on InstaClone: ${post.caption}"
+                                        )
+                                    },
+                                    onEditPost = { post -> editPostTarget = post },
                                     onOpenProfile = openUserProfile,
                                     onDirectMessageAuthor = { uid, uname, avatar ->
                                         openDirectChat(
@@ -338,21 +560,35 @@ fun AdaptiveMainScaffold(
                             InstaTab.REELS -> {
                                 ReelsScreen(
                                     uiState = reelsUiState,
+                                    currentUserId = viewModel.currentUserId,
+                                    currentUsername = myProfile?.username ?: "creator",
                                     initialFocusedReelId = focusedReelId,
                                     onClearFocusedReel = { focusedReelId = null },
                                     onToggleLike = { reelId -> viewModel.toggleReelLike(reelId) },
+                                    onToggleBookmark = { reelId -> viewModel.toggleReelBookmark(reelId) },
                                     onAddComment = { reelId, text -> viewModel.addReelComment(reelId, text) },
+                                    onDeleteComment = { reelId, commentId -> viewModel.deleteReelComment(reelId, commentId) },
                                     onToggleFollow = { uname -> viewModel.toggleFollowReelCreator(uname) },
+                                    onShareReel = { reel ->
+                                        sharePayload = SharePayload(
+                                            title = "Share @${reel.username}'s Reel",
+                                            message = "Watch @${reel.username}'s reel on InstaClone: ${reel.caption}\n${reel.videoUrl}"
+                                        )
+                                    },
                                     onOpenReelsEditor = { seedReel ->
                                         reelsEditorSeedReel = seedReel
                                         showReelsEditor = true
-                                    }
+                                    },
+                                    onEditReelCaption = { reel -> editReelTarget = reel },
+                                    onDeleteReel = { reelId -> viewModel.deleteReel(reelId) },
+                                    onOpenProfile = openUserProfile
                                 )
                             }
 
                             InstaTab.CREATE -> {
                                 CreatePostScreen(
                                     isPublishing = isPublishing,
+                                    onOpenCreateStory = { showCreateStoryDialog = true },
                                     onOpenReelsStudio = {
                                         reelsEditorSeedReel = null
                                         showReelsEditor = true
@@ -374,11 +610,26 @@ fun AdaptiveMainScaffold(
                                     currentUserId = viewModel.currentUserId,
                                     conversationsState = conversationsState,
                                     creatorsState = creatorsState,
+                                    callSessions = callSessions,
                                     selectedPeer = activeChatPeer,
                                     onSelectPeer = { activeChatPeer = it },
                                     buildConversationId = { peerUid -> viewModel.buildConversationId(peerUid) },
                                     observeMessages = { convId -> viewModel.observeMessages(convId) },
-                                    onSendMessage = { peer, text -> viewModel.sendMessage(peer, text) },
+                                    onSendMessage = { peer, text, attachment, reply ->
+                                        viewModel.sendMessage(
+                                            peerProfile = peer,
+                                            text = text,
+                                            attachment = attachment,
+                                            replyTo = reply
+                                        )
+                                    },
+                                    onToggleReaction = { convId, msg, emoji ->
+                                        viewModel.toggleMessageReaction(convId, msg, emoji)
+                                    },
+                                    onDeleteMessage = { convId, msgId ->
+                                        viewModel.deleteMessage(convId, msgId)
+                                    },
+                                    onStartCall = { peer, callType -> viewModel.startCall(peer, callType) },
                                     onOpenProfile = openUserProfile
                                 )
                             }
@@ -387,26 +638,66 @@ fun AdaptiveMainScaffold(
                                 val ownPostsFlow = remember(viewModel.currentUserId) {
                                     viewModel.observeAuthorPosts(viewModel.currentUserId)
                                 }
+                                val ownHighlightsFlow = remember(viewModel.currentUserId) {
+                                    viewModel.observeHighlights(viewModel.currentUserId)
+                                }
                                 ProfileScreen(
                                     targetUserId = viewModel.currentUserId,
                                     currentUserId = viewModel.currentUserId,
                                     profileFlow = viewModel.myProfileState,
                                     authorPostsFlow = ownPostsFlow,
+                                    highlightsFlow = ownHighlightsFlow,
                                     allPublicPosts = allPublicPosts,
+                                    allCreators = allCreators,
+                                    allReels = reelsUiState.reels,
+                                    activeStories = activeStories,
                                     likedPostIds = likedPostIds,
                                     bookmarkedPostIds = bookmarkedPostIds,
                                     followingIds = followingIds,
+                                    followerIds = followerIds,
                                     showBackButton = false,
                                     onBack = {},
                                     onToggleFollow = { uid, following -> viewModel.toggleFollow(uid, following) },
                                     onMessageUser = openDirectChat,
-                                    onUpdateProfile = { uname, dname, bio, avatar ->
-                                        viewModel.updateProfile(uname, dname, bio, avatar) {}
+                                    onStartCall = { peer, callType -> viewModel.startCall(peer, callType) },
+                                    onUpdateProfile = { uname, dname, bio, avatar, cat, pronouns, website, visibility ->
+                                        viewModel.updateProfile(
+                                            username = uname,
+                                            displayName = dname,
+                                            bio = bio,
+                                            avatarData = avatar,
+                                            category = cat,
+                                            pronouns = pronouns,
+                                            website = website,
+                                            visibility = visibility
+                                        )
                                     },
+                                    onCreateHighlight = { title, cover, storyIds ->
+                                        viewModel.createHighlight(title, cover, storyIds)
+                                    },
+                                    onOpenStories = { stories -> activeStoryGroup = stories },
+                                    onOpenCreateStory = { showCreateStoryDialog = true },
+                                    onOpenCreatePost = { currentTab = InstaTab.CREATE },
+                                    onOpenCreateReel = {
+                                        reelsEditorSeedReel = null
+                                        showReelsEditor = true
+                                    },
+                                    onOpenReelById = { reelId ->
+                                        focusedReelId = reelId
+                                        currentTab = InstaTab.REELS
+                                    },
+                                    onSearchHashtag = openExploreWithQuery,
                                     onSignOut = onSignOut,
                                     onToggleLike = { post -> viewModel.toggleLike(post.id, post.id in likedPostIds) },
                                     onOpenComments = { post -> commentSheetPost = post },
                                     onToggleBookmark = { post -> viewModel.toggleBookmark(post.id, post.id in bookmarkedPostIds) },
+                                    onSharePost = { post ->
+                                        sharePayload = SharePayload(
+                                            title = "Share @${post.authorUsername}'s Post",
+                                            message = "Check out @${post.authorUsername}'s post on InstaClone: ${post.caption}"
+                                        )
+                                    },
+                                    onEditPost = { post -> editPostTarget = post },
                                     onOpenProfile = openUserProfile,
                                     onDeletePost = { postId -> viewModel.deletePost(postId) }
                                 )

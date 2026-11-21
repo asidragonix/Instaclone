@@ -39,12 +39,16 @@ import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.ChatBubbleOutline
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -255,10 +259,13 @@ fun PostCard(
     onToggleBookmark: () -> Unit,
     onOpenProfile: (String) -> Unit,
     onDirectMessageAuthor: (String, String, String) -> Unit,
+    onSharePost: (() -> Unit)? = null,
+    onEditPost: (() -> Unit)? = null,
     onDeletePost: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     var showHeartBurst by remember { mutableStateOf(false) }
+    var showManageMenu by remember { mutableStateOf(false) }
 
     LaunchedEffect(showHeartBurst) {
         if (showHeartBurst) {
@@ -331,16 +338,41 @@ fun PostCard(
                     }
                 }
 
-                if (isOwnPost && onDeletePost != null) {
-                    IconButton(
-                        onClick = onDeletePost,
-                        modifier = Modifier.testTag("delete_post_button_${post.id}")
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.DeleteOutline,
-                            contentDescription = stringResource(R.string.cd_delete_post),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                if (isOwnPost && (onDeletePost != null || onEditPost != null)) {
+                    Box {
+                        IconButton(
+                            onClick = { showManageMenu = true },
+                            modifier = Modifier.testTag("manage_post_button_${post.id}")
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.MoreVert,
+                                contentDescription = "Manage post",
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        DropdownMenu(
+                            expanded = showManageMenu,
+                            onDismissRequest = { showManageMenu = false }
+                        ) {
+                            if (onEditPost != null) {
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(R.string.edit_caption)) },
+                                    onClick = {
+                                        showManageMenu = false
+                                        onEditPost()
+                                    }
+                                )
+                            }
+                            if (onDeletePost != null) {
+                                DropdownMenuItem(
+                                    text = { Text("Delete Post", color = MaterialTheme.colorScheme.error) },
+                                    onClick = {
+                                        showManageMenu = false
+                                        onDeletePost()
+                                    }
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -417,7 +449,18 @@ fun PostCard(
                     )
                 }
 
-                if (!isOwnPost) {
+                if (onSharePost != null) {
+                    IconButton(
+                        onClick = onSharePost,
+                        modifier = Modifier.testTag("share_post_button_${post.id}")
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Share,
+                            contentDescription = stringResource(R.string.cd_share_content),
+                            tint = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                } else if (!isOwnPost) {
                     IconButton(
                         onClick = {
                             onDirectMessageAuthor(

@@ -3,12 +3,18 @@ package com.example.data.repository
 import android.content.Context
 import com.example.R
 import com.example.data.model.Bookmark
+import com.example.data.model.CallSession
 import com.example.data.model.Comment
 import com.example.data.model.Conversation
 import com.example.data.model.DirectMessage
 import com.example.data.model.Follow
+import com.example.data.model.PendingAttachment
 import com.example.data.model.Post
 import com.example.data.model.PostLike
+import com.example.data.model.Story
+import com.example.data.model.StoryComment
+import com.example.data.model.StoryHighlight
+import com.example.data.model.StoryLike
 import com.example.data.model.UserProfile
 import com.example.data.remote.OperationType
 import com.example.data.remote.handleFirestoreError
@@ -121,7 +127,11 @@ class InstaCloneRepository(
         username: String,
         displayName: String,
         bio: String,
-        avatarData: String
+        avatarData: String,
+        category: String = "",
+        pronouns: String = "",
+        website: String = "",
+        visibility: String = "public"
     ): Result<Unit> {
         val uid = requireUserId()
         val docRef = db.collection("profiles").document(uid)
@@ -129,6 +139,10 @@ class InstaCloneRepository(
         val safeDisplayName = displayName.trim().ifBlank { safeUsername }.take(50)
         val safeBio = bio.trim().take(200)
         val safeAvatar = avatarData.trim().take(340000)
+        val safeCategory = category.trim().take(50)
+        val safePronouns = pronouns.trim().take(30)
+        val safeWebsite = website.trim().take(200)
+        val safeVisibility = if (visibility == "private") "private" else "public"
         return try {
             docRef.update(
                 mapOf(
@@ -136,6 +150,10 @@ class InstaCloneRepository(
                     "displayName" to safeDisplayName,
                     "bio" to safeBio,
                     "avatarData" to safeAvatar,
+                    "category" to safeCategory,
+                    "pronouns" to safePronouns,
+                    "website" to safeWebsite,
+                    "visibility" to safeVisibility,
                     "updatedAt" to FieldValue.serverTimestamp()
                 )
             ).await()
@@ -287,6 +305,26 @@ class InstaCloneRepository(
             throw e
         } catch (e: Exception) {
             handleFirestoreError(e, OperationType.CREATE, postRef.path)
+            Result.failure(e)
+        }
+    }
+
+    suspend fun updatePostCaption(postId: String, caption: String, location: String): Result<Unit> {
+        requireUserId()
+        val postRef = db.collection("posts").document(postId)
+        return try {
+            postRef.update(
+                mapOf(
+                    "caption" to caption.trim().take(2200),
+                    "location" to location.trim().take(80),
+                    "updatedAt" to FieldValue.serverTimestamp()
+                )
+            ).await()
+            Result.success(Unit)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            handleFirestoreError(e, OperationType.UPDATE, postRef.path)
             Result.failure(e)
         }
     }
@@ -465,6 +503,23 @@ class InstaCloneRepository(
             }
     }
 
+    fun observeFollowerIds(userId: String): Flow<Set<String>> {
+        val path = "follows"
+        return db.collection("follows")
+            .whereEqualTo("followingId", userId)
+            .snapshots()
+            .map { snapshot ->
+                snapshot.toObjects(
+                    Follow::class.java,
+                    DocumentSnapshot.ServerTimestampBehavior.ESTIMATE
+                ).map { it.followerId }.toSet()
+            }
+            .catch { error ->
+                if (error is Exception) handleFirestoreError(error, OperationType.LIST, path)
+                throw error
+            }
+    }
+
     suspend fun toggleFollow(targetUserId: String, currentlyFollowing: Boolean): Result<Unit> {
         val uid = requireUserId()
         if (uid == targetUserId) return Result.failure(IllegalArgumentException("Cannot follow yourself"))
@@ -578,6 +633,298 @@ class InstaCloneRepository(
         }
     }
 
+    // --- STORIES ---
+
+    fun observeActiveStories(): Flow<List<Story>> {
+        val path = "stories"
+        return db.collection("stories")
+            .whereEqualTo("visibility", "public")
+            .snapshots()
+            .map { snapshot ->
+                val now = System.currentTimeMillis()
+                snapshot.toObjects(
+                    Story::class.java,
+                    DocumentSnapshot.ServerTimestampBehavior.ESTIMATE
+                )
+                    .filter { it.expiresAtMillis == 0L || it.expiresAtMillis > now }
+                    .sortedByDescending { it.createdAt ?: Timestamp(0, 0) }
+            }
+            .catch { error ->
+                if (error is Exception) handleFirestoreError(error, OperationType.LIST, path)
+                throw error
+            }
+    }
+
+    suspend fun createStory(
+        authorUsername: String,
+        authorAvatarData: String,
+        mediaData: String,
+        mediaType: String,
+        bgGradient: String,
+        overlayText: String,
+        sticker: String,
+        caption: String
+    ): Result<String> {
+        val uid = requireUserId()
+        val storyId = "story_${UUID.randomUUID().toString().replace("-", "").take(16)}"
+        val storyRef = db.collection("stories").document(storyId)
+        val expiresAt = System.currentTimeMillis() + 24L * 3600L * 1000L
+        return try {
+            storyRef.set(
+                mapOf(
+                    "authorId" to uid,
+                    "authorUsername" to sanitizeUsername(authorUsername, uid),
+                    "authorAvatarData" to authorAvatarData.take(340000),
+                    "mediaData" to mediaData.take(440000),
+                    "mediaType" to if (mediaType in listOf("image", "video", "text")) mediaType else "image",
+                    "bgGradient" to bgGradient.take(80),
+                    "overlayText" to overlayText.trim().take(120),
+                    "sticker" to sticker.trim().take(40),
+                    "caption" to caption.trim().take(300),
+                    "likesCount" to 0L,
+                    "commentsCount" to 0L,
+                    "viewsCount" to 0L,
+                    "lastCommentId" to "",
+                    "expiresAtMillis" to expiresAt,
+                    "visibility" to "public",
+                    "createdAt" to FieldValue.serverTimestamp(),
+                    "updatedAt" to FieldValue.serverTimestamp()
+                )
+            ).await()
+            Result.success(storyId)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            handleFirestoreError(e, OperationType.CREATE, storyRef.path)
+            Result.failure(e)
+        }
+    }
+
+    suspend fun deleteStory(storyId: String): Result<Unit> {
+        requireUserId()
+        val storyRef = db.collection("stories").document(storyId)
+        return try {
+            storyRef.delete().await()
+            Result.success(Unit)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            handleFirestoreError(e, OperationType.DELETE, storyRef.path)
+            Result.failure(e)
+        }
+    }
+
+    fun observeLikedStoryIds(userId: String): Flow<Set<String>> {
+        val path = "story_likes"
+        return db.collection("story_likes")
+            .whereEqualTo("userId", userId)
+            .snapshots()
+            .map { snapshot ->
+                snapshot.toObjects(
+                    StoryLike::class.java,
+                    DocumentSnapshot.ServerTimestampBehavior.ESTIMATE
+                ).map { it.storyId }.toSet()
+            }
+            .catch { error ->
+                if (error is Exception) handleFirestoreError(error, OperationType.LIST, path)
+                throw error
+            }
+    }
+
+    suspend fun toggleStoryLike(storyId: String, currentlyLiked: Boolean): Result<Unit> {
+        val uid = requireUserId()
+        val likeId = "${storyId}_${uid}"
+        val likeRef = db.collection("story_likes").document(likeId)
+        val storyRef = db.collection("stories").document(storyId)
+        return try {
+            val snap = storyRef.get().await()
+            val currentLikes = snap.getLong("likesCount") ?: 0L
+            val batch = db.batch()
+            if (currentlyLiked) {
+                batch.delete(likeRef)
+                batch.update(
+                    storyRef,
+                    mapOf(
+                        "likesCount" to (currentLikes - 1L).coerceAtLeast(0L),
+                        "updatedAt" to FieldValue.serverTimestamp()
+                    )
+                )
+            } else {
+                batch.set(
+                    likeRef,
+                    mapOf(
+                        "storyId" to storyId,
+                        "userId" to uid,
+                        "createdAt" to FieldValue.serverTimestamp()
+                    )
+                )
+                batch.update(
+                    storyRef,
+                    mapOf(
+                        "likesCount" to (currentLikes + 1L),
+                        "updatedAt" to FieldValue.serverTimestamp()
+                    )
+                )
+            }
+            batch.commit().await()
+            Result.success(Unit)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            handleFirestoreError(e, OperationType.WRITE, likeRef.path)
+            Result.failure(e)
+        }
+    }
+
+    fun observeStoryComments(storyId: String): Flow<List<StoryComment>> {
+        val path = "story_comments"
+        return db.collection("story_comments")
+            .whereEqualTo("storyId", storyId)
+            .whereEqualTo("visibility", "public")
+            .snapshots()
+            .map { snapshot ->
+                snapshot.toObjects(
+                    StoryComment::class.java,
+                    DocumentSnapshot.ServerTimestampBehavior.ESTIMATE
+                ).sortedBy { it.createdAt ?: Timestamp(0, 0) }
+            }
+            .catch { error ->
+                if (error is Exception) handleFirestoreError(error, OperationType.LIST, path)
+                throw error
+            }
+    }
+
+    suspend fun addStoryComment(
+        storyId: String,
+        authorUsername: String,
+        authorAvatarData: String,
+        text: String
+    ): Result<String> {
+        val uid = requireUserId()
+        val trimmed = text.trim().take(500)
+        if (trimmed.isBlank()) return Result.failure(IllegalArgumentException("Comment cannot be empty"))
+        val commentId = "sc_${UUID.randomUUID().toString().replace("-", "").take(16)}"
+        val commentRef = db.collection("story_comments").document(commentId)
+        val storyRef = db.collection("stories").document(storyId)
+        return try {
+            val snap = storyRef.get().await()
+            val currentComments = snap.getLong("commentsCount") ?: 0L
+            val batch = db.batch()
+            batch.set(
+                commentRef,
+                mapOf(
+                    "storyId" to storyId,
+                    "authorId" to uid,
+                    "authorUsername" to sanitizeUsername(authorUsername, uid),
+                    "authorAvatarData" to authorAvatarData.take(340000),
+                    "text" to trimmed,
+                    "visibility" to "public",
+                    "createdAt" to FieldValue.serverTimestamp()
+                )
+            )
+            batch.update(
+                storyRef,
+                mapOf(
+                    "commentsCount" to (currentComments + 1L),
+                    "lastCommentId" to commentId,
+                    "updatedAt" to FieldValue.serverTimestamp()
+                )
+            )
+            batch.commit().await()
+            Result.success(commentId)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            handleFirestoreError(e, OperationType.CREATE, commentRef.path)
+            Result.failure(e)
+        }
+    }
+
+    suspend fun incrementStoryView(storyId: String) {
+        if (auth.currentUser == null) return
+        val storyRef = db.collection("stories").document(storyId)
+        try {
+            val snap = storyRef.get().await()
+            if (!snap.exists()) return
+            val currentViews = snap.getLong("viewsCount") ?: 0L
+            storyRef.update(
+                mapOf(
+                    "viewsCount" to (currentViews + 1L),
+                    "updatedAt" to FieldValue.serverTimestamp()
+                )
+            ).await()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            handleFirestoreError(e, OperationType.UPDATE, storyRef.path)
+        }
+    }
+
+    // --- STORY HIGHLIGHTS ---
+
+    fun observeHighlights(ownerId: String): Flow<List<StoryHighlight>> {
+        val path = "highlights"
+        return db.collection("highlights")
+            .whereEqualTo("ownerId", ownerId)
+            .whereEqualTo("visibility", "public")
+            .snapshots()
+            .map { snapshot ->
+                snapshot.toObjects(
+                    StoryHighlight::class.java,
+                    DocumentSnapshot.ServerTimestampBehavior.ESTIMATE
+                ).sortedByDescending { it.createdAt ?: Timestamp(0, 0) }
+            }
+            .catch { error ->
+                if (error is Exception) handleFirestoreError(error, OperationType.LIST, path)
+                throw error
+            }
+    }
+
+    suspend fun createHighlight(
+        title: String,
+        coverData: String,
+        storyIds: List<String>
+    ): Result<String> {
+        val uid = requireUserId()
+        val safeTitle = title.trim().ifBlank { "Highlights" }.take(32)
+        val hlId = "hl_${UUID.randomUUID().toString().replace("-", "").take(16)}"
+        val hlRef = db.collection("highlights").document(hlId)
+        return try {
+            hlRef.set(
+                mapOf(
+                    "ownerId" to uid,
+                    "title" to safeTitle,
+                    "coverData" to coverData.take(440000),
+                    "storyIds" to storyIds.take(30),
+                    "visibility" to "public",
+                    "createdAt" to FieldValue.serverTimestamp()
+                )
+            ).await()
+            Result.success(hlId)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            handleFirestoreError(e, OperationType.CREATE, hlRef.path)
+            Result.failure(e)
+        }
+    }
+
+    suspend fun deleteHighlight(highlightId: String): Result<Unit> {
+        requireUserId()
+        val hlRef = db.collection("highlights").document(highlightId)
+        return try {
+            hlRef.delete().await()
+            Result.success(Unit)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            handleFirestoreError(e, OperationType.DELETE, hlRef.path)
+            Result.failure(e)
+        }
+    }
+
+    // --- DIRECT MESSAGES & ATTACHMENTS ---
+
     fun buildConversationId(uidA: String, uidB: String): String {
         val sorted = listOf(uidA, uidB).sorted()
         return "${sorted[0]}_${sorted[1]}"
@@ -620,11 +967,18 @@ class InstaCloneRepository(
     suspend fun sendDirectMessage(
         myProfile: UserProfile,
         peerProfile: UserProfile,
-        text: String
+        text: String,
+        attachment: PendingAttachment? = null,
+        replyTo: DirectMessage? = null
     ): Result<String> {
         val uid = requireUserId()
         val trimmed = text.trim().take(1000)
-        if (trimmed.isBlank()) {
+        val effectiveText = when {
+            trimmed.isNotEmpty() -> trimmed
+            attachment != null -> "Sent ${attachment.type}: ${attachment.name}"
+            else -> ""
+        }
+        if (effectiveText.isBlank()) {
             return Result.failure(IllegalArgumentException("Message cannot be empty"))
         }
         val sortedProfiles = listOf(myProfile, peerProfile).sortedBy { it.userId }
@@ -636,6 +990,13 @@ class InstaCloneRepository(
         val msgId = "msg_${UUID.randomUUID().toString().replace("-", "").take(16)}"
         val msgRef = convRef.collection("messages").document(msgId)
 
+        val preview = when (attachment?.type) {
+            "image" -> if (trimmed.isNotEmpty()) "📷 $trimmed" else "📷 Photo"
+            "video" -> if (trimmed.isNotEmpty()) "🎥 $trimmed" else "🎥 Video"
+            "file" -> if (trimmed.isNotEmpty()) "📎 $trimmed" else "📎 ${attachment.name}"
+            else -> effectiveText
+        }.take(1000)
+
         return try {
             val convSnap = convRef.get().await()
             val batch = db.batch()
@@ -643,7 +1004,7 @@ class InstaCloneRepository(
                 batch.update(
                     convRef,
                     mapOf(
-                        "lastMessage" to trimmed,
+                        "lastMessage" to preview,
                         "lastSenderId" to uid,
                         "userOneUsername" to sanitizeUsername(userOne.username, userOne.userId),
                         "userOneAvatarData" to userOne.avatarData.take(340000),
@@ -663,30 +1024,172 @@ class InstaCloneRepository(
                         "userTwoId" to userTwo.userId,
                         "userTwoUsername" to sanitizeUsername(userTwo.username, userTwo.userId),
                         "userTwoAvatarData" to userTwo.avatarData.take(340000),
-                        "lastMessage" to trimmed,
+                        "lastMessage" to preview,
                         "lastSenderId" to uid,
                         "createdAt" to FieldValue.serverTimestamp(),
                         "updatedAt" to FieldValue.serverTimestamp()
                     )
                 )
             }
-            batch.set(
-                msgRef,
-                mapOf(
-                    "conversationId" to conversationId,
-                    "participantIds" to participantIds,
-                    "senderId" to uid,
-                    "senderUsername" to sanitizeUsername(myProfile.username, uid),
-                    "text" to trimmed,
-                    "createdAt" to FieldValue.serverTimestamp()
-                )
+            val msgPayload = mutableMapOf<String, Any>(
+                "conversationId" to conversationId,
+                "participantIds" to participantIds,
+                "senderId" to uid,
+                "senderUsername" to sanitizeUsername(myProfile.username, uid),
+                "text" to effectiveText,
+                "createdAt" to FieldValue.serverTimestamp()
             )
+            if (attachment != null) {
+                msgPayload["attachmentType"] = attachment.type
+                msgPayload["attachmentName"] = attachment.name.take(160)
+                msgPayload["attachmentSize"] = attachment.sizeBytes.coerceIn(0L, 50_000_000L)
+                msgPayload["attachmentData"] = attachment.data.take(440000)
+            }
+            if (replyTo != null) {
+                msgPayload["replyToId"] = replyTo.id.take(128)
+                msgPayload["replyToSender"] = replyTo.senderUsername.take(40)
+                msgPayload["replyToText"] = replyTo.text.take(200)
+            }
+            batch.set(msgRef, msgPayload)
             batch.commit().await()
             Result.success(conversationId)
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
             handleFirestoreError(e, OperationType.WRITE, msgRef.path)
+            Result.failure(e)
+        }
+    }
+
+    suspend fun toggleMessageReaction(
+        conversationId: String,
+        messageId: String,
+        emoji: String,
+        currentReactions: Map<String, Long>
+    ): Result<Unit> {
+        requireUserId()
+        val msgRef = db.collection("conversations").document(conversationId)
+            .collection("messages").document(messageId)
+        val nextMap = currentReactions.toMutableMap()
+        val count = nextMap[emoji] ?: 0L
+        if (count > 0L) {
+            nextMap.remove(emoji)
+        } else if (nextMap.size < 12) {
+            nextMap[emoji] = 1L
+        }
+        return try {
+            msgRef.update("reactions", nextMap).await()
+            Result.success(Unit)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            handleFirestoreError(e, OperationType.UPDATE, msgRef.path)
+            Result.failure(e)
+        }
+    }
+
+    suspend fun deleteDirectMessage(conversationId: String, messageId: String): Result<Unit> {
+        requireUserId()
+        val msgRef = db.collection("conversations").document(conversationId)
+            .collection("messages").document(messageId)
+        return try {
+            msgRef.delete().await()
+            Result.success(Unit)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            handleFirestoreError(e, OperationType.DELETE, msgRef.path)
+            Result.failure(e)
+        }
+    }
+
+    // --- VOICE & VIDEO CALL SIGNALING ---
+
+    suspend fun startCallSession(
+        myProfile: UserProfile,
+        peerProfile: UserProfile,
+        callType: String
+    ): Result<CallSession> {
+        val uid = requireUserId()
+        val callId = "call_${UUID.randomUUID().toString().replace("-", "").take(16)}"
+        val callRef = db.collection("calls").document(callId)
+        val safeType = if (callType == "video") "video" else "voice"
+        val participantIds = listOf(uid, peerProfile.userId)
+        return try {
+            callRef.set(
+                mapOf(
+                    "callerId" to uid,
+                    "callerUsername" to sanitizeUsername(myProfile.username, uid),
+                    "callerAvatarData" to myProfile.avatarData.take(340000),
+                    "calleeId" to peerProfile.userId,
+                    "calleeUsername" to sanitizeUsername(peerProfile.username, peerProfile.userId),
+                    "calleeAvatarData" to peerProfile.avatarData.take(340000),
+                    "participantIds" to participantIds,
+                    "callType" to safeType,
+                    "status" to "ringing",
+                    "createdAt" to FieldValue.serverTimestamp(),
+                    "updatedAt" to FieldValue.serverTimestamp()
+                )
+            ).await()
+            Result.success(
+                CallSession(
+                    id = callId,
+                    callerId = uid,
+                    callerUsername = myProfile.username,
+                    callerAvatarData = myProfile.avatarData,
+                    calleeId = peerProfile.userId,
+                    calleeUsername = peerProfile.username,
+                    calleeAvatarData = peerProfile.avatarData,
+                    participantIds = participantIds,
+                    callType = safeType,
+                    status = "ringing"
+                )
+            )
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            handleFirestoreError(e, OperationType.CREATE, callRef.path)
+            Result.failure(e)
+        }
+    }
+
+    fun observeCallSessionsForUser(userId: String): Flow<List<CallSession>> {
+        val path = "calls"
+        return db.collection("calls")
+            .whereArrayContains("participantIds", userId)
+            .snapshots()
+            .map { snapshot ->
+                snapshot.toObjects(
+                    CallSession::class.java,
+                    DocumentSnapshot.ServerTimestampBehavior.ESTIMATE
+                ).sortedByDescending { it.createdAt ?: Timestamp(0, 0) }
+            }
+            .catch { error ->
+                if (error is Exception) handleFirestoreError(error, OperationType.LIST, path)
+                throw error
+            }
+    }
+
+    suspend fun updateCallStatus(callId: String, status: String): Result<Unit> {
+        requireUserId()
+        val callRef = db.collection("calls").document(callId)
+        val safeStatus = if (status in listOf("ringing", "active", "ended", "declined", "missed")) {
+            status
+        } else {
+            "ended"
+        }
+        return try {
+            callRef.update(
+                mapOf(
+                    "status" to safeStatus,
+                    "updatedAt" to FieldValue.serverTimestamp()
+                )
+            ).await()
+            Result.success(Unit)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            handleFirestoreError(e, OperationType.UPDATE, callRef.path)
             Result.failure(e)
         }
     }

@@ -25,6 +25,18 @@
           "type": "string",
           "description": "Compressed avatar data URI or HTTPS URL."
         },
+        "category": {
+          "type": "string",
+          "description": "Optional creator category label (up to 50 chars)."
+        },
+        "pronouns": {
+          "type": "string",
+          "description": "Optional pronouns label (up to 30 chars)."
+        },
+        "website": {
+          "type": "string",
+          "description": "Optional external website URL (up to 200 chars)."
+        },
         "followersCount": {
           "type": "integer",
           "description": "Total number of followers."
@@ -316,7 +328,7 @@
     },
     "DirectMessage": {
       "title": "DirectMessage",
-      "description": "Individual chat message inside a 1-on-1 conversation.",
+      "description": "Individual chat message inside a 1-on-1 conversation with optional attachment, reply quote, and emoji reactions.",
       "type": "object",
       "properties": {
         "conversationId": {
@@ -339,6 +351,38 @@
           "type": "string",
           "description": "Message text content (1-1000 chars)."
         },
+        "attachmentType": {
+          "type": "string",
+          "description": "Optional attachment type: '', 'image', 'video', or 'file'."
+        },
+        "attachmentName": {
+          "type": "string",
+          "description": "Optional attachment display filename."
+        },
+        "attachmentSize": {
+          "type": "integer",
+          "description": "Optional attachment byte size."
+        },
+        "attachmentData": {
+          "type": "string",
+          "description": "Optional attachment data URI or preview URL."
+        },
+        "replyToId": {
+          "type": "string",
+          "description": "Optional replied-to message ID."
+        },
+        "replyToSender": {
+          "type": "string",
+          "description": "Optional replied-to sender username."
+        },
+        "replyToText": {
+          "type": "string",
+          "description": "Optional replied-to preview text."
+        },
+        "reactions": {
+          "type": "object",
+          "description": "Map of emoji reaction to count."
+        },
         "createdAt": {
           "type": "string",
           "format": "date-time",
@@ -352,6 +396,128 @@
         "senderUsername",
         "text",
         "createdAt"
+      ]
+    },
+    "Story": {
+      "title": "Story",
+      "description": "Ephemeral 24-hour photo, video, or gradient text card story.",
+      "type": "object",
+      "properties": {
+        "authorId": { "type": "string" },
+        "authorUsername": { "type": "string" },
+        "authorAvatarData": { "type": "string" },
+        "mediaData": { "type": "string" },
+        "mediaType": { "type": "string", "enum": ["image", "video", "text"] },
+        "bgGradient": { "type": "string" },
+        "overlayText": { "type": "string" },
+        "sticker": { "type": "string" },
+        "caption": { "type": "string" },
+        "likesCount": { "type": "integer" },
+        "commentsCount": { "type": "integer" },
+        "viewsCount": { "type": "integer" },
+        "lastCommentId": { "type": "string" },
+        "expiresAtMillis": { "type": "integer" },
+        "visibility": { "type": "string", "enum": ["public"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "authorId",
+        "authorUsername",
+        "authorAvatarData",
+        "mediaData",
+        "mediaType",
+        "bgGradient",
+        "overlayText",
+        "sticker",
+        "caption",
+        "likesCount",
+        "commentsCount",
+        "viewsCount",
+        "lastCommentId",
+        "expiresAtMillis",
+        "visibility",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "StoryLike": {
+      "title": "StoryLike",
+      "description": "Single user's like on a story.",
+      "type": "object",
+      "properties": {
+        "storyId": { "type": "string" },
+        "userId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["storyId", "userId", "createdAt"]
+    },
+    "StoryComment": {
+      "title": "StoryComment",
+      "description": "Comment or quick reply on a story.",
+      "type": "object",
+      "properties": {
+        "storyId": { "type": "string" },
+        "authorId": { "type": "string" },
+        "authorUsername": { "type": "string" },
+        "authorAvatarData": { "type": "string" },
+        "text": { "type": "string" },
+        "visibility": { "type": "string", "enum": ["public"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "storyId",
+        "authorId",
+        "authorUsername",
+        "authorAvatarData",
+        "text",
+        "visibility",
+        "createdAt"
+      ]
+    },
+    "StoryHighlight": {
+      "title": "StoryHighlight",
+      "description": "Permanent curated story highlight collection on a user profile.",
+      "type": "object",
+      "properties": {
+        "ownerId": { "type": "string" },
+        "title": { "type": "string" },
+        "coverData": { "type": "string" },
+        "storyIds": { "type": "array" },
+        "visibility": { "type": "string", "enum": ["public"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["ownerId", "title", "coverData", "storyIds", "visibility", "createdAt"]
+    },
+    "CallSession": {
+      "title": "CallSession",
+      "description": "1-on-1 voice or video call signaling session between two users.",
+      "type": "object",
+      "properties": {
+        "callerId": { "type": "string" },
+        "callerUsername": { "type": "string" },
+        "callerAvatarData": { "type": "string" },
+        "calleeId": { "type": "string" },
+        "calleeUsername": { "type": "string" },
+        "calleeAvatarData": { "type": "string" },
+        "participantIds": { "type": "array" },
+        "callType": { "type": "string", "enum": ["voice", "video"] },
+        "status": { "type": "string", "enum": ["ringing", "active", "ended", "declined", "missed"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "callerId",
+        "callerUsername",
+        "callerAvatarData",
+        "calleeId",
+        "calleeUsername",
+        "calleeAvatarData",
+        "participantIds",
+        "callType",
+        "status",
+        "createdAt",
+        "updatedAt"
       ]
     }
   },
@@ -387,6 +553,26 @@
     "/conversations/{conversationId}/messages/{messageId}": {
       "schema": "DirectMessage",
       "description": "Messages inside a direct message thread."
+    },
+    "/stories/{storyId}": {
+      "schema": "Story",
+      "description": "24-hour user stories."
+    },
+    "/story_likes/{likeId}": {
+      "schema": "StoryLike",
+      "description": "Per-user story likes keyed by storyId_userId."
+    },
+    "/story_comments/{commentId}": {
+      "schema": "StoryComment",
+      "description": "Comments and quick replies on stories."
+    },
+    "/highlights/{highlightId}": {
+      "schema": "StoryHighlight",
+      "description": "User profile story highlights."
+    },
+    "/calls/{callId}": {
+      "schema": "CallSession",
+      "description": "1-on-1 voice/video call signaling sessions."
     }
   }
 }

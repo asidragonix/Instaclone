@@ -67,4 +67,20 @@
     <string name="reels_filter_following">Following</string>
     <string name="reels_studio_title">Reels Edit Studio</string>
     <string name="publish_reel">Publish Reel</string>
+    <string name="your_story">Your Story</string>
+    <string name="create_story">Create Story</string>
+    <string name="tab_reels">Reels</string>
+    <string name="tab_tagged">Tagged</string>
+    <string name="share_profile">Share Profile</string>
+    <string name="voice_call">Voice Call</string>
+    <string name="video_call">Video Call</string>
+    <string name="cd_share_content">Share</string>
+    <string name="cd_voice_call">Start voice call</string>
+    <string name="cd_video_call">Start video call</string>
+    <string name="cd_attach_media">Attach photo, video, or file</string>
+    <string name="saved_privacy_notice">Only you can see what you\'ve saved</string>
+    <string name="story_reply_hint">Send a reply or comment…</string>
+    <string name="edit_caption">Edit Caption</string>
+    <string name="highlights_title">Story Highlights</string>
+    <string name="new_highlight">New</string>
 </resources>

@@ -1,8 +1,8 @@
 package com.example.ui.screens
 
-import android.content.Intent
 import android.media.MediaPlayer
 import android.net.Uri
+import android.os.Build
 import android.widget.VideoView
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Spring
@@ -41,13 +41,22 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.VolumeOff
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
+import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.ContentCut
+import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Movie
 import androidx.compose.material.icons.filled.MusicNote
+import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.Speed
+import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material.icons.outlined.ChatBubbleOutline
 import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
@@ -65,6 +74,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -76,7 +86,6 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -98,18 +107,27 @@ enum class ReelsFeedFilter(val label: String) {
     FOLLOWING("Following")
 }
 
+private val speedOptions = listOf(0.5f, 1.0f, 1.25f, 1.5f, 2.0f)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReelsScreen(
     uiState: ReelsUiState,
+    currentUserId: String,
+    currentUsername: String,
     initialFocusedReelId: String?,
     onClearFocusedReel: () -> Unit,
     onToggleLike: (String) -> Unit,
+    onToggleBookmark: (String) -> Unit,
     onAddComment: (String, String) -> Unit,
+    onDeleteComment: (String, String) -> Unit,
     onToggleFollow: (String) -> Unit,
-    onOpenReelsEditor: (Reel?) -> Unit
+    onShareReel: (Reel) -> Unit,
+    onOpenReelsEditor: (Reel?) -> Unit,
+    onEditReelCaption: (Reel) -> Unit,
+    onDeleteReel: (String) -> Unit,
+    onOpenProfile: (String) -> Unit
 ) {
-    val context = LocalContext.current
     var activeFilter by remember { mutableStateOf(ReelsFeedFilter.ALL) }
     var isMuted by remember { mutableStateOf(true) }
     var commentTargetReelId by remember { mutableStateOf<String?>(null) }
@@ -142,7 +160,9 @@ fun ReelsScreen(
     if (commentTargetReel != null) {
         ReelCommentsSheet(
             reel = commentTargetReel,
+            currentUsername = currentUsername,
             onAddComment = { text -> onAddComment(commentTargetReel.id, text) },
+            onDeleteComment = { commentId -> onDeleteComment(commentTargetReel.id, commentId) },
             onDismiss = { commentTargetReelId = null }
         )
     }
@@ -190,6 +210,7 @@ fun ReelsScreen(
                 val isCurrentlyVisible = pagerState.settledPage == page
                 ReelPagerItem(
                     reel = reel,
+                    isOwnReel = reel.authorId == currentUserId || reel.username == currentUsername,
                     isActivePage = isCurrentlyVisible,
                     isMuted = isMuted,
                     onToggleMute = { isMuted = !isMuted },
@@ -197,19 +218,16 @@ fun ReelsScreen(
                         if (!reel.isLiked) onToggleLike(reel.id)
                     },
                     onToggleLike = { onToggleLike(reel.id) },
+                    onToggleBookmark = { onToggleBookmark(reel.id) },
                     onOpenComments = { commentTargetReelId = reel.id },
                     onToggleFollow = { onToggleFollow(reel.username) },
-                    onShare = {
-                        val shareIntent = Intent(Intent.ACTION_SEND).apply {
-                            type = "text/plain"
-                            putExtra(
-                                Intent.EXTRA_TEXT,
-                                "Watch @${reel.username}'s reel on InstaClone: ${reel.caption}\n${reel.videoUrl}"
-                            )
-                        }
-                        context.startActivity(Intent.createChooser(shareIntent, "Share Reel"))
-                    },
-                    onEditReel = { onOpenReelsEditor(reel) }
+                    onShare = { onShareReel(reel) },
+                    onRemixReel = { onOpenReelsEditor(reel) },
+                    onEditCaption = { onEditReelCaption(reel) },
+                    onDeleteReel = { onDeleteReel(reel.id) },
+                    onOpenProfile = {
+                        if (reel.authorId.isNotBlank()) onOpenProfile(reel.authorId)
+                    }
                 )
             }
         }
@@ -294,18 +312,27 @@ fun ReelsScreen(
 @Composable
 private fun ReelPagerItem(
     reel: Reel,
+    isOwnReel: Boolean,
     isActivePage: Boolean,
     isMuted: Boolean,
     onToggleMute: () -> Unit,
     onDoubleTapLike: () -> Unit,
     onToggleLike: () -> Unit,
+    onToggleBookmark: () -> Unit,
     onOpenComments: () -> Unit,
     onToggleFollow: () -> Unit,
     onShare: () -> Unit,
-    onEditReel: () -> Unit
+    onRemixReel: () -> Unit,
+    onEditCaption: () -> Unit,
+    onDeleteReel: () -> Unit,
+    onOpenProfile: () -> Unit
 ) {
     var showHeartBurst by remember { mutableStateOf(false) }
     var isVideoPrepared by remember { mutableStateOf(false) }
+    var isPaused by remember { mutableStateOf(false) }
+    var playbackSpeed by remember(reel.id) { mutableFloatStateOf(reel.playbackSpeed.coerceIn(0.5f, 2.0f)) }
+    var showSpeedHud by remember { mutableStateOf(false) }
+    var showMoreMenu by remember { mutableStateOf(false) }
     var mediaPlayerRef by remember { mutableStateOf<MediaPlayer?>(null) }
 
     LaunchedEffect(showHeartBurst) {
@@ -318,6 +345,15 @@ private fun ReelPagerItem(
     LaunchedEffect(isMuted, mediaPlayerRef) {
         val vol = if (isMuted) 0f else 1f
         runCatching { mediaPlayerRef?.setVolume(vol, vol) }
+    }
+
+    LaunchedEffect(playbackSpeed, mediaPlayerRef, isVideoPrepared) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            runCatching {
+                val mp = mediaPlayerRef ?: return@runCatching
+                mp.playbackParams = mp.playbackParams.setSpeed(playbackSpeed)
+            }
+        }
     }
 
     val likeScale by animateFloatAsState(
@@ -344,11 +380,19 @@ private fun ReelPagerItem(
                         showHeartBurst = true
                         onDoubleTapLike()
                     },
-                    onTap = { onToggleMute() }
+                    onLongPress = {
+                        showSpeedHud = !showSpeedHud
+                    },
+                    onTap = {
+                        if (showSpeedHud) {
+                            showSpeedHud = false
+                        } else {
+                            isPaused = !isPaused
+                        }
+                    }
                 )
             }
     ) {
-        // Poster thumbnail underneath for instant visual continuity while streaming
         AsyncImage(
             model = reel.posterUrl,
             contentDescription = reel.caption,
@@ -356,7 +400,6 @@ private fun ReelPagerItem(
             modifier = Modifier.fillMaxSize()
         )
 
-        // Native VideoView active only when nearby/visible
         AndroidView(
             factory = { ctx ->
                 VideoView(ctx).apply {
@@ -366,12 +409,16 @@ private fun ReelPagerItem(
                         mp.isLooping = true
                         val vol = if (isMuted) 0f else 1f
                         mp.setVolume(vol, vol)
-                        if (isActivePage) {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                            runCatching {
+                                mp.playbackParams = mp.playbackParams.setSpeed(playbackSpeed)
+                            }
+                        }
+                        if (isActivePage && !isPaused) {
                             start()
                         }
                     }
                     setOnErrorListener { _, _, _ ->
-                        // Gracefully keep poster visual without modal popup if offline
                         isVideoPrepared = false
                         true
                     }
@@ -382,7 +429,7 @@ private fun ReelPagerItem(
                 runCatching {
                     val vol = if (isMuted) 0f else 1f
                     mediaPlayerRef?.setVolume(vol, vol)
-                    if (isActivePage) {
+                    if (isActivePage && !isPaused) {
                         if (!videoView.isPlaying && isVideoPrepared) {
                             videoView.start()
                         }
@@ -410,7 +457,6 @@ private fun ReelPagerItem(
             )
         }
 
-        // Bottom gradient scrim for crisp text legibility
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -423,7 +469,6 @@ private fun ReelPagerItem(
                 )
         )
 
-        // Custom overlay sticker text if added in Reels Edit Studio
         if (reel.overlayText.isNotBlank()) {
             Surface(
                 shape = RoundedCornerShape(12.dp),
@@ -442,6 +487,87 @@ private fun ReelPagerItem(
             }
         }
 
+        // Play/Pause Indicator when paused
+        if (isPaused) {
+            Surface(
+                shape = CircleShape,
+                color = Color.Black.copy(alpha = 0.55f),
+                modifier = Modifier.align(Alignment.Center)
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.PlayArrow,
+                    contentDescription = "Paused - tap to resume",
+                    tint = Color.White,
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .size(44.dp)
+                )
+            }
+        }
+
+        // Long-Press Speed Selector HUD
+        AnimatedVisibility(
+            visible = showSpeedHud,
+            enter = fadeIn() + scaleIn(),
+            exit = fadeOut() + scaleOut(),
+            modifier = Modifier
+                .align(Alignment.Center)
+                .padding(horizontal = 20.dp)
+        ) {
+            Surface(
+                shape = RoundedCornerShape(22.dp),
+                color = Color.Black.copy(alpha = 0.85f),
+                modifier = Modifier
+                    .border(1.dp, Color.White.copy(alpha = 0.25f), RoundedCornerShape(22.dp))
+                    .testTag("reel_speed_hud_${reel.id}")
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp)
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Filled.Speed, contentDescription = null, tint = InstaCoral, modifier = Modifier.size(18.dp))
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "Playback Speed",
+                            style = MaterialTheme.typography.labelLarge,
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        speedOptions.forEach { spd ->
+                            val selected = playbackSpeed == spd
+                            Surface(
+                                shape = RoundedCornerShape(14.dp),
+                                color = if (selected) InstaCoral else Color.White.copy(alpha = 0.14f),
+                                modifier = Modifier
+                                    .clickable {
+                                        playbackSpeed = spd
+                                        showSpeedHud = false
+                                    }
+                                    .testTag("speed_option_${spd}x")
+                            ) {
+                                Text(
+                                    text = if (spd == 1.0f) "1x" else "${spd}x",
+                                    style = MaterialTheme.typography.labelMedium,
+                                    color = Color.White,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
+                                )
+                            }
+                        }
+                    }
+                    Text(
+                        text = "Hold video anytime to change speed",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = Color.White.copy(alpha = 0.7f)
+                    )
+                }
+            }
+        }
+
         // Double-Tap Heart Animation
         AnimatedVisibility(
             visible = showHeartBurst,
@@ -457,13 +583,13 @@ private fun ReelPagerItem(
             )
         }
 
-        // Right-side Instagram Engagement Action Column
+        // Right-side Engagement Action Column
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(14.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(end = 12.dp, bottom = 24.dp)
+                .padding(end = 12.dp, bottom = 22.dp)
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 IconButton(
@@ -508,6 +634,18 @@ private fun ReelPagerItem(
             }
 
             IconButton(
+                onClick = onToggleBookmark,
+                modifier = Modifier.testTag("reel_bookmark_${reel.id}")
+            ) {
+                Icon(
+                    imageVector = if (reel.isBookmarked) Icons.Filled.Bookmark else Icons.Outlined.BookmarkBorder,
+                    contentDescription = "Save reel",
+                    tint = if (reel.isBookmarked) InstaCoral else Color.White,
+                    modifier = Modifier.size(26.dp)
+                )
+            }
+
+            IconButton(
                 onClick = onShare,
                 modifier = Modifier.testTag("reel_share_${reel.id}")
             ) {
@@ -519,16 +657,64 @@ private fun ReelPagerItem(
                 )
             }
 
-            IconButton(
-                onClick = onEditReel,
-                modifier = Modifier.testTag("reel_edit_${reel.id}")
+            // Speed Pill Button (also triggered via long-press)
+            Surface(
+                shape = RoundedCornerShape(14.dp),
+                color = if (playbackSpeed != 1.0f) InstaCoral else Color.Black.copy(alpha = 0.55f),
+                modifier = Modifier
+                    .clickable { showSpeedHud = !showSpeedHud }
+                    .testTag("reel_speed_pill_${reel.id}")
             ) {
-                Icon(
-                    imageVector = Icons.Filled.ContentCut,
-                    contentDescription = "Remix or edit reel",
-                    tint = Color.White,
-                    modifier = Modifier.size(24.dp)
+                Text(
+                    text = if (playbackSpeed == 1.0f) "1x" else "${playbackSpeed}x",
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White,
+                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp)
                 )
+            }
+
+            // Manage / Remix Menu
+            Box {
+                IconButton(
+                    onClick = { showMoreMenu = true },
+                    modifier = Modifier.testTag("reel_more_${reel.id}")
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.MoreVert,
+                        contentDescription = "Reel options",
+                        tint = Color.White,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+                DropdownMenu(
+                    expanded = showMoreMenu,
+                    onDismissRequest = { showMoreMenu = false }
+                ) {
+                    DropdownMenuItem(
+                        text = { Text("Remix in Reels Studio") },
+                        onClick = {
+                            showMoreMenu = false
+                            onRemixReel()
+                        }
+                    )
+                    if (isOwnReel) {
+                        DropdownMenuItem(
+                            text = { Text(stringResource(R.string.edit_caption)) },
+                            onClick = {
+                                showMoreMenu = false
+                                onEditCaption()
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Delete Reel", color = MaterialTheme.colorScheme.error) },
+                            onClick = {
+                                showMoreMenu = false
+                                onDeleteReel()
+                            }
+                        )
+                    }
+                }
             }
 
             IconButton(
@@ -553,10 +739,12 @@ private fun ReelPagerItem(
             modifier = Modifier
                 .align(Alignment.BottomStart)
                 .fillMaxWidth()
-                .padding(start = 16.dp, end = 80.dp, bottom = 22.dp)
+                .padding(start = 16.dp, end = 84.dp, bottom = 22.dp)
         ) {
-
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.clickable(onClick = onOpenProfile)
+            ) {
                 StoryAvatarRing(
                     avatarData = reel.avatarUrl,
                     username = reel.username,
@@ -610,7 +798,7 @@ private fun ReelPagerItem(
                 )
                 Spacer(modifier = Modifier.width(6.dp))
                 Text(
-                    text = "${reel.audioTrack} • ${reel.niche} • Tap for sound",
+                    text = "${reel.audioTrack} • ${reel.niche} • Tap pause • Hold speed",
                     style = MaterialTheme.typography.labelMedium,
                     color = Color.White.copy(alpha = 0.9f),
                     maxLines = 1,
@@ -625,7 +813,9 @@ private fun ReelPagerItem(
 @Composable
 private fun ReelCommentsSheet(
     reel: Reel,
+    currentUsername: String,
     onAddComment: (String) -> Unit,
+    onDeleteComment: (String) -> Unit,
     onDismiss: () -> Unit
 ) {
     var draft by remember { mutableStateOf("") }
@@ -667,17 +857,32 @@ private fun ReelCommentsSheet(
                     }
                 } else {
                     items(reel.comments, key = { it.id }) { comment ->
-                        Column {
-                            Text(
-                                text = "@${comment.author}",
-                                style = MaterialTheme.typography.labelLarge,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                            Text(
-                                text = comment.text,
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = "@${comment.author}",
+                                    style = MaterialTheme.typography.labelLarge,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Text(
+                                    text = comment.text,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+                            if (comment.author == currentUsername) {
+                                IconButton(onClick = { onDeleteComment(comment.id) }) {
+                                    Icon(
+                                        imageVector = Icons.Filled.DeleteOutline,
+                                        contentDescription = "Delete comment",
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                }
+                            }
                         }
                     }
                 }

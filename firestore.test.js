@@ -306,4 +306,147 @@ test("Direct Messaging isolates conversations and messages strictly to participa
       .where("participantIds", "array-contains", ALICE_UID)
       .get()
   );
+
+  // Attachment + reply message succeeds for sender; participant can react; only sender can delete
+  const bobDb = testEnv.authenticatedContext(BOB_UID).firestore();
+  const msg2Ref = aliceDb.collection("conversations").doc(convId).collection("messages").doc("msg_2");
+  await assertSucceeds(
+    msg2Ref.set({
+      conversationId: convId,
+      participantIds: [ALICE_UID, BOB_UID],
+      senderId: ALICE_UID,
+      senderUsername: "alice.lens",
+      text: "Check out this photo!",
+      attachmentType: "image",
+      attachmentName: "sunset.jpg",
+      attachmentSize: 2048,
+      attachmentData: "data:image/jpeg;base64,abc",
+      replyToId: "msg_1",
+      replyToSender: "alice.lens",
+      replyToText: "Hey Bob!",
+      reactions: {},
+      createdAt: serverTimestamp(),
+    })
+  );
+  await assertSucceeds(
+    bobDb.collection("conversations").doc(convId).collection("messages").doc("msg_2").update({
+      reactions: { "❤️": 1 },
+    })
+  );
+  await assertFails(
+    bobDb.collection("conversations").doc(convId).collection("messages").doc("msg_2").delete()
+  );
+  await assertSucceeds(msg2Ref.delete());
 });
+
+test("Stories, atomic StoryLike/StoryComment, Highlights, and Calls enforce ownership and participant isolation", async () => {
+  await seedProfiles();
+  const aliceDb = testEnv.authenticatedContext(ALICE_UID).firestore();
+  const bobDb = testEnv.authenticatedContext(BOB_UID).firestore();
+  const eveDb = testEnv.authenticatedContext(EVE_UID).firestore();
+
+  // Profile extended fields update succeeds for owner
+  await assertSucceeds(
+    aliceDb.collection("profiles").doc(ALICE_UID).update({
+      category: "Street Photographer",
+      pronouns: "she/her",
+      website: "https://alice.example.com",
+      updatedAt: serverTimestamp(),
+    })
+  );
+
+  // Create story succeeds for owner
+  await assertSucceeds(
+    aliceDb.collection("stories").doc("story_1").set({
+      authorId: ALICE_UID,
+      authorUsername: "alice.lens",
+      authorAvatarData: "",
+      mediaData: "",
+      mediaType: "text",
+      bgGradient: "sunset",
+      overlayText: "Golden Hour",
+      sticker: "✨",
+      caption: "Evening walk",
+      likesCount: 0,
+      commentsCount: 0,
+      viewsCount: 0,
+      lastCommentId: "",
+      expiresAtMillis: Date.now() + 86400000,
+      visibility: "public",
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    })
+  );
+
+  // Atomic StoryLike succeeds
+  const storyLikeBatch = bobDb.batch();
+  storyLikeBatch.set(bobDb.collection("story_likes").doc(`story_1_${BOB_UID}`), {
+    storyId: "story_1",
+    userId: BOB_UID,
+    createdAt: serverTimestamp(),
+  });
+  storyLikeBatch.update(bobDb.collection("stories").doc("story_1"), {
+    likesCount: 1,
+    updatedAt: serverTimestamp(),
+  });
+  await assertSucceeds(storyLikeBatch.commit());
+
+  // Atomic StoryComment succeeds
+  const storyCommentBatch = bobDb.batch();
+  storyCommentBatch.set(bobDb.collection("story_comments").doc("sc_1"), {
+    storyId: "story_1",
+    authorId: BOB_UID,
+    authorUsername: "bob.studio",
+    authorAvatarData: "",
+    text: "Love this mood!",
+    visibility: "public",
+    createdAt: serverTimestamp(),
+  });
+  storyCommentBatch.update(bobDb.collection("stories").doc("story_1"), {
+    commentsCount: 1,
+    lastCommentId: "sc_1",
+    updatedAt: serverTimestamp(),
+  });
+  await assertSucceeds(storyCommentBatch.commit());
+
+  // Bob cannot delete Alice's story
+  await assertFails(bobDb.collection("stories").doc("story_1").delete());
+
+  // Highlight creation succeeds for owner, fails for spoofing
+  await assertSucceeds(
+    aliceDb.collection("highlights").doc("hl_1").set({
+      ownerId: ALICE_UID,
+      title: "Travel",
+      coverData: "preset://sunset_horizon",
+      storyIds: ["story_1"],
+      visibility: "public",
+      createdAt: serverTimestamp(),
+    })
+  );
+  await assertFails(bobDb.collection("highlights").doc("hl_1").delete());
+
+  // Calls strictly isolated to participants
+  await assertSucceeds(
+    aliceDb.collection("calls").doc("call_1").set({
+      callerId: ALICE_UID,
+      callerUsername: "alice.lens",
+      callerAvatarData: "",
+      calleeId: BOB_UID,
+      calleeUsername: "bob.studio",
+      calleeAvatarData: "",
+      participantIds: [ALICE_UID, BOB_UID],
+      callType: "video",
+      status: "ringing",
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    })
+  );
+  await assertFails(eveDb.collection("calls").doc("call_1").get());
+  await assertSucceeds(
+    bobDb.collection("calls").doc("call_1").update({
+      status: "active",
+      updatedAt: serverTimestamp(),
+    })
+  );
+});
+

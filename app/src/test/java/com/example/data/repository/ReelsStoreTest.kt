@@ -77,4 +77,39 @@ class ReelsStoreTest {
         val reloaded = ReelsStore(context)
         assertTrue(reloaded.uiState.value.reels.any { it.id == published.id && it.overlayText == "HELLO" })
     }
+
+    @Test
+    fun `bookmark delete comment edit caption and delete reel work and persist`() {
+        val store = ReelsStore(context)
+        val firstReel = store.uiState.value.reels.first()
+        val beforeBookmarked = firstReel.isBookmarked
+
+        store.toggleBookmarkReel(firstReel.id)
+        val afterBookmarked = store.uiState.value.reels.first { it.id == firstReel.id }
+        assertEquals(!beforeBookmarked, afterBookmarked.isBookmarked)
+
+        store.addComment(firstReel.id, "tester", "Temporary comment")
+        val addedCommentId = store.uiState.value.reels
+            .first { it.id == firstReel.id }
+            .comments
+            .last { it.text == "Temporary comment" }
+            .id
+
+        store.deleteComment(firstReel.id, addedCommentId)
+        assertTrue(
+            store.uiState.value.reels
+                .first { it.id == firstReel.id }
+                .comments
+                .none { it.id == addedCommentId }
+        )
+
+        store.updateReelCaption(firstReel.id, "Updated caption #v2")
+        assertEquals(
+            "Updated caption #v2",
+            store.uiState.value.reels.first { it.id == firstReel.id }.caption
+        )
+
+        store.deleteReel(firstReel.id)
+        assertTrue(store.uiState.value.reels.none { it.id == firstReel.id })
+    }
 }

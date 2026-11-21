@@ -61,6 +61,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun CreatePostScreen(
     isPublishing: Boolean,
+    onOpenCreateStory: () -> Unit = {},
     onOpenReelsStudio: () -> Unit = {},
     onPublishPost: (imageData: String, caption: String, location: String, visibility: String) -> Unit
 ) {
@@ -108,28 +109,40 @@ fun CreatePostScreen(
                 .padding(horizontal = 16.dp, vertical = 14.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxWidth()
-            ) {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(
                     text = stringResource(R.string.create_new_post),
                     style = MaterialTheme.typography.headlineMedium,
                     color = MaterialTheme.colorScheme.onBackground
                 )
-                OutlinedButton(
-                    onClick = onOpenReelsStudio,
-                    shape = RoundedCornerShape(14.dp),
-                    modifier = Modifier.testTag("switch_to_reels_studio_button")
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    Icon(
-                        imageVector = Icons.Filled.ContentCut,
-                        contentDescription = null,
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text("Reels Studio")
+                    OutlinedButton(
+                        onClick = onOpenCreateStory,
+                        shape = RoundedCornerShape(14.dp),
+                        modifier = Modifier
+                            .weight(1f)
+                            .testTag("switch_to_create_story_button")
+                    ) {
+                        Text(stringResource(R.string.create_story), maxLines = 1)
+                    }
+                    OutlinedButton(
+                        onClick = onOpenReelsStudio,
+                        shape = RoundedCornerShape(14.dp),
+                        modifier = Modifier
+                            .weight(1f)
+                            .testTag("switch_to_reels_studio_button")
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.ContentCut,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("Reels Studio", maxLines = 1)
+                    }
                 }
             }
 

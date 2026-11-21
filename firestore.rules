@@ -30,6 +30,9 @@ service cloud.firestore {
              data.displayName is string && data.displayName.size() >= 1 && data.displayName.size() <= 50 &&
              data.bio is string && data.bio.size() <= 200 &&
              data.avatarData is string && data.avatarData.size() <= 350000 &&
+             (!('category' in data) || (data.category is string && data.category.size() <= 50)) &&
+             (!('pronouns' in data) || (data.pronouns is string && data.pronouns.size() <= 30)) &&
+             (!('website' in data) || (data.website is string && data.website.size() <= 200)) &&
              data.followersCount is int && data.followersCount >= 0 &&
              data.followingCount is int && data.followingCount >= 0 &&
              data.postsCount is int && data.postsCount >= 0 &&
@@ -107,10 +110,80 @@ service cloud.firestore {
              data.participantIds[1] is string && isValidId(data.participantIds[1]) &&
              data.participantIds[0] != data.participantIds[1] &&
              request.auth.uid in data.participantIds &&
-             data.senderId is string && isValidId(data.senderId) && data.senderId == request.auth.uid &&
+             data.senderId is string && isValidId(data.senderId) &&
              data.senderUsername is string && data.senderUsername.size() >= 2 && data.senderUsername.size() <= 30 &&
              data.text is string && data.text.size() >= 1 && data.text.size() <= 1000 &&
+             (!('attachmentType' in data) || (data.attachmentType is string && data.attachmentType in ['', 'image', 'video', 'file'])) &&
+             (!('attachmentName' in data) || (data.attachmentName is string && data.attachmentName.size() <= 160)) &&
+             (!('attachmentSize' in data) || (data.attachmentSize is int && data.attachmentSize >= 0 && data.attachmentSize <= 50000000)) &&
+             (!('attachmentData' in data) || (data.attachmentData is string && data.attachmentData.size() <= 450000)) &&
+             (!('replyToId' in data) || (data.replyToId is string && data.replyToId.size() <= 128)) &&
+             (!('replyToSender' in data) || (data.replyToSender is string && data.replyToSender.size() <= 40)) &&
+             (!('replyToText' in data) || (data.replyToText is string && data.replyToText.size() <= 200)) &&
+             (!('reactions' in data) || (data.reactions is map && data.reactions.size() <= 12)) &&
              data.createdAt is timestamp && data.createdAt <= request.time;
+    }
+
+    function isValidStory(data) {
+      return data.authorId is string && isValidId(data.authorId) &&
+             data.authorUsername is string && data.authorUsername.size() >= 2 && data.authorUsername.size() <= 30 &&
+             data.authorAvatarData is string && data.authorAvatarData.size() <= 350000 &&
+             data.mediaData is string && data.mediaData.size() <= 450000 &&
+             data.mediaType is string && data.mediaType in ['image', 'video', 'text'] &&
+             data.bgGradient is string && data.bgGradient.size() <= 80 &&
+             data.overlayText is string && data.overlayText.size() <= 120 &&
+             data.sticker is string && data.sticker.size() <= 40 &&
+             data.caption is string && data.caption.size() <= 300 &&
+             data.likesCount is int && data.likesCount >= 0 &&
+             data.commentsCount is int && data.commentsCount >= 0 &&
+             data.viewsCount is int && data.viewsCount >= 0 &&
+             data.lastCommentId is string && data.lastCommentId.size() <= 128 &&
+             data.expiresAtMillis is int && data.expiresAtMillis > 0 &&
+             data.visibility is string && data.visibility == 'public' &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    function isValidStoryLike(data) {
+      return data.storyId is string && isValidId(data.storyId) &&
+             data.userId is string && isValidId(data.userId) && data.userId == request.auth.uid &&
+             data.createdAt is timestamp && data.createdAt <= request.time;
+    }
+
+    function isValidStoryComment(data) {
+      return data.storyId is string && isValidId(data.storyId) &&
+             data.authorId is string && isValidId(data.authorId) && data.authorId == request.auth.uid &&
+             data.authorUsername is string && data.authorUsername.size() >= 2 && data.authorUsername.size() <= 30 &&
+             data.authorAvatarData is string && data.authorAvatarData.size() <= 350000 &&
+             data.text is string && data.text.size() >= 1 && data.text.size() <= 500 &&
+             data.visibility is string && data.visibility == 'public' &&
+             data.createdAt is timestamp && data.createdAt <= request.time;
+    }
+
+    function isValidHighlight(data) {
+      return data.ownerId is string && isValidId(data.ownerId) && data.ownerId == request.auth.uid &&
+             data.title is string && data.title.size() >= 1 && data.title.size() <= 32 &&
+             data.coverData is string && data.coverData.size() <= 450000 &&
+             data.storyIds is list && data.storyIds.size() <= 30 &&
+             (data.storyIds.size() == 0 || data.storyIds[0] is string) &&
+             data.visibility is string && data.visibility == 'public' &&
+             data.createdAt is timestamp && data.createdAt <= request.time;
+    }
+
+    function isValidCallSession(data) {
+      return data.callerId is string && isValidId(data.callerId) &&
+             data.callerUsername is string && data.callerUsername.size() >= 2 && data.callerUsername.size() <= 30 &&
+             data.callerAvatarData is string && data.callerAvatarData.size() <= 350000 &&
+             data.calleeId is string && isValidId(data.calleeId) &&
+             data.calleeId != data.callerId &&
+             data.calleeUsername is string && data.calleeUsername.size() >= 2 && data.calleeUsername.size() <= 30 &&
+             data.calleeAvatarData is string && data.calleeAvatarData.size() <= 350000 &&
+             data.participantIds is list && data.participantIds.size() == 2 &&
+             request.auth.uid in data.participantIds &&
+             data.callType is string && data.callType in ['voice', 'video'] &&
+             data.status is string && data.status in ['ringing', 'active', 'ended', 'declined', 'missed'] &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
     }
 
     // 1. Public User Profiles (No PII)
@@ -132,6 +205,7 @@ service cloud.firestore {
                        ]) &&
                        incoming().keys().hasOnly([
                          'userId', 'username', 'displayName', 'bio', 'avatarData',
+                         'category', 'pronouns', 'website',
                          'followersCount', 'followingCount', 'postsCount', 'visibility',
                          'createdAt', 'updatedAt'
                        ]) &&
@@ -150,6 +224,7 @@ service cloud.firestore {
                           incoming().followersCount == existing().followersCount &&
                           incoming().diff(existing()).affectedKeys().hasOnly([
                             'username', 'displayName', 'bio', 'avatarData',
+                            'category', 'pronouns', 'website',
                             'visibility', 'postsCount', 'followingCount', 'updatedAt'
                           ])) ||
                          // Action 2: Atomic Follow (+1 followersCount)
@@ -376,20 +451,200 @@ service cloud.firestore {
                          isValidId(conversationId) &&
                          isValidId(messageId) &&
                          incoming().conversationId == conversationId &&
+                         incoming().senderId == request.auth.uid &&
                          incoming().keys().hasAll([
                            'conversationId', 'participantIds', 'senderId',
                            'senderUsername', 'text', 'createdAt'
                          ]) &&
                          incoming().keys().hasOnly([
                            'conversationId', 'participantIds', 'senderId',
-                           'senderUsername', 'text', 'createdAt'
+                           'senderUsername', 'text', 'attachmentType', 'attachmentName',
+                           'attachmentSize', 'attachmentData', 'replyToId', 'replyToSender',
+                           'replyToText', 'reactions', 'createdAt'
                          ]) &&
                          isValidDirectMessage(incoming()) &&
                          existsAfter(/databases/$(database)/documents/conversations/$(conversationId)) &&
                          incoming().participantIds == getAfter(/databases/$(database)/documents/conversations/$(conversationId)).data.participantIds;
 
-        allow update, delete: if false;
+        allow update: if isSignedIn() &&
+                         isValidId(conversationId) &&
+                         isValidId(messageId) &&
+                         isValidDirectMessage(incoming()) &&
+                         request.auth.uid in existing().participantIds &&
+                         incoming().conversationId == existing().conversationId &&
+                         incoming().participantIds == existing().participantIds &&
+                         incoming().senderId == existing().senderId &&
+                         incoming().senderUsername == existing().senderUsername &&
+                         incoming().createdAt == existing().createdAt &&
+                         incoming().diff(existing()).affectedKeys().hasOnly(['reactions']);
+
+        allow delete: if isSignedIn() &&
+                         isValidId(conversationId) &&
+                         isValidId(messageId) &&
+                         request.auth.uid in existing().participantIds &&
+                         existing().senderId == request.auth.uid;
       }
+    }
+
+    // 9. Stories (24h ephemeral stories)
+    match /stories/{storyId} {
+      allow get: if isSignedIn() && isValidId(storyId) && resource != null &&
+                    (existing().visibility == 'public' || existing().authorId == request.auth.uid);
+      allow list: if isSignedIn() &&
+                     (existing().visibility == 'public' || existing().authorId == request.auth.uid);
+
+      allow create: if isSignedIn() &&
+                       isValidId(storyId) &&
+                       incoming().authorId == request.auth.uid &&
+                       incoming().keys().hasAll([
+                         'authorId', 'authorUsername', 'authorAvatarData', 'mediaData',
+                         'mediaType', 'bgGradient', 'overlayText', 'sticker', 'caption',
+                         'likesCount', 'commentsCount', 'viewsCount', 'lastCommentId',
+                         'expiresAtMillis', 'visibility', 'createdAt', 'updatedAt'
+                       ]) &&
+                       incoming().keys().hasOnly([
+                         'authorId', 'authorUsername', 'authorAvatarData', 'mediaData',
+                         'mediaType', 'bgGradient', 'overlayText', 'sticker', 'caption',
+                         'likesCount', 'commentsCount', 'viewsCount', 'lastCommentId',
+                         'expiresAtMillis', 'visibility', 'createdAt', 'updatedAt'
+                       ]) &&
+                       incoming().likesCount == 0 &&
+                       incoming().commentsCount == 0 &&
+                       incoming().viewsCount == 0 &&
+                       incoming().lastCommentId == '' &&
+                       isValidStory(incoming());
+
+      allow update: if isSignedIn() &&
+                       isValidId(storyId) &&
+                       isValidStory(incoming()) &&
+                       incoming().authorId == existing().authorId &&
+                       incoming().createdAt == existing().createdAt && (
+                         // Atomic Like (+1)
+                         (incoming().diff(existing()).affectedKeys().hasOnly(['likesCount', 'updatedAt']) &&
+                          incoming().likesCount == existing().likesCount + 1 &&
+                          !exists(/databases/$(database)/documents/story_likes/$(storyId + '_' + request.auth.uid)) &&
+                          existsAfter(/databases/$(database)/documents/story_likes/$(storyId + '_' + request.auth.uid))) ||
+                         // Atomic Unlike (-1)
+                         (incoming().diff(existing()).affectedKeys().hasOnly(['likesCount', 'updatedAt']) &&
+                          incoming().likesCount == existing().likesCount - 1 &&
+                          exists(/databases/$(database)/documents/story_likes/$(storyId + '_' + request.auth.uid)) &&
+                          !existsAfter(/databases/$(database)/documents/story_likes/$(storyId + '_' + request.auth.uid))) ||
+                         // Atomic Comment (+1)
+                         (incoming().diff(existing()).affectedKeys().hasOnly(['commentsCount', 'lastCommentId', 'updatedAt']) &&
+                          incoming().commentsCount == existing().commentsCount + 1 &&
+                          isValidId(incoming().lastCommentId) &&
+                          !exists(/databases/$(database)/documents/story_comments/$(incoming().lastCommentId)) &&
+                          existsAfter(/databases/$(database)/documents/story_comments/$(incoming().lastCommentId)) &&
+                          getAfter(/databases/$(database)/documents/story_comments/$(incoming().lastCommentId)).data.storyId == storyId &&
+                          getAfter(/databases/$(database)/documents/story_comments/$(incoming().lastCommentId)).data.authorId == request.auth.uid) ||
+                         // View count increment (+1)
+                         (incoming().diff(existing()).affectedKeys().hasOnly(['viewsCount', 'updatedAt']) &&
+                          incoming().viewsCount == existing().viewsCount + 1)
+                       );
+
+      allow delete: if isSignedIn() && isValidId(storyId) && existing().authorId == request.auth.uid;
+    }
+
+    // 10. Story Likes
+    match /story_likes/{likeId} {
+      allow get: if isSignedIn() && isValidId(likeId) &&
+                    ((resource == null && likeId.size() > request.auth.uid.size() + 1 &&
+                      likeId[(likeId.size() - request.auth.uid.size() - 1):likeId.size()] == ('_' + request.auth.uid)) ||
+                     (resource != null && existing().userId == request.auth.uid));
+      allow list: if isSignedIn() && existing().userId == request.auth.uid;
+
+      allow create: if isSignedIn() &&
+                       isValidId(likeId) &&
+                       likeId == (incoming().storyId + '_' + request.auth.uid) &&
+                       incoming().keys().hasAll(['storyId', 'userId', 'createdAt']) &&
+                       incoming().keys().hasOnly(['storyId', 'userId', 'createdAt']) &&
+                       isValidStoryLike(incoming()) &&
+                       exists(/databases/$(database)/documents/stories/$(incoming().storyId));
+
+      allow update: if false;
+      allow delete: if isSignedIn() && isValidId(likeId) && existing().userId == request.auth.uid;
+    }
+
+    // 11. Story Comments
+    match /story_comments/{commentId} {
+      allow get: if isSignedIn() && isValidId(commentId) && resource != null &&
+                    (existing().visibility == 'public' || existing().authorId == request.auth.uid);
+      allow list: if isSignedIn() &&
+                     (existing().visibility == 'public' || existing().authorId == request.auth.uid);
+
+      allow create: if isSignedIn() &&
+                       isValidId(commentId) &&
+                       incoming().keys().hasAll([
+                         'storyId', 'authorId', 'authorUsername',
+                         'authorAvatarData', 'text', 'visibility', 'createdAt'
+                       ]) &&
+                       incoming().keys().hasOnly([
+                         'storyId', 'authorId', 'authorUsername',
+                         'authorAvatarData', 'text', 'visibility', 'createdAt'
+                       ]) &&
+                       isValidStoryComment(incoming()) &&
+                       exists(/databases/$(database)/documents/stories/$(incoming().storyId));
+
+      allow update: if false;
+      allow delete: if isSignedIn() && isValidId(commentId) && existing().authorId == request.auth.uid;
+    }
+
+    // 12. Story Highlights
+    match /highlights/{highlightId} {
+      allow get: if isSignedIn() && isValidId(highlightId) && resource != null &&
+                    (existing().visibility == 'public' || existing().ownerId == request.auth.uid);
+      allow list: if isSignedIn() &&
+                     (existing().visibility == 'public' || existing().ownerId == request.auth.uid);
+
+      allow create: if isSignedIn() &&
+                       isValidId(highlightId) &&
+                       incoming().ownerId == request.auth.uid &&
+                       incoming().keys().hasAll([
+                         'ownerId', 'title', 'coverData', 'storyIds', 'visibility', 'createdAt'
+                       ]) &&
+                       incoming().keys().hasOnly([
+                         'ownerId', 'title', 'coverData', 'storyIds', 'visibility', 'createdAt'
+                       ]) &&
+                       isValidHighlight(incoming());
+
+      allow update: if false;
+      allow delete: if isSignedIn() && isValidId(highlightId) && existing().ownerId == request.auth.uid;
+    }
+
+    // 13. Voice & Video Call Sessions
+    match /calls/{callId} {
+      allow get: if isSignedIn() && isValidId(callId) && resource != null &&
+                    request.auth.uid in existing().participantIds;
+      allow list: if isSignedIn() && request.auth.uid in existing().participantIds;
+
+      allow create: if isSignedIn() &&
+                       isValidId(callId) &&
+                       incoming().callerId == request.auth.uid &&
+                       incoming().status == 'ringing' &&
+                       incoming().keys().hasAll([
+                         'callerId', 'callerUsername', 'callerAvatarData',
+                         'calleeId', 'calleeUsername', 'calleeAvatarData',
+                         'participantIds', 'callType', 'status', 'createdAt', 'updatedAt'
+                       ]) &&
+                       incoming().keys().hasOnly([
+                         'callerId', 'callerUsername', 'callerAvatarData',
+                         'calleeId', 'calleeUsername', 'calleeAvatarData',
+                         'participantIds', 'callType', 'status', 'createdAt', 'updatedAt'
+                       ]) &&
+                       isValidCallSession(incoming());
+
+      allow update: if isSignedIn() &&
+                       isValidId(callId) &&
+                       isValidCallSession(incoming()) &&
+                       request.auth.uid in existing().participantIds &&
+                       incoming().callerId == existing().callerId &&
+                       incoming().calleeId == existing().calleeId &&
+                       incoming().participantIds == existing().participantIds &&
+                       incoming().callType == existing().callType &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt']);
+
+      allow delete: if false;
     }
   }
 }

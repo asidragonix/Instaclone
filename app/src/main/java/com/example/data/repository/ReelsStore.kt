@@ -64,6 +64,17 @@ class ReelsStore(context: Context) {
     }
 
     @Synchronized
+    fun toggleBookmarkReel(reelId: String) {
+        userReels = userReels.map { r ->
+            if (r.id == reelId) r.copy(isBookmarked = !r.isBookmarked) else r
+        }.toMutableList()
+        friendReels = friendReels.map { r ->
+            if (r.id == reelId) r.copy(isBookmarked = !r.isBookmarked) else r
+        }.toMutableList()
+        persistAndEmit()
+    }
+
+    @Synchronized
     fun addComment(reelId: String, author: String, text: String) {
         val trimmed = text.trim().take(400)
         if (trimmed.isEmpty()) return
@@ -79,6 +90,36 @@ class ReelsStore(context: Context) {
         friendReels = friendReels.map { r ->
             if (r.id == reelId) r.copy(comments = r.comments + newComment) else r
         }.toMutableList()
+        persistAndEmit()
+    }
+
+    @Synchronized
+    fun deleteComment(reelId: String, commentId: String) {
+        userReels = userReels.map { r ->
+            if (r.id == reelId) r.copy(comments = r.comments.filterNot { it.id == commentId }) else r
+        }.toMutableList()
+        friendReels = friendReels.map { r ->
+            if (r.id == reelId) r.copy(comments = r.comments.filterNot { it.id == commentId }) else r
+        }.toMutableList()
+        persistAndEmit()
+    }
+
+    @Synchronized
+    fun updateReelCaption(reelId: String, newCaption: String) {
+        val trimmed = newCaption.trim().take(1000)
+        userReels = userReels.map { r ->
+            if (r.id == reelId) r.copy(caption = trimmed) else r
+        }.toMutableList()
+        friendReels = friendReels.map { r ->
+            if (r.id == reelId) r.copy(caption = trimmed) else r
+        }.toMutableList()
+        persistAndEmit()
+    }
+
+    @Synchronized
+    fun deleteReel(reelId: String) {
+        userReels = userReels.filterNot { it.id == reelId }.toMutableList()
+        friendReels = friendReels.filterNot { it.id == reelId }.toMutableList()
         persistAndEmit()
     }
 
@@ -127,7 +168,9 @@ class ReelsStore(context: Context) {
             niche = "Creator Studio",
             likesCount = 1L,
             isLiked = false,
+            isBookmarked = false,
             isFollowing = true,
+            viewsCount = 1L,
             createdAtMillis = System.currentTimeMillis(),
             filterPreset = filterPreset,
             playbackSpeed = playbackSpeed,
@@ -209,7 +252,9 @@ class ReelsStore(context: Context) {
             put("niche", r.niche)
             put("likesCount", r.likesCount)
             put("isLiked", r.isLiked)
+            put("isBookmarked", r.isBookmarked)
             put("isFollowing", r.isFollowing)
+            put("viewsCount", r.viewsCount)
             put("createdAtMillis", r.createdAtMillis)
             put("filterPreset", r.filterPreset)
             put("playbackSpeed", r.playbackSpeed.toDouble())
@@ -251,7 +296,9 @@ class ReelsStore(context: Context) {
                     niche = o.optString("niche", "Reels"),
                     likesCount = o.optLong("likesCount", 0L),
                     isLiked = o.optBoolean("isLiked", false),
+                    isBookmarked = o.optBoolean("isBookmarked", false),
                     isFollowing = o.optBoolean("isFollowing", false),
+                    viewsCount = o.optLong("viewsCount", 1240L),
                     createdAtMillis = o.optLong("createdAtMillis", System.currentTimeMillis()),
                     filterPreset = o.optString("filterPreset", "Original"),
                     playbackSpeed = o.optDouble("playbackSpeed", 1.0).toFloat(),
@@ -310,7 +357,9 @@ class ReelsStore(context: Context) {
                     niche = "Travel",
                     likesCount = 1840L,
                     isLiked = false,
+                    isBookmarked = false,
                     isFollowing = false,
+                    viewsCount = 18400L,
                     createdAtMillis = now - 2L * 3600_000L,
                     comments = listOf(
                         ReelComment("fc_1", "mohit_v", "Epic wave shot!", now - 3600_000L)
@@ -329,7 +378,9 @@ class ReelsStore(context: Context) {
                     niche = "Adventure",
                     likesCount = 3420L,
                     isLiked = true,
+                    isBookmarked = true,
                     isFollowing = true,
+                    viewsCount = 34200L,
                     createdAtMillis = now - 5L * 3600_000L,
                     comments = listOf(
                         ReelComment("fc_2", "aarav_travels", "Need to go diving here next month!", now - 1800_000L)
