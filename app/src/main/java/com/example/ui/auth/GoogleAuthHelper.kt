@@ -9,6 +9,9 @@ import androidx.credentials.CredentialManager
 import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialRequest
 import androidx.credentials.exceptions.GetCredentialCancellationException
+import androidx.credentials.exceptions.GetCredentialProviderConfigurationException
+import androidx.credentials.exceptions.GetCredentialUnsupportedException
+import androidx.credentials.exceptions.NoCredentialException
 import com.example.R
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
@@ -20,11 +23,13 @@ import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.auth
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 
 private const val AUTH_TAG = "Auth"
 
@@ -85,6 +90,7 @@ fun attemptAutoSignIn(
                 onUnauthenticated()
             }
         } catch (e: Exception) {
+            Log.d(AUTH_TAG, "Auto sign-in skipped: ${e.message}")
             onUnauthenticated()
         }
     }
@@ -127,6 +133,15 @@ fun onGoogleSignInClicked(
         } catch (e: GetCredentialCancellationException) {
             Log.w(AUTH_TAG, "Google Sign-In cancelled or dismissed: ${e.message}", e)
             onAuthCancelled()
+        } catch (e: NoCredentialException) {
+            Log.w(AUTH_TAG, "No Google credentials available on device", e)
+            onAuthError("No Google account found on this device. Add a Google account in Settings and try again.")
+        } catch (e: GetCredentialUnsupportedException) {
+            Log.e(AUTH_TAG, "Credential Manager unsupported on this device", e)
+            onAuthError("Google Play Services / Credential Manager is unavailable on this device.")
+        } catch (e: GetCredentialProviderConfigurationException) {
+            Log.e(AUTH_TAG, "Credential provider configuration error", e)
+            onAuthError("Google Sign-In provider configuration error. Check Google Play Services and SHA-1 setup.")
         } catch (e: Exception) {
             Log.e(AUTH_TAG, "Google Sign-In failed", e)
             onAuthError(e.localizedMessage ?: "Sign in failed. Please try again.")
@@ -139,14 +154,16 @@ fun signOutUser(
     onSignOutComplete: () -> Unit,
     scope: CoroutineScope
 ) {
-    Firebase.auth.signOut()
     scope.launch {
-        try {
-            credentialManager.clearCredentialState(ClearCredentialStateRequest())
-        } catch (e: Exception) {
-            Log.e(AUTH_TAG, "Failed to clear credential state", e)
-        } finally {
-            onSignOutComplete()
+        withContext(NonCancellable) {
+            try {
+                credentialManager.clearCredentialState(ClearCredentialStateRequest())
+            } catch (e: Exception) {
+                Log.w(AUTH_TAG, "Failed to clear credential state: ${e.message}", e)
+            } finally {
+                Firebase.auth.signOut()
+                onSignOutComplete()
+            }
         }
     }
 }

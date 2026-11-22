@@ -75,11 +75,13 @@ fun InstaCloneAppRoot(
         // Strict Auth Gate: Feature ViewModels and Firestore listeners are NOT instantiated while unauthenticated
         AuthScreen(onAuthSuccess = {})
     } else {
-        AuthenticatedAppSession(
-            user = user,
-            isDarkTheme = isDarkTheme,
-            onToggleTheme = onToggleTheme
-        )
+        androidx.compose.runtime.key(user.uid) {
+            AuthenticatedAppSession(
+                user = user,
+                isDarkTheme = isDarkTheme,
+                onToggleTheme = onToggleTheme
+            )
+        }
     }
 }
 

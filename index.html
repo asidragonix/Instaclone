@@ -169,13 +169,16 @@
                     <!-- Login Form -->
                     <form id="landingLoginForm" onsubmit="handleLandingLogin(event)" class="space-y-3">
                         <div id="landingUsernameField" class="hidden">
-                            <input type="text" id="landingUsernameInput" placeholder="Full Name or Username" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-zinc-500 transition" />
+                            <input type="text" id="landingUsernameInput" placeholder="Full Name or Username" autocomplete="name" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-zinc-500 transition" />
                         </div>
                         <div>
-                            <input type="email" id="landingEmailInput" required placeholder="Phone number, username, or email" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-zinc-500 transition" />
+                            <input type="text" id="landingEmailInput" required placeholder="Email or username" autocomplete="username" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-zinc-500 transition" />
                         </div>
                         <div>
-                            <input type="password" id="landingPasswordInput" required minlength="6" placeholder="Password" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-zinc-500 transition" />
+                            <input type="password" id="landingPasswordInput" required minlength="6" placeholder="Password (min 6 chars)" autocomplete="current-password" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-zinc-500 transition" />
+                        </div>
+                        <div class="flex justify-end">
+                            <button type="button" onclick="handleForgotPassword()" class="text-[11px] text-zinc-400 hover:text-rose-400 transition">Forgot password?</button>
                         </div>
                         
                         <button type="submit" id="landingSubmitBtn" class="w-full py-2.5 bg-gradient-to-r from-amber-500 via-rose-500 to-purple-600 hover:opacity-90 text-white font-bold text-xs rounded-xl shadow-lg transition flex items-center justify-center gap-2">
@@ -191,19 +194,19 @@
                     </div>
 
                     <!-- Google One-Click Login -->
-                    <button onclick="handleGoogleSignIn()" class="w-full py-2.5 px-3 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition">
+                    <button id="landingGoogleBtn" type="button" onclick="handleGoogleSignIn()" class="w-full py-2.5 px-3 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition">
                         <svg class="w-4 h-4" viewBox="0 0 24 24">
                             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                             <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
                             <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
                             <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
                         </svg>
-                        <span>Log in with Google</span>
+                        <span>Continue with Google</span>
                     </button>
 
-                    <!-- Bypass to Guest Mode -->
-                    <button onclick="enterAsGuest()" class="text-xs text-rose-400 hover:text-rose-300 font-semibold transition block w-full text-center">
-                        Continue as Guest / Preview Feed →
+                    <!-- Bypass to Guest / Shared Mode -->
+                    <button type="button" onclick="enterAsGuest()" class="text-xs text-rose-400 hover:text-rose-300 font-semibold transition block w-full text-center">
+                        Continue as Shared Guest / Preview →
                     </button>
                 </div>
 
@@ -252,8 +255,8 @@
                         <span id="sidebarOnlineBadge" class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 border-2 border-black rounded-full"></span>
                     </div>
                     <div class="flex-1 min-w-0">
-                        <p id="sidebarUserName" class="text-xs font-bold truncate">Asif</p>
-                        <p id="sidebarUserHandle" class="text-[11px] text-zinc-400 truncate">@asidragonix</p>
+                        <p id="sidebarUserName" class="text-xs font-bold truncate">Creator</p>
+                        <p id="sidebarUserHandle" class="text-[11px] text-zinc-400 truncate">@creator</p>
                     </div>
                     <span id="sidebarAuthStatusText" class="text-[10px] bg-green-950 text-green-400 font-medium px-2 py-0.5 rounded-md border border-green-800">Online</span>
                 </div>
@@ -538,9 +541,9 @@
             <div class="flex items-center gap-3 p-3 bg-zinc-900 border border-zinc-800 rounded-xl">
                 <img id="modalUserAvatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150" class="w-12 h-12 rounded-full object-cover border border-zinc-700" />
                 <div class="flex-1 min-w-0">
-                    <h4 id="modalUserName" class="font-bold text-sm truncate">Asif</h4>
-                    <p id="modalUserEmail" class="text-xs text-zinc-400 truncate">asif@gmail.com</p>
-                    <p class="text-[10px] text-amber-400 mt-0.5">Firebase Project: instaclone-f3599</p>
+                    <h4 id="modalUserName" class="font-bold text-sm truncate">Creator</h4>
+                    <p id="modalUserEmail" class="text-xs text-zinc-400 truncate">Sign in to sync across devices</p>
+                    <p id="modalUserAccountNote" class="text-[10px] text-amber-400 mt-0.5">Firebase Project: instaclone-f3599 • Same account sync enabled</p>
                 </div>
             </div>
 
@@ -918,7 +921,10 @@
             onAuthStateChanged, 
             signInWithEmailAndPassword, 
             createUserWithEmailAndPassword, 
-            signInWithPopup, 
+            signInWithPopup,
+            signInWithRedirect,
+            getRedirectResult,
+            sendPasswordResetEmail,
             GoogleAuthProvider, 
             signOut,
             updateProfile 
@@ -967,12 +973,27 @@
         const db = getFirestore(app);
         const storage = getStorage(app);
         const googleProvider = new GoogleAuthProvider();
+        googleProvider.setCustomParameters({ prompt: 'select_account' });
 
         window.firebaseApp = app;
         window.firebaseAuth = auth;
         window.firebaseDb = db;
         window.firebaseStorage = storage;
         window.firebaseGoogleProvider = googleProvider;
+
+        // Per-tab session ID so multiple devices/tabs logged into the SAME account can message & call each other cleanly
+        window.clientSessionId = (() => {
+            try {
+                let sid = sessionStorage.getItem('instaclone_client_sid');
+                if (!sid) {
+                    sid = 'sid_' + Math.random().toString(36).slice(2, 10) + '_' + Date.now().toString(36);
+                    sessionStorage.setItem('instaclone_client_sid', sid);
+                }
+                return sid;
+            } catch (e) {
+                return 'sid_' + Date.now();
+            }
+        })();
 
         // Auth helpers exposed for classic scripts
         window.firebaseAuthHelpers = {
@@ -985,6 +1006,8 @@
                 return cred;
             },
             signInGoogle: () => signInWithPopup(auth, googleProvider),
+            signInGoogleRedirect: () => signInWithRedirect(auth, googleProvider),
+            resetPassword: (email) => sendPasswordResetEmail(auth, email),
             signOutUser: () => signOut(auth)
         };
 
@@ -1069,19 +1092,37 @@
             }
         };
 
+        let dmThreadsUnsub = null;
+        let dmActiveThreadMsgUnsub = null;
+        let activeDmSubscribedThreadId = null;
+        let usersDirectoryUnsub = null;
+        let ownUserDocUnsub = null;
+
         window.firebaseDmHelpers = {
             getThreadId: (a, b) => [String(a || 'user').toLowerCase(), String(b || 'friend').toLowerCase()].sort().join('__'),
-            sendMessage: async (peerHandle, messageObj) => {
+            sendMessage: async (peerHandle, messageObj, peerUid = null) => {
                 try {
-                    const myHandle = window.userProfile?.username || 'asidragonix';
-                    const threadId = window.firebaseDmHelpers.getThreadId(myHandle, peerHandle);
+                    const myHandle = window.userProfile?.username || 'creator';
+                    const myUid = window.userProfile?.uid || null;
+                    const threadId = (myUid && peerUid && myUid !== peerUid)
+                        ? [myUid, peerUid].sort().join('__')
+                        : (myUid && peerHandle === myHandle
+                            ? `self__${myUid}`
+                            : window.firebaseDmHelpers.getThreadId(myHandle, peerHandle));
+                    const participants = Array.from(new Set([myHandle, peerHandle || myHandle]));
+                    const participantUids = Array.from(new Set([myUid, peerUid].filter(Boolean)));
                     await setDoc(doc(db, "dm_threads", threadId), {
-                        participants: [myHandle, peerHandle],
+                        participants,
+                        participantUids,
                         lastMsg: messageObj.text || (messageObj.attachment ? `Sent ${messageObj.attachment.type}` : ''),
+                        lastSenderHandle: myHandle,
+                        lastSenderUid: myUid || '',
                         updatedAt: serverTimestamp()
                     }, { merge: true });
                     await addDoc(collection(db, "dm_threads", threadId, "messages"), {
                         senderHandle: myHandle,
+                        senderUid: myUid || '',
+                        senderSessionId: window.clientSessionId,
                         senderName: window.userProfile?.name || myHandle,
                         text: messageObj.text || '',
                         attachment: messageObj.attachment ? {
@@ -1099,15 +1140,84 @@
                     console.log("DM Firestore sync notice:", e?.message || e);
                 }
             },
-            setTyping: async (peerHandle, isTyping) => {
+            setTyping: async (peerHandle, isTyping, peerUid = null) => {
                 try {
-                    const myHandle = window.userProfile?.username || 'asidragonix';
-                    const threadId = window.firebaseDmHelpers.getThreadId(myHandle, peerHandle);
+                    const myHandle = window.userProfile?.username || 'creator';
+                    const myUid = window.userProfile?.uid || null;
+                    const threadId = (myUid && peerUid && myUid !== peerUid)
+                        ? [myUid, peerUid].sort().join('__')
+                        : (myUid && peerHandle === myHandle
+                            ? `self__${myUid}`
+                            : window.firebaseDmHelpers.getThreadId(myHandle, peerHandle));
                     await setDoc(doc(db, "dm_threads", threadId), {
                         [`typing_${myHandle}`]: Boolean(isTyping),
                         updatedAt: serverTimestamp()
                     }, { merge: true });
                 } catch (e) {}
+            },
+            subscribeThreadMessages: (conv) => {
+                if (!conv || conv.isAiCompanion) return;
+                const myHandle = window.userProfile?.username || 'creator';
+                const myUid = window.userProfile?.uid || null;
+                const threadId = conv.firestoreThreadId || (
+                    (myUid && conv.uid && myUid !== conv.uid)
+                        ? [myUid, conv.uid].sort().join('__')
+                        : (myUid && (conv.isSelfDevice || conv.handle === myHandle)
+                            ? `self__${myUid}`
+                            : window.firebaseDmHelpers.getThreadId(myHandle, conv.handle))
+                );
+                if (!threadId || activeDmSubscribedThreadId === threadId) return;
+                if (dmActiveThreadMsgUnsub) { dmActiveThreadMsgUnsub(); dmActiveThreadMsgUnsub = null; }
+                activeDmSubscribedThreadId = threadId;
+                try {
+                    const q = query(collection(db, "dm_threads", threadId, "messages"), orderBy("createdAt", "asc"), limit(80));
+                    dmActiveThreadMsgUnsub = onSnapshot(q, (snap) => {
+                        const synced = [];
+                        snap.forEach((docSnap) => {
+                            const d = docSnap.data();
+                            const sameUidDifferentTab = Boolean(myUid && d.senderUid === myUid && d.senderSessionId && d.senderSessionId !== window.clientSessionId);
+                            const fromMe = conv.isSelfDevice
+                                ? (d.senderSessionId === window.clientSessionId)
+                                : (myUid && d.senderUid ? d.senderUid === myUid : d.senderHandle === myHandle);
+                            synced.push({
+                                id: docSnap.id,
+                                fromMe: Boolean(fromMe && !sameUidDifferentTab ? true : (conv.isSelfDevice ? d.senderSessionId === window.clientSessionId : fromMe)),
+                                text: d.text || '',
+                                attachment: d.attachment || null,
+                                replyTo: d.replyTo || null,
+                                reactions: d.reactions || {},
+                                time: d.createdAt?.seconds ? new Date(d.createdAt.seconds * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Just now',
+                                dateLabel: 'Today',
+                                status: 'read'
+                            });
+                        });
+                        if (synced.length && window.mergeSyncedThreadMessages) {
+                            window.mergeSyncedThreadMessages(conv.handle, synced, threadId);
+                        }
+                    }, () => {});
+                } catch (e) {}
+            },
+            subscribeThreads: () => {
+                if (dmThreadsUnsub) { dmThreadsUnsub(); dmThreadsUnsub = null; }
+                const myUid = window.userProfile?.uid;
+                const myHandle = window.userProfile?.username;
+                if (!myUid && !myHandle) return;
+                try {
+                    const q = myUid
+                        ? query(collection(db, "dm_threads"), where("participantUids", "array-contains", myUid), limit(30))
+                        : query(collection(db, "dm_threads"), where("participants", "array-contains", myHandle), limit(30));
+                    dmThreadsUnsub = onSnapshot(q, (snap) => {
+                        if (snap.empty) return;
+                        const items = [];
+                        snap.forEach((docSnap) => items.push({ id: docSnap.id, ...docSnap.data() }));
+                        if (window.mergeSyncedDmThreads) window.mergeSyncedDmThreads(items);
+                    }, () => {});
+                } catch (e) {}
+            },
+            unsubscribeAll: () => {
+                if (dmThreadsUnsub) { dmThreadsUnsub(); dmThreadsUnsub = null; }
+                if (dmActiveThreadMsgUnsub) { dmActiveThreadMsgUnsub(); dmActiveThreadMsgUnsub = null; }
+                activeDmSubscribedThreadId = null;
             }
         };
 
@@ -1152,19 +1262,21 @@
         window.setupIncomingCallListener = function() {
             if (incomingCallUnsub) { incomingCallUnsub(); incomingCallUnsub = null; }
             const myHandle = window.userProfile?.username;
-            if (!myHandle) return;
+            const myUid = window.userProfile?.uid;
+            if (!myHandle && !myUid) return;
             try {
                 const q = query(
                     collection(db, "calls"),
-                    where("calleeHandle", "==", myHandle),
                     where("status", "==", "ringing"),
-                    limit(5)
+                    limit(20)
                 );
                 incomingCallUnsub = onSnapshot(q, (snap) => {
                     snap.docChanges().forEach((change) => {
                         if (change.type === 'added') {
                             const data = change.doc.data();
-                            if (window.handleIncomingFirestoreCall) {
+                            if (data.callerSessionId && data.callerSessionId === window.clientSessionId) return;
+                            const isForMe = (myUid && data.calleeUid === myUid) || (myHandle && data.calleeHandle === myHandle);
+                            if (isForMe && window.handleIncomingFirestoreCall) {
                                 window.handleIncomingFirestoreCall(change.doc.id, data);
                             }
                         }
@@ -1173,26 +1285,119 @@
             } catch (e) {}
         };
 
-        // Firebase Auth State Listener
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                const username = user.displayName || (user.email ? user.email.split('@')[0] : 'creator');
-                const avatar = user.photoURL || `https://api.dicebear.com/7.x/adventurer/svg?seed=${user.uid}`;
-                window.userProfile.uid = user.uid;
-                window.userProfile.username = username;
-                window.userProfile.name = user.displayName || username;
-                window.userProfile.email = user.email || window.userProfile.email;
-                window.userProfile.avatar = avatar;
+        window.setupUsersDirectoryListener = function() {
+            if (usersDirectoryUnsub) { usersDirectoryUnsub(); usersDirectoryUnsub = null; }
+            try {
+                const q = query(collection(db, "users"), limit(50));
+                usersDirectoryUnsub = onSnapshot(q, (snap) => {
+                    const realUsers = [];
+                    snap.forEach((docSnap) => {
+                        const d = docSnap.data();
+                        if (!d || (!d.username && !d.name)) return;
+                        realUsers.push({
+                            uid: d.uid || docSnap.id,
+                            username: d.username || (d.name || 'creator').toLowerCase().replace(/[^a-z0-9_]/g, '_'),
+                            name: d.name || d.username || 'Creator',
+                            email: d.email || '',
+                            avatar: d.avatar || `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodeURIComponent(d.uid || docSnap.id)}`,
+                            bio: d.bio || 'Creator on InstaClone ✨',
+                            website: d.website || '',
+                            category: d.category || 'Creator',
+                            pronouns: d.pronouns || '',
+                            isVerified: Boolean(d.isVerified),
+                            isPrivate: Boolean(d.isPrivate),
+                            isOnline: Boolean(d.isOnline),
+                            lastSeenLabel: d.isOnline ? 'Active now' : 'Recently active',
+                            followersCount: typeof d.followersCount === 'number' ? d.followersCount : 0,
+                            followingCount: typeof d.followingCount === 'number' ? d.followingCount : 0,
+                            isRealUser: true,
+                            isAiCompanion: false
+                        });
+                    });
+                    window.firebaseRealUsers = realUsers;
+                    if (window.syncRealUsersIntoDirectory) window.syncRealUsersIntoDirectory();
+                }, () => {});
+            } catch (e) {}
+        };
 
+        window.lookupFirebaseEmailByUsername = async function(usernameInput) {
+            const target = String(usernameInput || '').replace(/^@/, '').trim().toLowerCase();
+            if (!target) return null;
+            const localMatch = (window.firebaseRealUsers || []).find(u =>
+                String(u.username || '').toLowerCase() === target && u.email
+            );
+            if (localMatch?.email) return localMatch.email;
+            try {
+                const q = query(collection(db, "users"), where("username", "==", target), limit(1));
+                const snap = await getDocs(q);
+                if (!snap.empty) {
+                    const d = snap.docs[0].data();
+                    if (d?.email) return d.email;
+                }
+            } catch (e) {}
+            return null;
+        };
+
+        // Handle Google Redirect Sign-In result on page boot (mobile / popup-blocked fallback)
+        getRedirectResult(auth).then((result) => {
+            if (result?.user && window.showToast) {
+                window.showToast('Signed in with Google!', 'success');
+            }
+        }).catch((err) => {
+            if (err && err.code && window.showLandingAuthAlert) {
+                window.showLandingAuthAlert(window.formatFirebaseAuthError ? window.formatFirebaseAuthError(err) : (err.message || 'Google sign-in failed.'));
+            }
+        });
+
+        // Firebase Auth State Listener (auto-unlocks session + syncs same-account profile from Firestore)
+        onAuthStateChanged(auth, async (user) => {
+            if (ownUserDocUnsub) { ownUserDocUnsub(); ownUserDocUnsub = null; }
+            if (user) {
+                const defaultHandle = String(
+                    (user.email ? user.email.split('@')[0] : '') || user.displayName || 'creator'
+                ).toLowerCase().replace(/[^a-z0-9_.]/g, '').slice(0, 28) || ('creator_' + user.uid.slice(0, 6));
+                const fallbackName = user.displayName || defaultHandle;
+                const fallbackAvatar = user.photoURL || `https://api.dicebear.com/7.x/adventurer/svg?seed=${user.uid}`;
+
+                if (window.switchAccountStorageScope) {
+                    window.switchAccountStorageScope(user.uid);
+                }
+
+                // Initialize baseline from Firebase Auth before reading existing Firestore profile
+                window.userProfile.uid = user.uid;
+                window.userProfile.email = user.email || '';
+                if (!window.userProfile._loadedForUid || window.userProfile._loadedForUid !== user.uid) {
+                    window.userProfile.username = defaultHandle;
+                    window.userProfile.name = fallbackName;
+                    window.userProfile.avatar = fallbackAvatar;
+                    window.userProfile.bio = 'Capturing & sharing moments on InstaClone ✨';
+                    window.userProfile._loadedForUid = user.uid;
+                }
+
+                const userRef = doc(db, "users", user.uid);
                 try {
-                    const userRef = doc(db, "users", user.uid);
+                    const existingSnap = await getDoc(userRef);
+                    if (existingSnap.exists()) {
+                        const d = existingSnap.data();
+                        if (d.username) window.userProfile.username = d.username;
+                        if (d.name) window.userProfile.name = d.name;
+                        if (d.avatar) window.userProfile.avatar = d.avatar;
+                        if (typeof d.bio === 'string') window.userProfile.bio = d.bio;
+                        if (typeof d.website === 'string') window.userProfile.website = d.website;
+                        if (typeof d.category === 'string') window.userProfile.category = d.category;
+                        if (typeof d.pronouns === 'string') window.userProfile.pronouns = d.pronouns;
+                        if (typeof d.isVerified === 'boolean') window.userProfile.isVerified = d.isVerified;
+                        if (typeof d.isPrivate === 'boolean') window.userProfile.isPrivate = d.isPrivate;
+                        if (typeof d.followersCount === 'number') window.userProfile.followersCount = d.followersCount;
+                        if (typeof d.followingCount === 'number') window.userProfile.followingCount = d.followingCount;
+                    }
                     await setDoc(userRef, {
                         uid: user.uid,
-                        username: username,
+                        username: window.userProfile.username,
                         name: window.userProfile.name,
                         email: window.userProfile.email,
-                        avatar: avatar,
-                        bio: window.userProfile.bio,
+                        avatar: window.userProfile.avatar,
+                        bio: window.userProfile.bio || '',
                         website: window.userProfile.website || '',
                         category: window.userProfile.category || '',
                         pronouns: window.userProfile.pronouns || '',
@@ -1202,12 +1407,48 @@
                         lastSeen: serverTimestamp(),
                         updatedAt: serverTimestamp()
                     }, { merge: true });
+
+                    // Keep same-account profile live-synced across tabs/devices
+                    ownUserDocUnsub = onSnapshot(userRef, (snap) => {
+                        if (!snap.exists()) return;
+                        const d = snap.data();
+                        let changed = false;
+                        ['username', 'name', 'avatar', 'bio', 'website', 'category', 'pronouns'].forEach((k) => {
+                            if (typeof d[k] === 'string' && d[k] !== window.userProfile[k]) {
+                                window.userProfile[k] = d[k];
+                                changed = true;
+                            }
+                        });
+                        if (typeof d.isVerified === 'boolean' && d.isVerified !== window.userProfile.isVerified) {
+                            window.userProfile.isVerified = d.isVerified;
+                            changed = true;
+                        }
+                        if (typeof d.isPrivate === 'boolean' && d.isPrivate !== window.userProfile.isPrivate) {
+                            window.userProfile.isPrivate = d.isPrivate;
+                            changed = true;
+                        }
+                        if (changed) {
+                            window.saveAppState && window.saveAppState();
+                            window.updateHeaderProfileUI && window.updateHeaderProfileUI();
+                            window.render && window.render();
+                        }
+                    }, () => {});
                 } catch (e) {
                     console.log("Firestore user profile sync notice:", e);
                 }
 
-                window.updateHeaderProfileUI();
+                window.saveAppState && window.saveAppState();
+                window.setupUsersDirectoryListener();
+                window.firebaseDmHelpers.subscribeThreads();
                 window.setupIncomingCallListener();
+                window.loginSuccess && window.loginSuccess();
+            } else {
+                window.firebaseDmHelpers.unsubscribeAll();
+                if (incomingCallUnsub) { incomingCallUnsub(); incomingCallUnsub = null; }
+                window.setupUsersDirectoryListener();
+                if (!window.isGuestSession && window.isAuthenticated) {
+                    window.resetSessionToLoggedOut && window.resetSessionToLoggedOut();
+                }
             }
         });
 
@@ -1399,8 +1640,11 @@
         window.replyingToMsg = null;
         window.dmAttachmentDraft = null;
         window.isAuthenticated = false;
+        window.isGuestSession = false;
         window.isLandingSignUp = false;
-        window.isFriendTyping = false;
+        window.typingByChat = {};
+        window.aiBotsEnabled = true;
+        window.firebaseRealUsers = [];
         window.activeStoryId = null;
         window.storyTimerPaused = false;
         window.isStoryMuted = true;
@@ -1425,11 +1669,12 @@
         window.reelPlaybackSpeeds = {};
         window.reelSpeedMenuOpenFor = null;
         window.homeInlineMuteState = {};
-        window.notificationsFeed = [
-            { id: 'n1', icon: 'message-circle', iconColor: 'text-blue-400', actor: 'Mohit Verma', text: 'sent you a direct message.', time: '2m', targetTab: 'messages', targetUser: 'Mohit Verma' },
-            { id: 'n2', icon: 'heart', iconColor: 'text-rose-500', actor: 'Priya Sharma', text: 'liked your post.', time: '1h', targetTab: 'home' },
-            { id: 'n3', icon: 'user-plus', iconColor: 'text-blue-500', actor: 'Aarav Patel', text: 'started following you.', time: '3h', targetTab: 'profile' }
+        window.defaultNotificationsFeed = [
+            { id: 'n1', icon: 'sparkles', iconColor: 'text-amber-400', actor: 'InstaClone', text: 'Welcome! Share a photo, reel, or start a live chat with friends.', time: 'Now', targetTab: 'create' },
+            { id: 'n2', icon: 'heart', iconColor: 'text-rose-500', actor: 'Priya Sharma', text: 'shared a new golden hour post.', time: '1h', targetTab: 'home' },
+            { id: 'n3', icon: 'video', iconColor: 'text-blue-400', actor: 'Mohit Verma', text: 'uploaded a new travel reel.', time: '3h', targetTab: 'reels' }
         ];
+        window.notificationsFeed = [...window.defaultNotificationsFeed];
 
         // Instagram Reels Editor State
         window.reelEditorState = {
@@ -1459,61 +1704,39 @@
         window.uploadedMediaType = null;
         window.uploadedMediaFile = null;
 
-        window.userProfile = {
-            uid: null,
-            username: 'asidragonix',
-            name: 'Asif',
-            email: 'asif@gmail.com',
-            category: 'Digital Creator',
-            pronouns: 'he/him',
-            website: 'https://instaclone-oqy7.vercel.app',
-            isVerified: true,
-            isPrivate: false,
-            bio: 'Digital Creator & Full-Stack Developer 🚀\nBuilding real-time social apps & sharing #photography #travel moments with @priya_designs',
-            avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
-            postsCount: 3,
-            followersCount: 1420,
-            followingCount: 380
-        };
+        function createDefaultUserProfile() {
+            return {
+                uid: null,
+                username: 'creator',
+                name: 'Creator',
+                email: '',
+                category: 'Creator',
+                pronouns: '',
+                website: '',
+                isVerified: false,
+                isPrivate: false,
+                bio: 'Capturing & sharing moments on InstaClone ✨',
+                avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
+                postsCount: 0,
+                followersCount: 0,
+                followingCount: 0
+            };
+        }
+        window.userProfile = createDefaultUserProfile();
 
-        // Real Friends Directory
-        window.friends = [
-            { username: 'mohit_v', name: 'Mohit Verma', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150', status: 'Online', isOnline: true, lastSeenLabel: 'Active now', category: 'Traveler & Tech', pronouns: 'he/him', website: 'https://mohitv.dev', isVerified: false, isPrivate: false, isFollowing: true, followStatus: 'following', followersCount: 890, followingCount: 310, bio: 'Coffee lover ☕ | Tech enthusiast & traveler\nChasing trails #mountains @aarav_travels' },
-            { username: 'priya_designs', name: 'Priya Sharma', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150', status: 'Online', isOnline: true, lastSeenLabel: 'Active now', category: 'Visual Designer', pronouns: 'she/her', website: 'https://priyastudio.design', isVerified: true, isPrivate: false, isFollowing: true, followStatus: 'following', followersCount: 2840, followingCount: 412, bio: 'UI/UX Designer & Photographer 📸\nGolden hour chaser ✨ #design #goldenhour' },
-            { username: 'aarav_travels', name: 'Aarav Patel', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150', status: 'Active 15m ago', isOnline: false, lastSeenLabel: 'Last seen 15m ago', category: 'Community Host', pronouns: 'he/him', website: '', isVerified: false, isPrivate: false, isFollowing: false, followStatus: 'none', followersCount: 1640, followingCount: 295, bio: 'Chasing mountains & sunsets 🏔️\nWeekend creator meetups #creators #travel' },
-            { username: 'sara_vlogs', name: 'Sara Ali', avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150', status: 'Active 1h ago', isOnline: false, lastSeenLabel: 'Last seen 1h ago', category: 'Video Creator', pronouns: 'she/her', website: 'https://saravlogs.tv', isVerified: true, isPrivate: false, isFollowing: false, followStatus: 'none', followersCount: 5120, followingCount: 520, bio: 'Lifestyle, fitness & daily creator reels ✨\nNew waves & edits every week #reels #lifestyle' },
-            { username: 'naitik_dev', name: 'Naitik Singh', avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150', status: 'Active yesterday', isOnline: false, lastSeenLabel: 'Last seen yesterday', category: 'Mobile Engineer', pronouns: 'he/him', website: '', isVerified: false, isPrivate: true, isFollowing: false, followStatus: 'none', followersCount: 640, followingCount: 198, bio: 'Android & Jetpack Compose engineer 🤖\nClean architecture & minimal setups #devlife' }
+        // Starter Community Creators (AI Companion bots kept small, clean & clearly separated from real Firebase users)
+        window.defaultStarterCreators = [
+            { username: 'mohit_v', name: 'Mohit Verma', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150', status: 'Online', isOnline: true, lastSeenLabel: 'Active now', category: 'Traveler & Tech', pronouns: 'he/him', website: 'https://mohitv.dev', isVerified: false, isPrivate: false, isFollowing: true, followStatus: 'following', followersCount: 890, followingCount: 310, bio: 'Coffee lover ☕ | Tech enthusiast & traveler\nChasing trails #mountains @aarav_travels', isAiCompanion: true, isRealUser: false },
+            { username: 'priya_designs', name: 'Priya Sharma', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150', status: 'Online', isOnline: true, lastSeenLabel: 'Active now', category: 'Visual Designer', pronouns: 'she/her', website: 'https://priyastudio.design', isVerified: true, isPrivate: false, isFollowing: true, followStatus: 'following', followersCount: 2840, followingCount: 412, bio: 'UI/UX Designer & Photographer 📸\nGolden hour chaser ✨ #design #goldenhour', isAiCompanion: true, isRealUser: false },
+            { username: 'aarav_travels', name: 'Aarav Patel', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150', status: 'Active 15m ago', isOnline: false, lastSeenLabel: 'Last seen 15m ago', category: 'Community Host', pronouns: 'he/him', website: '', isVerified: false, isPrivate: false, isFollowing: false, followStatus: 'none', followersCount: 1640, followingCount: 295, bio: 'Chasing mountains & sunsets 🏔️\nWeekend creator meetups #creators #travel', isAiCompanion: true, isRealUser: false },
+            { username: 'sara_vlogs', name: 'Sara Ali', avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150', status: 'Active 1h ago', isOnline: false, lastSeenLabel: 'Last seen 1h ago', category: 'Video Creator', pronouns: 'she/her', website: 'https://saravlogs.tv', isVerified: true, isPrivate: false, isFollowing: false, followStatus: 'none', followersCount: 5120, followingCount: 520, bio: 'Lifestyle, fitness & daily creator reels ✨\nNew waves & edits every week #reels #lifestyle', isAiCompanion: true, isRealUser: false },
+            { username: 'naitik_dev', name: 'Naitik Singh', avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150', status: 'Active yesterday', isOnline: false, lastSeenLabel: 'Last seen yesterday', category: 'Mobile Engineer', pronouns: 'he/him', website: '', isVerified: false, isPrivate: true, isFollowing: false, followStatus: 'none', followersCount: 640, followingCount: 198, bio: 'Android & Jetpack Compose engineer 🤖\nClean architecture & minimal setups #devlife', isAiCompanion: true, isRealUser: false }
         ];
+        window.friends = JSON.parse(JSON.stringify(window.defaultStarterCreators));
 
-        // Story Highlights (keyed by '_self' for logged-in user and friend usernames)
+        // Story Highlights (keyed by '_self' for logged-in user and creator usernames)
         window.defaultHighlights = {
-            _self: [
-                {
-                    id: 'hl-self-1',
-                    title: 'Travel 🏔️',
-                    cover: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=400',
-                    items: [
-                        { id: 'hls-1', mediaUrl: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800', isVideo: false, caption: 'Himachal sunrise ridge 🏔️', createdAt: Date.now() - 8 * 86400000, likes: 42, views: 190, comments: [] },
-                        { id: 'hls-2', isTextCard: true, cardBg: 'Ocean', sticker: '📍 Mountains', textOverlay: 'Best road trip with the squad!', caption: 'Throwback weekend', createdAt: Date.now() - 7 * 86400000, likes: 31, views: 165, comments: [] }
-                    ]
-                },
-                {
-                    id: 'hl-self-2',
-                    title: 'Builds 💻',
-                    cover: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=400',
-                    items: [
-                        { id: 'hls-3', mediaUrl: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=800', isVideo: false, caption: 'Shipping InstaClone live builds 🚀', createdAt: Date.now() - 3 * 86400000, likes: 56, views: 210, comments: [] }
-                    ]
-                },
-                {
-                    id: 'hl-self-3',
-                    title: 'Moments ✨',
-                    cover: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=400',
-                    items: [
-                        { id: 'hls-4', mediaUrl: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800', isVideo: false, caption: 'Creative studio light tests', createdAt: Date.now() - 2 * 86400000, likes: 29, views: 134, comments: [] }
-                    ]
-                }
-            ],
+            _self: [],
             priya_designs: [
                 {
                     id: 'hl-priya-1',
@@ -1547,47 +1770,27 @@
         };
         window.userHighlights = JSON.parse(JSON.stringify(window.defaultHighlights));
 
-        // Active Messaging Conversations with Friends
-        window.messages = [
-            {
-                id: 'c1', user: 'Mohit Verma', handle: 'mohit_v',
-                avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150',
-                lastMsg: 'Bhai Reels aur Story upload section mast ho gaya!', time: '2m', unread: false, unreadCount: 0, isOnline: true, lastSeenLabel: 'Active now',
-                chats: [
-                    { id: 'm1', fromMe: false, text: 'Hey Asif! Kaisa hai bhai?', time: '10:30 AM', dateLabel: 'Today', status: 'read', reactions: {} },
-                    { id: 'm2', fromMe: true, text: 'Ekdum badhiya! New Instagram update test kar raha hoon.', time: '10:32 AM', dateLabel: 'Today', status: 'read', reactions: { '🔥': 1 } },
-                    { id: 'm3', fromMe: false, text: 'Bhai Reels aur Story upload section mast ho gaya!', time: '10:35 AM', dateLabel: 'Today', status: 'read', reactions: {} }
-                ]
-            },
-            {
-                id: 'c2', user: 'Priya Sharma', handle: 'priya_designs',
-                avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150',
-                lastMsg: 'The color scheme and smooth animations look so clean! ✨', time: '15m', unread: true, unreadCount: 1, isOnline: true, lastSeenLabel: 'Active now',
-                chats: [
-                    { id: 'm4', fromMe: false, text: 'Loved your recent travel reel! Where was that shot?', time: 'Yesterday', dateLabel: 'Yesterday', status: 'read', reactions: {} },
-                    { id: 'm5', fromMe: true, text: 'Thank you Priya! That was in Himachal last weekend 🏔️', time: 'Yesterday', dateLabel: 'Yesterday', status: 'read', reactions: {} },
-                    { id: 'm6', fromMe: false, text: 'The color scheme and smooth animations look so clean! ✨', time: '15m ago', dateLabel: 'Today', status: 'delivered', reactions: {} }
-                ]
-            },
-            {
-                id: 'c3', user: 'Aarav Patel', handle: 'aarav_travels',
-                avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
-                lastMsg: 'Lets plan a photo walk this Sunday!', time: '1h', unread: false, unreadCount: 0, isOnline: false, lastSeenLabel: 'Last seen 15m ago',
-                chats: [
-                    { id: 'm7', fromMe: false, text: 'Bro are you free this weekend?', time: '1h ago', dateLabel: 'Today', status: 'read', reactions: {} },
-                    { id: 'm8', fromMe: false, text: 'Lets plan a photo walk this Sunday!', time: '1h ago', dateLabel: 'Today', status: 'read', reactions: {} }
-                ]
-            },
-            {
-                id: 'c4', user: 'Sara Ali', handle: 'sara_vlogs',
-                avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150',
-                lastMsg: 'Shared a reel with you', time: '3h', unread: false, unreadCount: 0, isOnline: false, lastSeenLabel: 'Last seen 1h ago',
-                chats: [
-                    { id: 'm9', fromMe: false, text: 'Check out this new camera lens comparison!', time: '3h ago', dateLabel: 'Today', status: 'read', reactions: {} },
-                    { id: 'm10', fromMe: false, text: 'Shared a reel with you', time: '3h ago', dateLabel: 'Today', status: 'read', reactions: {} }
-                ]
-            }
-        ];
+        function createDefaultStarterMessages() {
+            return [
+                {
+                    id: 'c1', user: 'Mohit Verma', handle: 'mohit_v', isAiCompanion: true, isRealUser: false,
+                    avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150',
+                    lastMsg: 'Hey! Check out the new travel reels whenever you get a minute.', time: '2m', unread: false, unreadCount: 0, isOnline: true, lastSeenLabel: 'Active now',
+                    chats: [
+                        { id: 'm1', fromMe: false, text: 'Hey! Welcome to InstaClone — feel free to message or test a call anytime.', time: '10:30 AM', dateLabel: 'Today', status: 'read', reactions: {} }
+                    ]
+                },
+                {
+                    id: 'c2', user: 'Priya Sharma', handle: 'priya_designs', isAiCompanion: true, isRealUser: false,
+                    avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150',
+                    lastMsg: 'The new feed & profile layout looks super clean! ✨', time: '15m', unread: false, unreadCount: 0, isOnline: true, lastSeenLabel: 'Active now',
+                    chats: [
+                        { id: 'm4', fromMe: false, text: 'The new feed & profile layout looks super clean! ✨', time: '15m ago', dateLabel: 'Today', status: 'read', reactions: {} }
+                    ]
+                }
+            ];
+        }
+        window.messages = createDefaultStarterMessages();
 
         window.defaultStories = [
             { id: 's1', user: 'Priya Sharma', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150', mediaUrl: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800', isVideo: false, caption: 'Golden valley sunset ✨', likes: 28, views: 64, isLiked: false, comments: [{ author: 'mohit_v', text: 'Unreal colors!', time: '12m' }], seen: false, createdAt: Date.now() - 25 * 60 * 1000, expiresAt: Date.now() + 23 * 3600 * 1000 },
@@ -1599,35 +1802,34 @@
 
         window.defaultPosts = [
             {
-                id: 1, user: 'Priya Sharma', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150',
+                id: 1, user: 'priya_designs', displayName: 'Priya Sharma', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150',
                 image: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800', isVideo: false,
                 likes: 384, caption: 'Golden hour in the valley 🌅 Nature never fails to amaze. #goldenhour #photography #nature',
-                time: '2 HOURS AGO', isLiked: false, isSaved: false, taggedUsers: ['asidragonix'],
+                time: '2 HOURS AGO', isLiked: false, isSaved: false, taggedUsers: [],
                 comments: [
-                    { author: 'Mohit', text: 'Breathtaking colors Priya!', time: '1h' },
-                    { author: 'asidragonix', text: 'Cinematic composition!', time: '45m' }
+                    { author: 'mohit_v', text: 'Breathtaking colors Priya!', time: '1h' }
                 ]
             },
             {
-                id: 2, user: 'Aarav Patel', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
+                id: 2, user: 'aarav_travels', displayName: 'Aarav Patel', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150',
                 image: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800', isVideo: false,
                 likes: 1250, caption: 'Excited to announce our new creator meetup with friends this weekend! 🚀 #creators #community #weekend',
-                time: '4 HOURS AGO', isLiked: true, isSaved: false, taggedUsers: ['asidragonix', 'naitik_dev'],
+                time: '4 HOURS AGO', isLiked: true, isSaved: false, taggedUsers: ['naitik_dev'],
                 comments: [
                     { author: 'naitik_dev', text: 'Count me in brother!', time: '3h' }
                 ]
             },
             {
-                id: 3, user: 'Mohit Verma', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150',
+                id: 3, user: 'mohit_v', displayName: 'Mohit Verma', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150',
                 image: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800', isVideo: false,
                 likes: 642, caption: 'Calm alpine mornings hit differently 🏔️☕ #mountains #travel #wanderlust',
-                time: '6 HOURS AGO', isLiked: false, isSaved: true, taggedUsers: [],
+                time: '6 HOURS AGO', isLiked: false, isSaved: false, taggedUsers: [],
                 comments: [
                     { author: 'sara_vlogs', text: 'Adding this spot to my bucket list!', time: '4h' }
                 ]
             },
             {
-                id: 4, user: 'Sara Ali', avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150',
+                id: 4, user: 'sara_vlogs', displayName: 'Sara Ali', avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150',
                 image: 'https://images.unsplash.com/photo-1490750967868-88aa4486c946?w=800', isVideo: false,
                 likes: 915, caption: 'Fresh blooms and warm afternoon light 🌸✨ #spring #aesthetic #lifestyle',
                 time: '8 HOURS AGO', isLiked: false, isSaved: false, taggedUsers: ['priya_designs'],
@@ -1636,7 +1838,7 @@
                 ]
             },
             {
-                id: 5, user: 'Naitik Singh', avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150',
+                id: 5, user: 'naitik_dev', displayName: 'Naitik Singh', avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150',
                 image: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=800', isVideo: false,
                 likes: 518, caption: 'Late night workstation setup & clean UI builds 💻⚡ #devlife #design #setup',
                 time: '11 HOURS AGO', isLiked: true, isSaved: false, taggedUsers: [],
@@ -1645,38 +1847,13 @@
                 ]
             },
             {
-                id: 6, user: 'Priya Sharma', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150',
+                id: 6, user: 'priya_designs', displayName: 'Priya Sharma', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150',
                 image: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=800', isVideo: false,
                 likes: 731, caption: 'City neon reflections after the rain 🌆📸 #streetphotography #nightvibes',
                 time: '1 DAY AGO', isLiked: false, isSaved: false, taggedUsers: [],
                 comments: [
                     { author: 'aarav_travels', text: 'Love the mood here!', time: '14h' }
                 ]
-            },
-            {
-                id: 'self-post-1', ownerTag: 'self', user: 'asidragonix', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
-                image: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=800', isVideo: false, isCarousel: true,
-                slides: [
-                    'https://images.unsplash.com/photo-1518770660439-4636190af475?w=800',
-                    'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800'
-                ],
-                likes: 284, caption: 'Minimal dark-mode desk & InstaClone Studio build ⚡ #devlife #photography',
-                time: '3 HOURS AGO', isLiked: true, isSaved: true, taggedUsers: [],
-                comments: [{ author: 'priya_designs', text: 'Super crisp aesthetic!', time: '2h' }]
-            },
-            {
-                id: 'self-post-2', ownerTag: 'self', user: 'asidragonix', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
-                image: 'https://cdn.plyr.io/static/demo/View_From_A_Blue_Moon_Trailer-576p.mp4', poster: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800',
-                isVideo: true, likes: 412, caption: 'Weekend coastal drone clip 🌊 #travel #video',
-                time: '2 DAYS AGO', isLiked: false, isSaved: false, taggedUsers: [],
-                comments: [{ author: 'mohit_v', text: 'Smooth footage!', time: '1d' }]
-            },
-            {
-                id: 'self-post-3', ownerTag: 'self', user: 'asidragonix', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
-                image: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=800', isVideo: false,
-                likes: 196, caption: 'Evening skyline & city lights 🌆 #streetphotography',
-                time: '4 DAYS AGO', isLiked: false, isSaved: false, taggedUsers: [],
-                comments: []
             }
         ];
         window.posts = [...window.defaultPosts];
@@ -1705,9 +1882,12 @@
         ];
 
         // ==========================================
-        // LOCAL STATE PERSISTENCE LAYER
+        // ACCOUNT-SCOPED STATE PERSISTENCE LAYER
         // ==========================================
-        const PERSIST_KEY = 'instaclone_app_state_v2';
+        window.getPersistKey = function(uidOverride = null) {
+            const uid = uidOverride || window.userProfile?.uid || 'guest';
+            return `instaclone_app_state_v3_${uid}`;
+        };
         window.persistedOverrides = {
             posts: {},
             reels: {},
@@ -1716,7 +1896,7 @@
             friendStates: {}
         };
 
-        window.saveAppState = function() {
+        window.saveAppState = function(uidOverride = null) {
             try {
                 const postMap = {};
                 window.posts.forEach(p => {
@@ -1786,21 +1966,23 @@
                     userUploadedReels: window.userUploadedReels.filter(r => String(r.video || '').length < 250000),
                     userUploadedStories: window.userUploadedStories.filter(s => String(s.mediaUrl || '').length < 250000),
                     reelPlaybackSpeeds: window.reelPlaybackSpeeds,
-                    notificationsFeed: window.notificationsFeed.slice(0, 25)
+                    notificationsFeed: window.notificationsFeed.slice(0, 25),
+                    aiBotsEnabled: Boolean(window.aiBotsEnabled)
                 };
-                localStorage.setItem(PERSIST_KEY, JSON.stringify(payload));
+                localStorage.setItem(window.getPersistKey(uidOverride), JSON.stringify(payload));
             } catch (e) {
                 console.warn('Local state persistence notice:', e?.message || e);
             }
         };
 
-        window.loadAppState = function() {
+        window.loadAppState = function(uidOverride = null) {
             try {
-                const raw = localStorage.getItem(PERSIST_KEY);
+                const raw = localStorage.getItem(window.getPersistKey(uidOverride));
                 if (!raw) return;
                 const data = JSON.parse(raw);
                 if (data.userProfile) window.userProfile = { ...window.userProfile, ...data.userProfile };
-                if (Array.isArray(data.messages) && data.messages.length) window.messages = data.messages;
+                if (Array.isArray(data.messages)) window.messages = data.messages;
+                if (typeof data.aiBotsEnabled === 'boolean') window.aiBotsEnabled = data.aiBotsEnabled;
                 if (data.overrides) {
                     window.persistedOverrides = data.overrides;
                     if (data.overrides.friendStates) {
@@ -1824,6 +2006,249 @@
             } catch (e) {
                 console.warn('Failed to load persisted state:', e);
             }
+        };
+
+        window.switchAccountStorageScope = function(uid) {
+            window.persistedOverrides = { posts: {}, reels: {}, stories: {}, followedUsers: {}, friendStates: {} };
+            window.userProfile = createDefaultUserProfile();
+            window.userHighlights = JSON.parse(JSON.stringify(window.defaultHighlights));
+            window.deletedContentIds = { posts: [], reels: [] };
+            window.userUploadedPosts = [];
+            window.userUploadedReels = [];
+            window.userUploadedStories = [];
+            window.reelPlaybackSpeeds = {};
+            window.friends = JSON.parse(JSON.stringify(window.defaultStarterCreators));
+            window.messages = createDefaultStarterMessages();
+            window.notificationsFeed = [...window.defaultNotificationsFeed];
+            window.typingByChat = {};
+            window.activeChatUser = null;
+            window.viewingProfileHandle = null;
+            window.loadAppState(uid || 'guest');
+            window.syncRealUsersIntoDirectory();
+            window.rebuildCombinedPosts();
+            window.rebuildCombinedStories();
+            window.rebuildCombinedReels();
+            window.updateUnreadMsgBadges();
+        };
+
+        window.resetSessionToLoggedOut = function() {
+            window.isAuthenticated = false;
+            window.isGuestSession = false;
+            window.activeChatUser = null;
+            window.typingByChat = {};
+            window.switchAccountStorageScope('guest');
+            const gate = document.getElementById('instagramLandingGate');
+            if (gate) gate.classList.remove('hidden');
+            if (typeof closeAuthModal === 'function') closeAuthModal();
+            if (typeof render === 'function') render();
+        };
+
+        window.syncRealUsersIntoDirectory = function() {
+            const myUid = window.userProfile?.uid || null;
+            const myHandle = String(window.userProfile?.username || '').toLowerCase();
+            const merged = [];
+            const seenHandles = new Set();
+
+            (window.firebaseRealUsers || []).forEach(u => {
+                if (!u || !u.username) return;
+                if (myUid && u.uid === myUid) return;
+                if (!myUid && myHandle && u.username.toLowerCase() === myHandle) return;
+                const handleKey = u.username.toLowerCase();
+                if (seenHandles.has(handleKey)) return;
+                seenHandles.add(handleKey);
+                const st = window.persistedOverrides?.friendStates?.[u.username];
+                merged.push({
+                    ...u,
+                    isRealUser: true,
+                    isAiCompanion: false,
+                    isFollowing: st ? Boolean(st.isFollowing) : false,
+                    followStatus: st ? (st.followStatus || (st.isFollowing ? 'following' : 'none')) : 'none',
+                    followersCount: st && typeof st.followersCount === 'number' ? st.followersCount : (u.followersCount || 0)
+                });
+            });
+
+            (window.defaultStarterCreators || []).forEach(c => {
+                const handleKey = c.username.toLowerCase();
+                if (seenHandles.has(handleKey)) return;
+                seenHandles.add(handleKey);
+                const st = window.persistedOverrides?.friendStates?.[c.username];
+                merged.push({
+                    ...c,
+                    isRealUser: false,
+                    isAiCompanion: true,
+                    isFollowing: st ? Boolean(st.isFollowing) : Boolean(c.isFollowing),
+                    followStatus: st ? (st.followStatus || (st.isFollowing ? 'following' : 'none')) : (c.followStatus || 'none'),
+                    followersCount: st && typeof st.followersCount === 'number' ? st.followersCount : c.followersCount
+                });
+            });
+
+            window.friends = merged;
+
+            // Keep existing DM thread metadata updated with real user presence & uid
+            (window.messages || []).forEach(conv => {
+                if (conv.isSelfDevice) return;
+                const match = merged.find(f => f.username.toLowerCase() === String(conv.handle || '').toLowerCase());
+                if (match) {
+                    conv.uid = match.uid || conv.uid || '';
+                    conv.isRealUser = Boolean(match.isRealUser);
+                    conv.isAiCompanion = Boolean(match.isAiCompanion);
+                    conv.isOnline = Boolean(match.isOnline);
+                    conv.lastSeenLabel = match.lastSeenLabel || (match.isOnline ? 'Active now' : 'Recently active');
+                    if (match.avatar) conv.avatar = match.avatar;
+                    if (match.name) conv.user = match.name;
+                }
+            });
+            if (typeof render === 'function' && (window.currentTab === 'messages' || window.currentTab === 'explore' || window.currentTab === 'profile')) {
+                render();
+            }
+        };
+
+        window.mergeSyncedDmThreads = function(items) {
+            if (!Array.isArray(items) || !items.length) return;
+            const myUid = window.userProfile?.uid || '';
+            const myHandle = String(window.userProfile?.username || '').toLowerCase();
+            let updated = false;
+
+            items.forEach(t => {
+                const isSelfThread = t.id === `self__${myUid}` || (
+                    Array.isArray(t.participantUids) && t.participantUids.length === 1 && t.participantUids[0] === myUid && String(t.id || '').startsWith('self__')
+                );
+                if (isSelfThread) {
+                    let selfConv = window.messages.find(m => m.isSelfDevice);
+                    if (!selfConv) {
+                        selfConv = {
+                            id: 'self-device-thread',
+                            user: `${window.userProfile?.name || 'You'} (Other Device)`,
+                            handle: window.userProfile?.username || 'creator',
+                            uid: myUid,
+                            isSelfDevice: true,
+                            isRealUser: true,
+                            isAiCompanion: false,
+                            firestoreThreadId: t.id,
+                            avatar: window.userProfile?.avatar || '',
+                            lastMsg: t.lastMsg || 'Sync messages across devices on the same account',
+                            time: 'Just now',
+                            unread: false,
+                            unreadCount: 0,
+                            isOnline: true,
+                            lastSeenLabel: 'Same account • Live sync',
+                            chats: []
+                        };
+                        window.messages.unshift(selfConv);
+                    } else {
+                        selfConv.firestoreThreadId = t.id;
+                        if (t.lastMsg) selfConv.lastMsg = t.lastMsg;
+                    }
+                    updated = true;
+                    return;
+                }
+
+                const peerUid = (t.participantUids || []).find(u => u && u !== myUid) || '';
+                const peerHandle = (t.participants || []).find(h => h && String(h).toLowerCase() !== myHandle) || '';
+                if (!peerUid && !peerHandle) return;
+
+                const realMatch = (window.friends || []).find(f =>
+                    (peerUid && f.uid === peerUid) || (peerHandle && f.username.toLowerCase() === peerHandle.toLowerCase())
+                );
+                let conv = window.messages.find(m =>
+                    (!m.isSelfDevice) && ((peerUid && m.uid === peerUid) || (peerHandle && String(m.handle || '').toLowerCase() === peerHandle.toLowerCase()))
+                );
+                if (!conv) {
+                    conv = {
+                        id: t.id || ('c-' + Date.now()),
+                        user: realMatch?.name || peerHandle || 'Creator',
+                        handle: realMatch?.username || peerHandle || 'creator',
+                        uid: peerUid || realMatch?.uid || '',
+                        isRealUser: true,
+                        isAiCompanion: false,
+                        isSelfDevice: false,
+                        firestoreThreadId: t.id,
+                        avatar: realMatch?.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(peerHandle || 'creator')}`,
+                        lastMsg: t.lastMsg || 'New message',
+                        time: 'Just now',
+                        unread: Boolean(t.lastSenderUid && t.lastSenderUid !== myUid && window.activeChatUser !== (realMatch?.name || peerHandle)),
+                        unreadCount: 0,
+                        isOnline: Boolean(realMatch?.isOnline),
+                        lastSeenLabel: realMatch?.lastSeenLabel || 'Recently active',
+                        chats: []
+                    };
+                    window.messages.unshift(conv);
+                    updated = true;
+                } else {
+                    conv.firestoreThreadId = t.id;
+                    conv.isRealUser = true;
+                    conv.isAiCompanion = false;
+                    if (peerUid) conv.uid = peerUid;
+                    if (t.lastMsg && t.lastMsg !== conv.lastMsg) {
+                        conv.lastMsg = t.lastMsg;
+                        updated = true;
+                    }
+                }
+                if (conv.handle) {
+                    const typingKey = `typing_${conv.handle}`;
+                    if (typeof t[typingKey] === 'boolean') {
+                        window.typingByChat[conv.handle] = t[typingKey];
+                    }
+                }
+            });
+
+            if (updated) {
+                window.saveAppState();
+                window.updateUnreadMsgBadges();
+                if (typeof render === 'function' && window.currentTab === 'messages') render();
+            }
+        };
+
+        window.mergeSyncedThreadMessages = function(handle, synced, threadId) {
+            const conv = window.messages.find(m =>
+                (threadId && m.firestoreThreadId === threadId) ||
+                String(m.handle || '').toLowerCase() === String(handle || '').toLowerCase()
+            );
+            if (!conv || !Array.isArray(synced) || !synced.length) return;
+            conv.firestoreThreadId = threadId;
+            const localOnly = (conv.chats || []).filter(c =>
+                String(c.id || '').startsWith('msg-') &&
+                !synced.some(s => s.text === c.text && Boolean(s.fromMe) === Boolean(c.fromMe))
+            );
+            conv.chats = [...synced, ...localOnly];
+            const last = conv.chats[conv.chats.length - 1];
+            if (last) {
+                conv.lastMsg = last.text || (last.attachment ? `Sent ${last.attachment.type}` : 'Message');
+                conv.time = last.time || 'Just now';
+            }
+            window.saveAppState();
+            if (typeof render === 'function' && window.currentTab === 'messages' && window.activeChatUser === conv.user) {
+                render();
+                if (typeof scrollChatToBottom === 'function') scrollChatToBottom();
+            }
+        };
+
+        window.toggleAiBotsEnabled = function() {
+            window.aiBotsEnabled = !window.aiBotsEnabled;
+            window.typingByChat = {};
+            window.saveAppState();
+            window.showToast(
+                window.aiBotsEnabled ? 'AI companion replies enabled' : 'AI companion auto-replies paused',
+                window.aiBotsEnabled ? 'success' : 'info'
+            );
+            if (typeof render === 'function') render();
+        };
+
+        window.cleanAiBotChats = function() {
+            const before = window.messages.length;
+            window.messages = (window.messages || []).filter(m => Boolean(m.isRealUser || m.isSelfDevice || !m.isAiCompanion));
+            if (window.activeChatUser && !window.messages.some(m => m.user === window.activeChatUser)) {
+                window.activeChatUser = null;
+            }
+            window.typingByChat = {};
+            window.saveAppState();
+            window.updateUnreadMsgBadges();
+            const removed = Math.max(0, before - window.messages.length);
+            window.showToast(
+                removed > 0 ? `Cleaned ${removed} AI bot chat${removed > 1 ? 's' : ''}` : 'AI bot chats already clean',
+                'success'
+            );
+            if (typeof render === 'function') render();
         };
 
         function applyOverridesToPost(p) {
@@ -1924,11 +2349,12 @@
 
         (function initAppHydration() {
             try {
+                localStorage.removeItem('instaclone_app_state_v2');
                 localStorage.removeItem('instaclone_100_ai_bots_v1');
                 localStorage.removeItem('instaclone_100_bot_reels_v1');
                 localStorage.removeItem('instaclone_100_bot_logs_v1');
             } catch (e) {}
-            window.loadAppState();
+            window.loadAppState('guest');
             window.rebuildCombinedPosts();
             window.rebuildCombinedStories();
             window.rebuildCombinedReels();
@@ -1938,6 +2364,38 @@
         // ==========================================
         // AUTHENTICATION LOGIC (Instagram Landing Gate)
         // ==========================================
+        window.formatFirebaseAuthError = function(err) {
+            const code = String(err?.code || '');
+            switch (code) {
+                case 'auth/invalid-credential':
+                case 'auth/invalid-login-credentials':
+                case 'auth/wrong-password':
+                    return 'Incorrect email or password. Double-check your credentials or click "Forgot password?".';
+                case 'auth/user-not-found':
+                    return 'No account found with that email. Switch to Sign Up to create one.';
+                case 'auth/email-already-in-use':
+                    return 'An account already exists with that email. Try logging in instead.';
+                case 'auth/weak-password':
+                    return 'Password is too weak. Use at least 6 characters.';
+                case 'auth/invalid-email':
+                    return 'Please enter a valid email address.';
+                case 'auth/too-many-requests':
+                    return 'Too many failed attempts. Please wait a moment or reset your password.';
+                case 'auth/popup-closed-by-user':
+                    return 'Google sign-in popup was closed before finishing.';
+                case 'auth/popup-blocked':
+                    return 'Browser blocked the sign-in popup. Trying redirect sign-in...';
+                case 'auth/unauthorized-domain':
+                    return 'This domain is not authorized in Firebase Console -> Authentication -> Settings -> Authorized domains.';
+                case 'auth/account-exists-with-different-credential':
+                    return 'An account already exists with this email using a different sign-in method.';
+                case 'auth/network-request-failed':
+                    return 'Network error while contacting Firebase Auth. Check your connection and retry.';
+                default:
+                    return err?.message || 'Authentication error. Please try again.';
+            }
+        };
+
         function showLandingAuthAlert(message, isError = true) {
             const box = document.getElementById('landingAuthAlert');
             if (!box) return;
@@ -1947,6 +2405,7 @@
                 : 'mb-4 p-3 rounded-xl text-xs bg-emerald-950/80 border border-emerald-700 text-emerald-200';
             box.classList.remove('hidden');
         }
+        window.showLandingAuthAlert = showLandingAuthAlert;
 
         function toggleLandingAuthMode() {
             isLandingSignUp = !isLandingSignUp;
@@ -1954,6 +2413,7 @@
             const btn = document.getElementById('landingToggleBtn');
             const submitBtn = document.getElementById('landingSubmitBtn');
             const userField = document.getElementById('landingUsernameField');
+            const emailInput = document.getElementById('landingEmailInput');
             const alertEl = document.getElementById('landingAuthAlert');
             if (alertEl) alertEl.classList.add('hidden');
 
@@ -1962,21 +2422,28 @@
                 btn.textContent = "Log in";
                 submitBtn.innerHTML = "<span>Sign Up with Firebase</span>";
                 userField.classList.remove('hidden');
+                if (emailInput) emailInput.placeholder = "Email address";
             } else {
                 prompt.textContent = "Don't have an account? ";
                 btn.textContent = "Sign up";
                 submitBtn.innerHTML = "<span>Log In with Firebase</span>";
                 userField.classList.add('hidden');
+                if (emailInput) emailInput.placeholder = "Email or username";
             }
         }
 
         async function handleLandingLogin(event) {
             event.preventDefault();
-            const email = document.getElementById('landingEmailInput').value.trim();
+            const rawIdentifier = document.getElementById('landingEmailInput').value.trim();
             const password = document.getElementById('landingPasswordInput').value;
             const usernameInput = document.getElementById('landingUsernameInput').value.trim();
             const submitBtn = document.getElementById('landingSubmitBtn');
-            if (!email || !password) return;
+            const alertEl = document.getElementById('landingAuthAlert');
+            if (alertEl) alertEl.classList.add('hidden');
+            if (!rawIdentifier || !password) {
+                showLandingAuthAlert('Please enter your email/username and password.');
+                return;
+            }
 
             if (submitBtn) {
                 submitBtn.disabled = true;
@@ -1984,108 +2451,164 @@
             }
 
             try {
-                if (window.firebaseAuthHelpers) {
+                if (!window.firebaseAuthHelpers) {
+                    showLandingAuthAlert('Firebase Auth is still initializing. Please wait a second and retry.');
+                    return;
+                }
+
+                let email = rawIdentifier;
+                if (!email.includes('@')) {
                     if (isLandingSignUp) {
-                        await window.firebaseAuthHelpers.signUpEmail(email, password, usernameInput || email.split('@')[0]);
-                    } else {
-                        await window.firebaseAuthHelpers.signInEmail(email, password);
+                        showLandingAuthAlert('Please enter a valid email address to create your account.');
+                        return;
                     }
+                    const resolvedEmail = window.lookupFirebaseEmailByUsername
+                        ? await window.lookupFirebaseEmailByUsername(rawIdentifier)
+                        : null;
+                    if (!resolvedEmail) {
+                        showLandingAuthAlert(`No account found for "@${rawIdentifier.replace(/^@/, '')}". Try signing in with your email address.`);
+                        return;
+                    }
+                    email = resolvedEmail;
+                }
+
+                window.isGuestSession = false;
+                if (isLandingSignUp) {
+                    const desiredHandle = (usernameInput || email.split('@')[0])
+                        .toLowerCase().replace(/[^a-z0-9_.]/g, '').slice(0, 28) || 'creator';
+                    const cred = await window.firebaseAuthHelpers.signUpEmail(email, password, usernameInput || desiredHandle);
+                    if (cred?.user?.uid) {
+                        window.switchAccountStorageScope(cred.user.uid);
+                        window.userProfile.uid = cred.user.uid;
+                        window.userProfile.email = email;
+                        window.userProfile.username = desiredHandle;
+                        window.userProfile.name = usernameInput || desiredHandle;
+                        window.userProfile._loadedForUid = cred.user.uid;
+                    }
+                    showToast('Account created & signed in!', 'success');
+                } else {
+                    await window.firebaseAuthHelpers.signInEmail(email, password);
                     showToast('Signed in with Firebase!', 'success');
-                    loginSuccess();
-                    return;
                 }
+                // onAuthStateChanged will hydrate profile, subscribe realtime & unlock UI
             } catch (err) {
-                const code = err?.code || '';
-                if (code === 'auth/email-already-in-use' || code === 'auth/wrong-password' || code === 'auth/weak-password' || code === 'auth/invalid-email') {
-                    showLandingAuthAlert(err.message || 'Authentication error. Please check your credentials.');
-                    if (submitBtn) {
-                        submitBtn.disabled = false;
-                        submitBtn.innerHTML = `<span>${isLandingSignUp ? 'Sign Up with Firebase' : 'Log In with Firebase'}</span>`;
-                    }
-                    return;
-                }
-                // Preview sandbox / unprovisioned email fallback with clear notice
-                console.warn('Firebase Auth preview fallback:', err?.message || err);
+                showLandingAuthAlert(window.formatFirebaseAuthError(err));
             } finally {
                 if (submitBtn) {
                     submitBtn.disabled = false;
                     submitBtn.innerHTML = `<span>${isLandingSignUp ? 'Sign Up with Firebase' : 'Log In with Firebase'}</span>`;
                 }
             }
+        }
 
-            userProfile.email = email;
-            if (usernameInput) {
-                userProfile.name = usernameInput;
-                userProfile.username = usernameInput.toLowerCase().replace(/\s+/g, '_');
-            } else {
-                userProfile.username = email.split('@')[0];
-                userProfile.name = email.split('@')[0];
+        async function handleForgotPassword() {
+            const rawIdentifier = document.getElementById('landingEmailInput')?.value.trim() || '';
+            if (!rawIdentifier) {
+                showLandingAuthAlert('Enter your email or username above first, then click "Forgot password?".');
+                return;
             }
-            userProfile.avatar = `https://api.dicebear.com/7.x/adventurer/svg?seed=${userProfile.username}`;
-            window.saveAppState();
-            loginSuccess();
+            if (!window.firebaseAuthHelpers?.resetPassword) {
+                showLandingAuthAlert('Firebase Auth is still initializing.');
+                return;
+            }
+            let email = rawIdentifier;
+            if (!email.includes('@')) {
+                const resolved = window.lookupFirebaseEmailByUsername
+                    ? await window.lookupFirebaseEmailByUsername(rawIdentifier)
+                    : null;
+                if (!resolved) {
+                    showLandingAuthAlert('Enter the email address linked to your account to receive a reset link.');
+                    return;
+                }
+                email = resolved;
+            }
+            try {
+                await window.firebaseAuthHelpers.resetPassword(email);
+                showLandingAuthAlert(`Password reset email sent to ${email}. Check your inbox & spam folder.`, false);
+            } catch (err) {
+                showLandingAuthAlert(window.formatFirebaseAuthError(err));
+            }
         }
 
         async function handleGoogleSignIn() {
+            const gBtn = document.getElementById('landingGoogleBtn');
+            const alertEl = document.getElementById('landingAuthAlert');
+            if (alertEl) alertEl.classList.add('hidden');
+            if (gBtn) gBtn.disabled = true;
+
             try {
-                if (window.firebaseAuthHelpers) {
-                    await window.firebaseAuthHelpers.signInGoogle();
-                    showToast('Signed in with Google!', 'success');
-                    loginSuccess();
+                if (!window.firebaseAuthHelpers) {
+                    showLandingAuthAlert('Firebase Auth is still initializing. Please try again in a moment.');
                     return;
                 }
+                window.isGuestSession = false;
+                await window.firebaseAuthHelpers.signInGoogle();
+                showToast('Signed in with Google!', 'success');
             } catch (err) {
-                console.warn('Google popup fallback:', err?.code || err?.message);
-                if (err?.code === 'auth/popup-closed-by-user') {
-                    showLandingAuthAlert('Google sign-in popup was closed.');
-                    return;
+                const code = err?.code || '';
+                if (code === 'auth/popup-blocked' || code === 'auth/cancelled-popup-request' || code === 'auth/operation-not-supported-in-this-environment') {
+                    try {
+                        showLandingAuthAlert('Redirecting to Google Sign-In...', false);
+                        await window.firebaseAuthHelpers.signInGoogleRedirect();
+                        return;
+                    } catch (redirErr) {
+                        showLandingAuthAlert(window.formatFirebaseAuthError(redirErr));
+                        return;
+                    }
                 }
+                showLandingAuthAlert(window.formatFirebaseAuthError(err));
+            } finally {
+                if (gBtn) gBtn.disabled = false;
             }
-            userProfile.name = "Google User";
-            userProfile.username = "google_creator";
-            userProfile.email = "creator@gmail.com";
-            userProfile.avatar = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150";
-            window.saveAppState();
-            showToast('Signed in with Google preview profile', 'info');
-            loginSuccess();
         }
 
         function enterAsGuest() {
-            showToast(`Welcome, ${userProfile.name}!`, 'info');
+            window.isGuestSession = true;
+            window.switchAccountStorageScope('guest');
+            if (!window.userProfile.name || window.userProfile.name === 'Creator') {
+                window.userProfile.name = 'Guest';
+                window.userProfile.username = 'guest_preview';
+            }
+            window.saveAppState('guest');
+            showToast(`Continuing as ${window.userProfile.name} (local preview)`, 'info');
             loginSuccess();
         }
 
         function loginSuccess() {
             isAuthenticated = true;
-            document.getElementById('instagramLandingGate').classList.add('hidden');
+            const gate = document.getElementById('instagramLandingGate');
+            if (gate) gate.classList.add('hidden');
             updateHeaderProfileUI();
             if (window.setupIncomingCallListener) window.setupIncomingCallListener();
             if (window.firebaseUpdatePresence) window.firebaseUpdatePresence(true);
-            render();
+            if (typeof render === 'function') render();
         }
+        window.loginSuccess = loginSuccess;
 
         async function handleSignOut() {
             try {
                 if (window.firebaseUpdatePresence) await window.firebaseUpdatePresence(false);
+                if (window.firebaseDmHelpers) window.firebaseDmHelpers.unsubscribeAll();
                 if (window.firebaseAuthHelpers) await window.firebaseAuthHelpers.signOutUser();
             } catch (e) {}
-            isAuthenticated = false;
-            document.getElementById('instagramLandingGate').classList.remove('hidden');
-            closeAuthModal();
+            window.resetSessionToLoggedOut();
             showToast('Logged out', 'info');
         }
 
         function updateHeaderProfileUI() {
-            document.getElementById('sidebarUserAvatar').src = userProfile.avatar;
-            document.getElementById('navProfileAvatar').src = userProfile.avatar;
-            document.getElementById('mobileBottomNavAvatar').src = userProfile.avatar;
-            document.getElementById('sidebarUserName').textContent = userProfile.name;
-            document.getElementById('sidebarUserHandle').textContent = `@${userProfile.username}`;
-            document.getElementById('modalUserAvatar').src = userProfile.avatar;
-            document.getElementById('modalUserName').textContent = userProfile.name;
-            document.getElementById('modalUserEmail').textContent = userProfile.email;
+            const setSrc = (id, src) => { const el = document.getElementById(id); if (el && src) el.src = src; };
+            const setTxt = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
+            setSrc('sidebarUserAvatar', userProfile.avatar);
+            setSrc('navProfileAvatar', userProfile.avatar);
+            setSrc('mobileBottomNavAvatar', userProfile.avatar);
+            setTxt('sidebarUserName', userProfile.name);
+            setTxt('sidebarUserHandle', `@${userProfile.username}`);
+            setSrc('modalUserAvatar', userProfile.avatar);
+            setTxt('modalUserName', userProfile.name);
+            setTxt('modalUserEmail', userProfile.email || 'Guest Preview');
             window.updateUnreadMsgBadges();
         }
+        window.updateHeaderProfileUI = updateHeaderProfileUI;
 
         function openAuthModal() {
             document.getElementById('authModal').classList.remove('hidden');
@@ -2125,27 +2648,66 @@
                     username: String(friendName).toLowerCase().replace(/[^a-z0-9_]/g, '_'),
                     avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(friendName)}`,
                     isOnline: false,
-                    lastSeenLabel: 'Recently active'
+                    lastSeenLabel: 'Recently active',
+                    isRealUser: false,
+                    isAiCompanion: true
                 };
+                const isReal = Boolean(friendObj.isRealUser);
+                const isBot = Boolean(friendObj.isAiCompanion && !isReal);
                 conv = {
                     id: 'c-' + Date.now(),
                     user: friendObj.name,
                     handle: friendObj.username,
+                    uid: friendObj.uid || '',
+                    isRealUser: isReal,
+                    isAiCompanion: isBot,
+                    isSelfDevice: false,
                     avatar: friendObj.avatar,
-                    lastMsg: 'Started conversation',
+                    lastMsg: isReal ? 'Start a real-time chat' : 'Say hi!',
                     time: 'Just now',
                     unread: false,
                     unreadCount: 0,
                     isOnline: Boolean(friendObj.isOnline),
                     lastSeenLabel: friendObj.lastSeenLabel || (friendObj.isOnline ? 'Active now' : 'Last seen recently'),
-                    chats: [
-                        { id: 'm-' + Date.now(), fromMe: false, text: `Hey ${userProfile.name}! Great to connect here ✨`, time: 'Just now', dateLabel: 'Today', status: 'read', reactions: {} }
-                    ]
+                    chats: isBot ? [
+                        { id: 'm-' + Date.now(), fromMe: false, text: `Hey ${userProfile.name}! Ask anything or test DMs & calls here ✨`, time: 'Just now', dateLabel: 'Today', status: 'read', reactions: {} }
+                    ] : []
                 };
                 messages.unshift(conv);
                 window.saveAppState();
             }
             return conv;
+        }
+
+        function openSelfDeviceChat() {
+            if (!window.userProfile?.uid) {
+                showToast('Sign in with an account first to sync across your other devices.', 'warning');
+                return;
+            }
+            let selfConv = messages.find(m => m.isSelfDevice);
+            if (!selfConv) {
+                selfConv = {
+                    id: 'self-device-thread',
+                    user: `${userProfile.name || 'You'} (Other Device)`,
+                    handle: userProfile.username || 'creator',
+                    uid: userProfile.uid,
+                    isSelfDevice: true,
+                    isRealUser: true,
+                    isAiCompanion: false,
+                    firestoreThreadId: `self__${userProfile.uid}`,
+                    avatar: userProfile.avatar,
+                    lastMsg: 'Sync messages & calls between devices on the same account',
+                    time: 'Now',
+                    unread: false,
+                    unreadCount: 0,
+                    isOnline: true,
+                    lastSeenLabel: 'Same account • Live sync',
+                    chats: []
+                };
+                messages.unshift(selfConv);
+                window.saveAppState();
+            }
+            openFriendChat(selfConv.user);
         }
 
         function openFriendChat(friendName) {
@@ -2157,6 +2719,9 @@
                 window.replyingToMsg = null;
                 window.updateUnreadMsgBadges();
                 window.saveAppState();
+                if (window.firebaseDmHelpers && (conv.isRealUser || conv.isSelfDevice || !conv.isAiCompanion)) {
+                    window.firebaseDmHelpers.subscribeThreadMessages(conv);
+                }
                 switchTab('messages');
                 scrollChatToBottom();
             }
@@ -2308,11 +2873,34 @@
         function handleDmTypingInput(friendUser) {
             const conv = messages.find(m => m.user === friendUser);
             if (!conv || !window.firebaseDmHelpers) return;
-            window.firebaseDmHelpers.setTyping(conv.handle, true);
+            window.firebaseDmHelpers.setTyping(conv.handle, true, conv.uid || null);
             clearTimeout(window._dmTypingDebouncer);
             window._dmTypingDebouncer = setTimeout(() => {
-                window.firebaseDmHelpers.setTyping(conv.handle, false);
+                window.firebaseDmHelpers.setTyping(conv.handle, false, conv.uid || null);
             }, 1500);
+        }
+
+        function generateAiCompanionReply(conv, text, attachmentPayload) {
+            if (attachmentPayload) {
+                if (attachmentPayload.type === 'image') return `Got your photo "${attachmentPayload.name}"! Framing & colors look super clean 📸`;
+                if (attachmentPayload.type === 'video') return `Watched your clip "${attachmentPayload.name}" — smooth edit! 🔥`;
+                return `Received your file "${attachmentPayload.name}" 👍`;
+            }
+            const lower = String(text || '').toLowerCase();
+            const firstName = String(conv.user || 'Friend').split(' ')[0];
+            if (/\b(hi|hello|hey|yo|sup|namaste)\b/.test(lower)) {
+                return `Hey ${window.userProfile?.name || 'there'}! ${firstName} here — how is your day going? ✨`;
+            }
+            if (/\b(call|ring|video|voice)\b/.test(lower)) {
+                return `Tap the phone or video icon at the top anytime — or test ringing right from chat! 📞`;
+            }
+            if (/\b(post|reel|story|photo|design|edit)\b/.test(lower)) {
+                return `Nice! Always excited to see new posts & reels on the feed. Keep creating 🙌`;
+            }
+            if (lower.includes('?')) {
+                return `Good question! Everything is synced live here — let me know what you want to try next.`;
+            }
+            return `Sounds great! Catching up on the feed right now 🙌`;
         }
 
         async function sendFriendDM(friendUser) {
@@ -2383,8 +2971,8 @@
             scrollChatToBottom();
 
             if (window.firebaseDmHelpers) {
-                window.firebaseDmHelpers.sendMessage(conv.handle, newMsg);
-                window.firebaseDmHelpers.setTyping(conv.handle, false);
+                window.firebaseDmHelpers.sendMessage(conv.handle, newMsg, conv.uid || null);
+                window.firebaseDmHelpers.setTyping(conv.handle, false, conv.uid || null);
             }
 
             setTimeout(() => {
@@ -2393,36 +2981,32 @@
                 if (currentTab === 'messages' && activeChatUser === friendUser) render();
             }, 450);
 
-            isFriendTyping = true;
+            // ONLY starter AI companion bots auto-reply when AI Bots are enabled — NEVER real Firebase users or same-account other devices
+            const shouldAiReply = Boolean(!conv.isRealUser && !conv.isSelfDevice && conv.isAiCompanion && window.aiBotsEnabled);
+            if (!shouldAiReply) return;
+
+            window.typingByChat[conv.handle] = true;
             if (currentTab === 'messages' && activeChatUser === friendUser) render();
             scrollChatToBottom();
 
             setTimeout(() => {
-                isFriendTyping = false;
+                window.typingByChat[conv.handle] = false;
+                if (!window.aiBotsEnabled) {
+                    if (currentTab === 'messages' && activeChatUser === friendUser) render();
+                    return;
+                }
                 newMsg.status = 'read';
-                const replies = attachmentPayload
-                    ? [
-                        `Got your ${attachmentPayload.type}! Looks super clean 🙌`,
-                        `Nice! Downloaded ${attachmentPayload.name} 👍`,
-                        `Thanks for sharing that ${attachmentPayload.type}! 🔥`
-                    ]
-                    : [
-                        "That sounds awesome! Let's catch up soon 🙌",
-                        "Haha totally agree! 😂",
-                        "Loved your recent post & reel!",
-                        "Yes!! Let's jump on a quick call later 📞"
-                    ];
-                const randomReply = replies[Math.floor(Math.random() * replies.length)];
+                const replyText = generateAiCompanionReply(conv, text, attachmentPayload);
                 conv.chats.push({
                     id: 'msg-' + Date.now(),
                     fromMe: false,
-                    text: randomReply,
+                    text: replyText,
                     time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
                     dateLabel: 'Today',
                     status: 'read',
                     reactions: {}
                 });
-                conv.lastMsg = randomReply;
+                conv.lastMsg = replyText;
                 conv.time = 'Just now';
                 if (activeChatUser !== friendUser) {
                     conv.unread = true;
@@ -2434,17 +3018,21 @@
                     render();
                     scrollChatToBottom();
                 }
-            }, 1350);
+            }, 1200);
         }
 
         function sendQuickHeart(friendUser) {
             const conv = messages.find(m => m.user === friendUser);
             if (!conv) return;
             const nowTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            conv.chats.push({ id: 'msg-' + Date.now(), fromMe: true, text: '❤️', isHeart: true, time: nowTime, dateLabel: 'Today', status: 'read', reactions: {} });
+            const heartMsg = { id: 'msg-' + Date.now(), fromMe: true, text: '❤️', isHeart: true, time: nowTime, dateLabel: 'Today', status: 'sent', reactions: {} };
+            conv.chats.push(heartMsg);
             conv.lastMsg = '❤️';
             conv.time = 'Just now';
             window.saveAppState();
+            if (window.firebaseDmHelpers) {
+                window.firebaseDmHelpers.sendMessage(conv.handle, heartMsg, conv.uid || null);
+            }
             render();
             scrollChatToBottom();
         }
@@ -2868,8 +3456,16 @@
         async function startCall(friendName, mode = 'video') {
             if (window.callState.status !== 'idle') return;
             const conv = getOrCreateConversation(friendName);
-            const friendObj = friends.find(f => f.name === conv.user || f.username === conv.handle) || {
-                name: conv.user, username: conv.handle, avatar: conv.avatar, isOnline: conv.isOnline
+            const matchedFriend = friends.find(f => f.name === conv.user || f.username === conv.handle);
+            const friendObj = matchedFriend || {
+                name: conv.user,
+                username: conv.handle,
+                uid: conv.uid || (conv.isSelfDevice ? (userProfile.uid || '') : ''),
+                avatar: conv.avatar,
+                isOnline: conv.isOnline,
+                isRealUser: Boolean(conv.isRealUser),
+                isSelfDevice: Boolean(conv.isSelfDevice),
+                lastSeenLabel: conv.lastSeenLabel
             };
 
             window.callState = {
@@ -2911,9 +3507,12 @@
                     await pc.setLocalDescription(offer);
                     if (window.firebaseCallSignaling) {
                         const docId = await window.firebaseCallSignaling.createCallDoc({
+                            callerUid: userProfile.uid || '',
+                            callerSessionId: window.clientSessionId,
                             callerHandle: userProfile.username,
                             callerName: userProfile.name,
                             callerAvatar: userProfile.avatar,
+                            calleeUid: friendObj.uid || '',
                             calleeHandle: friendObj.username,
                             calleeName: friendObj.name,
                             mode,
@@ -2946,8 +3545,8 @@
                 }
             }
 
-            if (!friendObj.isOnline) {
-                setCallNotice(`${friendObj.name} appears offline (${friendObj.lastSeenLabel || 'away'}). Use Demo Pickup to test call controls.`);
+            if (!friendObj.isOnline && !friendObj.isRealUser && !friendObj.isSelfDevice) {
+                setCallNotice(`${friendObj.name} is an offline companion (${friendObj.lastSeenLabel || 'away'}). Use Demo Pickup to preview controls.`);
             }
         }
 
@@ -4431,7 +5030,7 @@
         // ==========================================
         function switchTab(tab, opts = {}) {
             pauseAllVideosExcept(null);
-            currentTab = tab === 'reelsbot' ? 'home' : tab;
+            currentTab = tab;
             if (currentTab !== 'messages') activeChatUser = null;
             if (currentTab === 'profile' && !opts.keepProfileTarget) {
                 window.viewingProfileHandle = null;
@@ -5072,6 +5671,9 @@
                     pronouns: f.pronouns || '',
                     isVerified: Boolean(f.isVerified),
                     isPrivate: Boolean(f.isPrivate),
+                    isRealUser: Boolean(f.isRealUser),
+                    isAiCompanion: Boolean(f.isAiCompanion),
+                    uid: f.uid || '',
                     followersCount: f.followersCount || 420,
                     followingCount: f.followingCount || 180,
                     isFollowing: Boolean(f.isFollowing),
@@ -5794,6 +6396,7 @@
                     if (!conv) { activeChatUser = null; render(); return; }
                     const safeUser = escapeHtml(conv.user).replace(/'/g, "\\'");
                     const draft = window.dmAttachmentDraft;
+                    const isPeerTyping = Boolean(window.typingByChat?.[conv.handle]);
                     let lastDateSeen = '';
 
                     container.innerHTML = `
@@ -5809,10 +6412,14 @@
                                         ${conv.isOnline ? `<span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-black rounded-full"></span>` : ''}
                                     </div>
                                     <div onclick="openUserProfile('${safeUser}')" class="min-w-0 cursor-pointer">
-                                        <h4 class="font-bold text-sm text-white hover:underline truncate">${escapeHtml(conv.user)}</h4>
+                                        <div class="flex items-center gap-1.5">
+                                            <h4 class="font-bold text-sm text-white hover:underline truncate">${escapeHtml(conv.user)}</h4>
+                                            ${conv.isSelfDevice ? `<span class="px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300 text-[9px] font-bold">Other Device</span>`
+                                                : (conv.isAiCompanion && !conv.isRealUser ? `<span class="px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300 text-[9px] font-bold">AI Bot</span>` : '')}
+                                        </div>
                                         <p class="text-[10px] ${conv.isOnline ? 'text-green-400' : 'text-zinc-400'} flex items-center gap-1 truncate">
                                             ${conv.isOnline ? `<span class="w-1.5 h-1.5 rounded-full bg-green-400 flex-shrink-0"></span>` : ''}
-                                            <span>${isFriendTyping ? 'Typing...' : escapeHtml(conv.lastSeenLabel || (conv.isOnline ? 'Active now' : 'Offline'))}</span>
+                                            <span>${isPeerTyping ? 'Typing...' : escapeHtml(conv.lastSeenLabel || (conv.isOnline ? 'Active now' : 'Offline'))}</span>
                                         </p>
                                     </div>
                                 </div>
@@ -5823,9 +6430,11 @@
                                     <button onclick="startCall('${safeUser}', 'video')" class="touch-target flex items-center justify-center text-zinc-200 hover:text-rose-400 rounded-full hover:bg-zinc-900 transition" title="Video Call">
                                         <i data-lucide="video" class="w-5 h-5"></i>
                                     </button>
-                                    <button onclick="triggerDemoIncomingCall('${safeUser}', 'video')" class="px-2 py-1 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-[10px] font-semibold text-zinc-300 hidden sm:flex items-center gap-1" title="Preview Incoming Call Overlay">
-                                        <i data-lucide="phone-incoming" class="w-3 h-3 text-blue-400"></i> Ring
-                                    </button>
+                                    ${(!conv.isRealUser && !conv.isSelfDevice) ? `
+                                        <button onclick="triggerDemoIncomingCall('${safeUser}', 'video')" class="px-2 py-1 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-[10px] font-semibold text-zinc-300 hidden sm:flex items-center gap-1" title="Preview Incoming Call Overlay">
+                                            <i data-lucide="phone-incoming" class="w-3 h-3 text-blue-400"></i> Ring
+                                        </button>
+                                    ` : ''}
                                 </div>
                             </div>
 
@@ -5934,7 +6543,7 @@
                                     `;
                                 }).join('')}
 
-                                ${isFriendTyping ? `
+                                ${isPeerTyping ? `
                                     <div class="flex justify-start">
                                         <div class="px-3.5 py-2 rounded-2xl bg-zinc-900 border border-zinc-800 text-zinc-400 text-xs flex items-center gap-1.5">
                                             <span class="w-1.5 h-1.5 rounded-full bg-zinc-400 typing-dot"></span>
@@ -6009,16 +6618,42 @@
 
                     container.innerHTML = `
                         <div class="space-y-4">
-                            <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
+                            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-zinc-800 pb-3">
                                 <div>
                                     <h2 class="text-2xl font-bold">Direct Messages</h2>
-                                    <p class="text-xs text-zinc-400">Voice & video calls, media sharing, and live chat.</p>
+                                    <p class="text-xs text-zinc-400">Real users, same-account device sync, voice/video calls & chat.</p>
                                 </div>
-                                <button onclick="openNewChatModal()" class="px-3 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow flex items-center gap-1.5 transition">
-                                    <i data-lucide="edit" class="w-3.5 h-3.5"></i>
-                                    <span>New Chat</span>
-                                </button>
+                                <div class="flex items-center gap-1.5 flex-wrap">
+                                    <button onclick="toggleAiBotsEnabled()" class="px-2.5 py-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 ${window.aiBotsEnabled ? 'text-purple-300' : 'text-zinc-400'} font-semibold text-[11px] rounded-xl flex items-center gap-1.5 transition" title="Toggle starter AI bot auto-replies">
+                                        <i data-lucide="bot" class="w-3.5 h-3.5"></i>
+                                        <span>AI: ${window.aiBotsEnabled ? 'On' : 'Off'}</span>
+                                    </button>
+                                    <button onclick="cleanAiBotChats()" class="px-2.5 py-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 font-semibold text-[11px] rounded-xl flex items-center gap-1.5 transition" title="Remove AI companion chats">
+                                        <i data-lucide="sparkles" class="w-3.5 h-3.5 text-rose-400"></i>
+                                        <span>Clean Bots</span>
+                                    </button>
+                                    <button onclick="openNewChatModal()" class="px-3 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow flex items-center gap-1.5 transition">
+                                        <i data-lucide="edit" class="w-3.5 h-3.5"></i>
+                                        <span>New Chat</span>
+                                    </button>
+                                </div>
                             </div>
+
+                            ${userProfile.uid ? `
+                                <div onclick="openSelfDeviceChat()" class="flex items-center justify-between p-3 bg-gradient-to-r from-blue-950/60 to-zinc-950 border border-blue-800/50 hover:border-blue-600/70 rounded-2xl cursor-pointer transition gap-2">
+                                    <div class="flex items-center gap-3 min-w-0">
+                                        <img src="${userProfile.avatar}" class="w-10 h-10 rounded-full object-cover border-2 border-blue-500 flex-shrink-0" />
+                                        <div class="min-w-0">
+                                            <div class="flex items-center gap-1.5">
+                                                <h4 class="font-bold text-xs text-white truncate">You (Same Account • Other Device)</h4>
+                                                <span class="px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300 text-[9px] font-bold">Live Sync</span>
+                                            </div>
+                                            <p class="text-[11px] text-zinc-400 truncate">Message or call your own account across tabs & devices</p>
+                                        </div>
+                                    </div>
+                                    <i data-lucide="chevron-right" class="w-4 h-4 text-blue-400 flex-shrink-0"></i>
+                                </div>
+                            ` : ''}
 
                             <!-- Chat Search Bar -->
                             <div class="relative">
@@ -6028,11 +6663,11 @@
 
                             <!-- Online Active Friends Tray -->
                             <div>
-                                <h4 class="text-xs font-bold uppercase tracking-wider text-zinc-400 mb-2">Active Friends</h4>
+                                <h4 class="text-xs font-bold uppercase tracking-wider text-zinc-400 mb-2">Active Friends & Creators</h4>
                                 <div class="flex gap-3 overflow-x-auto hide-scrollbar py-1">
                                     ${friends.map(f => `
                                         <div onclick="openFriendChat('${escapeHtml(f.name).replace(/'/g, "\\'")}')" class="flex flex-col items-center flex-shrink-0 cursor-pointer group">
-                                            <div class="relative w-14 h-14 rounded-full p-[2px] bg-gradient-to-tr from-blue-500 to-purple-600 group-hover:scale-105 transition">
+                                            <div class="relative w-14 h-14 rounded-full p-[2px] ${f.isRealUser ? 'bg-gradient-to-tr from-emerald-400 to-blue-500' : 'bg-gradient-to-tr from-blue-500 to-purple-600'} group-hover:scale-105 transition">
                                                 <img src="${f.avatar}" class="w-full h-full rounded-full object-cover border-2 border-black" />
                                                 ${f.isOnline ? `<span class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-black rounded-full"></span>` : ''}
                                             </div>
@@ -6048,6 +6683,11 @@
                                 ${filteredMsgs.length ? filteredMsgs.map(m => {
                                     const unreadCount = m.unreadCount || (m.unread ? 1 : 0);
                                     const safeMUser = escapeHtml(m.user).replace(/'/g, "\\'");
+                                    const badgeHtml = m.isSelfDevice
+                                        ? `<span class="px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300 text-[9px] font-bold">Device</span>`
+                                        : (m.isRealUser
+                                            ? `<span class="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[9px] font-bold">User</span>`
+                                            : `<span class="px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300 text-[9px] font-bold">AI</span>`);
                                     return `
                                     <div onclick="openFriendChat('${safeMUser}')" class="flex items-center justify-between p-3.5 bg-zinc-950 hover:bg-zinc-900 rounded-2xl cursor-pointer transition border border-zinc-900 hover:border-zinc-800 shadow-sm gap-2">
                                         <div class="flex items-center gap-3 min-w-0">
@@ -6056,8 +6696,9 @@
                                                 ${m.isOnline ? `<span class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-black rounded-full"></span>` : ''}
                                             </div>
                                             <div class="min-w-0">
-                                                <div class="flex items-center gap-2">
+                                                <div class="flex items-center gap-1.5">
                                                     <h4 class="font-bold text-sm text-white truncate">${escapeHtml(m.user)}</h4>
+                                                    ${badgeHtml}
                                                     <span class="text-[10px] text-zinc-500 truncate">@${escapeHtml(m.handle || 'friend')}</span>
                                                 </div>
                                                 <p class="text-xs ${unreadCount > 0 ? 'text-white font-bold' : 'text-zinc-400'} truncate max-w-[200px] sm:max-w-xs">${escapeHtml(m.lastMsg)}</p>
@@ -6069,7 +6710,7 @@
                                         </div>
                                     </div>
                                 `;
-                                }).join('') : `<div class="p-8 text-center text-xs text-zinc-500 bg-zinc-950 border border-zinc-900 rounded-2xl">No conversations match your search.</div>`}
+                                }).join('') : `<div class="p-8 text-center text-xs text-zinc-500 bg-zinc-950 border border-zinc-900 rounded-2xl">No conversations yet. Tap New Chat or message a real user!</div>`}
                             </div>
                         </div>
                     `;
